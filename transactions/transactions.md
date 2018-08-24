@@ -10,3 +10,14 @@ for atomic and consistent assets transfers.
 [`Mykola Ilashchuk`](https://github.com/MukolaIlashchuk) 
 `Max Demiyan` 
 [`Denis Vasilov`](https://github.com/Vasilov345)
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+# Abstract
+
+# Overview
+This specification describes transactions processing algorithm for the [GEO](https://github.com/GEO-Project) network.  
+Proposed solution provides ability for up to 1024 network participants to achieve 100% consensus via potentially unstable network, in untrusted environment and/or during malicious participants behaviour.
