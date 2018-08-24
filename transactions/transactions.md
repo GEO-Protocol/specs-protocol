@@ -1,3 +1,4 @@
+`GEO Protocol / 2018`
 
 ![Twin Spark Logo](https://github.com/GEO-Project/specs-protocol/blob/master/transactions/resources/twin_spark.png)
 
