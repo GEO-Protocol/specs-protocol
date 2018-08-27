@@ -58,3 +58,36 @@ This section lists the functional and design requirements for the proposed algor
   
   1. _Computational efficiency._  
   Algorithm should have low computational complexity. The mechanism for achieving consensus must avoid frequent calling of complex cryptographic operations (as, for example, Proof Of Work mechanics assumes in some blockchain-based solutions).
+  
+**4. Requirements for anonymity of operations:**
+  1. _Network addressation agnostic_  
+  Algorithm must be agnostic on addressation mechanics, so the participants might be present by any kind of addresses (IP / any kind of name resolutions services / prosy services, etc). As a consequence - algorithm should support anonimization via tor and other similar networks.
+  
+  1. _Lack of a common ledger and common operations history_
+  The outcome of the operation must be determined and distributed only within the participants of this operation. The remaining nodes of the network, who do not participate in the operation, must not be able to retrieve the data about operation, and/or its content.
+  
+**5. Requirements for network resources:**
+  1. _Resistance to unstable networks._  
+  Algorithm is resistant to network interference, packet loss and/or even whole messages loss. In the worst case, if consensus can't be reached, the operation must be canceled on all devices participating in it.
+  
+  1. _Transport protocol agnostic._  
+  Algorithm must not require a permanent connection and must not base its own mechanics on the guarantees provided by different protocols, starting with the transport layer of the OSI model (for example, TCP). The reference implementation of the algorithm is based on UDP (see network protocol specifications for the details) [※ 1].
+  
+**6. Requirements for fault tolerance:**
+  1. _Strict operation completion guarantee_  
+  Algorithm in conjunction with the rest of the GEO protocol ecosystem solutions, must be ablr to ensure the finality of any running operation on the network. Scenarios under which the operation was started, but can not be completed (dead locks) must be striclty documnted and excluded.
+  
+  1. _Automatic synchronization_  
+  Algorithm must be able to automatically resolve possible conflicts between participants of the network, leading them back to the synchronization state, via strit logic of cryptographically-based solutions.
+  
+  
+**7. Requirements for the speed of operations:**
+  1. _Sub-second processing time for one participant._  
+  This point depends very much on the configuration of the separately taken node, but in general, the GEO Protocol team aims to create an algorithm that is as effective in time as possible. This approach is reflected in a number of optimizations adopted in the algorithm, and continues to find a place in the new solutions.
+  
+**8. Requirements for portability:**
+  1. The algorithm must not contain platform-dependent components.
+  1. The algorithm must not be hardware specific or dependent.
+  
+  
+※ To increase the probabilty of achieving consensus, and / or shorten the time of the algorithm execution, various traffic optimisation and correction techniques can be used as well. This protocol does not assumes any of them to be present, but obviously works better in the environments with stable network connections.
