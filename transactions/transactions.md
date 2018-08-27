@@ -151,6 +151,8 @@ graph LR;
     B-- 100 -->C;
     C-- 200 -->D;
 ```
+<img width=400 src="https://github.com/GEO-Project/specs-protocol/blob/master/transactions/resources/chart1.svg">
+
 * *(A) trusts (B) 50 (of some equivalent);*
 * *(B) trusts (C) 100 (of some equivalent);*
 * *(C) trusts (D) 200 (of some equivalent);*
@@ -213,7 +215,8 @@ Please, see [Routing]() `[#todo: link]` for the details on paths discovering.
         Coordinator (D)->>Receiver (A): Reserve 50
         Receiver (A)->>Coordinator (D): OK, only 50 reserved
     ```
-
+    <img src="https://github.com/GEO-Project/specs-protocol/blob/master/transactions/resources/chart2.svg">
+    
     ```c++
     struct RequestAmountReservation {
         TransactionID transactionID;
@@ -248,6 +251,7 @@ During amount reservation, it is very probable, that amount reservations, that w
         Coordinator (D)->>C: Yes, wait some more
         Coordinator (D)->>Receiver (A): Yes, wait some more
     ```
+    <img src="https://github.com/GEO-Project/specs-protocol/blob/master/transactions/resources/chart3.svg">
 
     ```c++
     struct RequestTransactionState {
@@ -277,6 +281,7 @@ During amount reservation, it is very probable, that amount reservations, that w
         Coordinator (D)->>C: No, abort it!
         Coordinator (D)->>Receiver (A): No, abort it!
     ```
+    <img src="https://github.com/GEO-Project/specs-protocol/blob/master/transactions/resources/chart4.svg">
     * In case if `Coordinator` responds with `abort` (for example, because required amount could not be collected on discovered paths) — transaction must be simply rejected `[Stage B]`. Amounts reservations might be safely dropped as well.
     * **Warn:** all other requests, related to this operation (for example, from other nodes) must be dropped, so each one node must remember this transaction for some period of time, and reject all requests, related to it. `todo: specify memory timeout from source`.
    
@@ -291,6 +296,7 @@ During amount reservation, it is very probable, that amount reservations, that w
         Coordinator (D)-->>C: (?)
         Coordinator (D)-->>Receiver (A): (?)
     ```
+    <img src="https://github.com/GEO-Project/specs-protocol/blob/master/transactions/resources/chart5.svg">
     * In case if no response was received from the `Coordinator` — one of 3 things might take place:
         1. `Coordinator` goes offline unexpectedly and/or is unable to proceed.
         1. Network segmentation takes place and no network packets are delivered / received to / from the node / `Coordinator`.
@@ -317,6 +323,7 @@ During amount reservation, it is very probable, that amount reservations, that w
           B->>C: OK, reserved 100 (without sign yet)
           C->>Coordinator (D): OK, only 100 reserved
     ```
+    <img src="https://github.com/GEO-Project/specs-protocol/blob/master/transactions/resources/chart6.svg">
 
 1. Node `(C)` reserves required amount on its side first. In case of success - it suspects for successful reservation on the neighbour node (`(B)` in the example), and sends the appropriate request to it. In case of received confirmation response from the neighbour node - `(C)` reports success to the `Coordinator`.
 1. Coordinator then updates it's internal `paths map`, calculates updated trust lines configuration for each one node involved into the path, and sends it to the nodes, via transferring them (trust lines configurations) through the neighbour nodes. `todo: think about optimization for this logic` `todo: possible vulnerability: intermediate node might fake the original TL configuration. This would be discovered on the next stage, but currently it leads to possibility to dos the network and hang transactions and reserves for some time`. For example, final configuration for the `Receiver` would be sent by the coordinator via node `(B)`, final configuration for the node `(B)` - would be sent via the node `(C)` and so one.
@@ -380,6 +387,7 @@ During amount reservation, it is very probable, that amount reservations, that w
         C->>Coordinator (D): [PubK + delegates list, ~9kB]
         Receiver (A)->>Coordinator (D): [PubK + delegates list, ~9kB]
     ```
+    <img src="https://github.com/GEO-Project/specs-protocol/blob/master/transactions/resources/chart7.svg">
 
     `todo: request structure`
 
@@ -406,6 +414,7 @@ During amount reservation, it is very probable, that amount reservations, that w
         Coordinator (D)->>C: Votes List
         Coordinator (D)->>Receiver (A): Votes List
     ```
+    <img src="https://github.com/GEO-Project/specs-protocol/blob/master/transactions/resources/chart8.svg">
 
     ```c++
     struct VotesList {
@@ -462,6 +471,7 @@ During amount reservation, it is very probable, that amount reservations, that w
         Receiver (A)->>B: PubKey Digest
         C->>B: PubKey Digest
     ```
+    <img src="https://github.com/GEO-Project/specs-protocol/blob/master/transactions/resources/chart9.svg">
 
     ```c++
     struct RequestPubKeyDigest {
