@@ -8,7 +8,7 @@ for atomic and consistent assets transfers.
 <br/>
 [`Dima Chizhevsky`](https://github.com/haysaycheese/) 
 [`Mykola Ilashchuk`](https://github.com/MukolaIlashchuk) 
-`Max Demiyan` 
+[`Max Demiyan`](https://github.com/MaxDemyan)
 [`Denis Vasilov`](https://github.com/Vasilov345)
 <br/>
 <br/>
