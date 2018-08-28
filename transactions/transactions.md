@@ -37,7 +37,7 @@ This section lists the functional and design requirements for the proposed algor
 
 **1. Requirements for cryptographic primitives:**
   1. _Quantum-resistant cryptography._  
-  Algorithm must be avare of usage of cryptographic solutions, which are potentially easily compromised in quantum-based environment (RSA / ECDSA, and other solutions that are based on similar mathematical problems).  
+  Algorithm must be avare of usage of cryptographic solutions, which are potentially [easily compromised in quantum-based environment](https://csrc.nist.gov/Projects/Post-Quantum-Cryptography) (RSA / ECDSA, and other solutions that are based on similar mathematical problems).  
   
   1. _Strict minimum of crypto-primitives._  
   Algorithm must use strict minimum of the crypto systems. The role of each of them must be strictly defined and clearly motivated. 
