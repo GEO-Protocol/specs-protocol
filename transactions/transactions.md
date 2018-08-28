@@ -135,12 +135,13 @@ Along with other finalists of the NIST SHA-3 contest, it has proven and reliable
 
 
 # Protocol decription
+## Abstract
 
+`Related specs:`
+* [Trust Lines;]() [#todo: add link]
+* [Economic model;]() [#todo: add link]
 
-# Abstract
-*At this point, it is assumed that reader is familiar with basic [Trust Lines]() `[#todo: add link to TL architecture]` mechanics and [economic model]() `todo: link`. This section only provides explanation for the payment mechanics itself, without any base-level ideas explanation.*
-
-Let's assume, there is a network with 4 attendees `{(A), (B), (C), (D)}` involved into the next topology:
+Lets assume that there is a network with 4 attendees `{(A), (B), (C), (D)}` involved into the next topology:
 
 ```mermaid
 graph LR;
@@ -150,20 +151,23 @@ graph LR;
 ```
 <img width=400 src="https://github.com/GEO-Project/specs-protocol/blob/master/transactions/resources/chart1.svg">
 
-* *(A) trusts (B) 50 (of some equivalent);*
-* *(B) trusts (C) 100 (of some equivalent);*
-* *(C) trusts (D) 200 (of some equivalent);*
+* _(A) trusts / opens channels with (B) 50 (accounting units of some value);_
+* _(B) trusts / opens channels with (C) 100 (accounting units of some value);_
+* _(C) trusts / opens channels with (D) 200 (accounting units of some value);_
 
-The initial task looks simple:
-* provide ability for `(D)` to pay `(A)` 50  of some equivalent through nodes `{(C), (B)}`;
-* provide strong guaranties for `(A)` and `(D)` about transaction's state, for example that it was approved/rejected, and would not change it's state any more, so `(A)` would be able to react on it (for example, ship some goods to `(D)`).
-For `{(B), (C)}` it is important, that transaction would not be partially committed (committed on some trust lines, and doesn't committed on the rest).
+The base task looks simple:
+* to provide ability for the `(D)` to send 50 accounting units to the `(A)` through nodes `{(C), (B)}`;
+* to provide strong guaranties for the `(A)` and `(D)` about transaction's state: trunsaction **must** be finally approved or rejected by all participants, and **must not** change it's state any more in future, so `(A)` would be able to react on it (for example, ship some goods to `(D)`).
 
-The challenge itself is to provide information about **final** state of the transaction to all the participant in *secure Byzantine-resistant manner, and in predictable time window*.
+For nodes `{(B), (C)}` it is very important to be shure that transaction would not be partially committed (committed on some trust lines, and not committed on the whole path).
 
-`todo: add CAP Theorem analyzing`
+The challenge itself is: 
 
-`todo: add description for the scenarios with several concurrent paths used`
+---
+
+_to provide information about **final** state of the transaction to all the participant in **secure Byzantine-resistant manner, and in predictable time window**_.
+
+---
 
 
 # Stage 1: Amount reservation
