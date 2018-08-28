@@ -169,14 +169,17 @@ _to provide information about **final** state of the transaction to all the part
 
 ---
 
+## Roles
 
-# Stage 1: Amount reservation
-Node, that initiates the transaction, takes part in it as `Coordinator`,
-(node `(D)` in example scheme) — special node, that cares most of computational load of the operation, and coordinates all other nodes during whole life cycle of the transaction.
+* `Coordinator` — node, that initiates the transaction (node `(D)` in example scheme). Coordinates all other nodes, involved into the operation during its life cycle. `Coordinator` utilizes significantly more network traffic in comparison with other participants, but it has economic motivation to do so — it wants to transfer assets to some node and is ready to "pay for it by its resources".
 
-* **Note:** `Coordinator` uses significantly more network traffic, in comparison with other nodes, involved into the operation, but it has economic motivation to do so — it wants to transfer assets to some node.
+* `Receiver` — node that receives the transfer (node `A` in the example scheme).
 
-1. `Coordinator`, in cooperation with `Receiver` (node `A` in the example scheme), discovers all possible network paths `{Coordinator -> Receiver}`. In case if no paths are available — algorithm execution stops with error code `No routes`.
+* `Middleware` node — node that takes part into the operation as common participant, and provides its trust lines / channels as transport for assets (nodes `(C)` and `(B)`).
+
+
+## Stage 1 — Amount collecting and reservation
+1. `Coordinator` in cooperation with `Receiver` discovers all possible network paths `{Coordinator -> Receiver}`. In case if no paths are available — algorithm execution stops with error code `No routes`.
 Please, see [Routing]() `[#todo: link]` for the details on paths discovering.
 
 1. `Coordinator` attempts to reserve required `transaction amount` to the `Receiver` on several (or all, if needed) discovered paths. For each path, `Coordinator` sequentially sends requests for amount reservation to all intermediate nodes on this path. Each request contains required reservation amount and address of the node, to which the reservation should be created.
@@ -627,11 +630,19 @@ struct Amount {
 ```
 
 # Operation result codes
+This section describes result codes, that are erported on the coordinator node to its interfaces (UI, API interface, etc)
+
+#### OK
+`code: 0`  
+Operation was committed well. 
+
+#### No routes
+`code: 403`  
+There is no any route discovered between `Coordinator` and `Receiver`;
+
 
 |Code|Mnemonic|Description|
 |----|--------|-----------|
-|0   |OK| |
-|... |...|...|
 |252 |Duplicated Addresses| `todo`|
 |253 |Duplicated Pub Keys| `todo`|
 |254 |Out Of Common Trust| `todo`|
