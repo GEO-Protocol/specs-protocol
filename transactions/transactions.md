@@ -171,18 +171,26 @@ _to provide information about **final** state of the transaction to all the part
 
 ## Roles
 
-* `Coordinator` — node, that initiates the transaction (node `(D)` in example scheme). Coordinates all other nodes, involved into the operation during its life cycle. `Coordinator` utilizes significantly more network traffic in comparison with other participants, but it has economic motivation to do so — it wants to transfer assets to some node and is ready to "pay for it by its resources".
+* `Coordinator` — node, that initiates the transaction (node `(D)` in example scheme). Coordinates all other nodes, involved into the operation during its life cycle. `Coordinator` utilizes significantly more network traffic in comparison with other participants, but it has economic motivation to do so — it wants to transfer assets to some node and is ready to "pay for it by its resources";
 
-* `Receiver` — node that receives the transfer (node `A` in the example scheme).
+* `Receiver` — node that receives the transfer (node `A` in the example scheme);
 
-* `Middleware` node — node that takes part into the operation as common participant, and provides its trust lines / channels as transport for assets (nodes `(C)` and `(B)`).
+* `Middleware` node — node that takes part into the operation as common participant, and provides its trust lines / channels as transport for assets (nodes `(C)` and `(B)`);
 
+
+## Terms
+
+* `Transaction Amount`  — (`tr. amount`) — amount of accounting units that `Coordinator` tries to send to the `Receiver`;
 
 ## Stage 1 — Amount collecting and reservation
-1. `Coordinator` in cooperation with `Receiver` discovers all possible network paths `{Coordinator -> Receiver}`. In case if no paths are available — algorithm execution stops with error code `No routes`.
-Please, see [Routing]() `[#todo: link]` for the details on paths discovering.
+1. _Paths discovering._  
+`Coordinator` in cooperation with `Receiver` must discover all (or some part of) possible network paths `{Coordinator -> Receiver}`. In case if no paths are found — algorithm execution **must** stop with error code [`No routes`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#no-routes). Please, see [Routing]() `[#todo: link]` for the details on paths discovering.
 
-1. `Coordinator` attempts to reserve required `transaction amount` to the `Receiver` on several (or all, if needed) discovered paths. For each path, `Coordinator` sequentially sends requests for amount reservation to all intermediate nodes on this path. Each request contains required reservation amount and address of the node, to which the reservation should be created.
+1. _Paths processing._  
+`Coordinator` **must** attempt to reserve `tr. amount` to the `Receiver` on several (or all, if needed, but at least one) discovered paths.
+
+For each path, and for each node on this path (except `Receiver` and itself), `Coordinator` sequentially, starting from its neighvours, must send reservation requests messages. Each request contains a) required `reservation amount` and b) address of the node, to which the reservation should be created.
+
     * `Coordinator (D)` knows whole path `{(D), (C), (B), (A)}` (`todo: describe also scenarios with several concurrent paths`), but it doesn't knows and can't predict `max. common amount` between all nodes on this path (due to the network volatility `todo: describe network volatility`), so it sends requests to the nodes in sequential manner.
     * `todo: Analise if coord. can send requests to all nodes in parallel`
     * `todo: Analise if coord. can recommend timeout for middle ware nodes`
@@ -628,6 +636,10 @@ struct Amount {
 }
 
 ```
+
+# Messages
+
+#### 
 
 # Operation result codes
 This section describes result codes, that are erported on the coordinator node to its interfaces (UI, API interface, etc)
