@@ -189,7 +189,7 @@ _to provide information about **final** state of the transaction to all the part
 1. _Paths processing._  
 `Coordinator` **must** attempt to reserve `tr. amount` to the `Receiver` on several (or all, if needed, but at least one) discovered paths.
 
-For each path, and for each node on this path (except `Receiver` and itself), `Coordinator` sequentially, starting from its neighvours, must send reservation requests messages. Each request contains a) required `reservation amount` and b) address of the node, to which the reservation should be created.
+For each path, and for each node on this path (except `Receiver` and itself), `Coordinator` sequentially, starting from its neighvours, must send [reservation requests messages](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#request-reservation-messages). 
 
     * `Coordinator (D)` knows whole path `{(D), (C), (B), (A)}` (`todo: describe also scenarios with several concurrent paths`), but it doesn't knows and can't predict `max. common amount` between all nodes on this path (due to the network volatility `todo: describe network volatility`), so it sends requests to the nodes in sequential manner.
     * `todo: Analise if coord. can send requests to all nodes in parallel`
@@ -228,15 +228,6 @@ For each path, and for each node on this path (except `Receiver` and itself), `C
         Receiver (A)->>Coordinator (D): OK, only 50 reserved
     ```
     <img src="https://github.com/GEO-Project/specs-protocol/blob/master/transactions/resources/chart2.svg">
-    
-    ```c++
-    struct RequestAmountReservation {
-        TransactionID transactionID;
-        Amount amount;
-        Address neighbourAddress;
-    }
-    ```
-    `todo: link source`
 
     ```c++
     struct ResponseAmountReservation {
@@ -639,7 +630,24 @@ struct Amount {
 
 # Messages
 
-#### 
+#### Request: Amount reservation 
+Request for amount reservation.
+
+```c++
+struct RequestAmountReservation {
+    TransactionID transactionID;
+    
+    // Specifies amount, that should be reserved.
+    Amount amount;
+    
+    // Specifies address of the node, towards which reservation must be done.
+    Address neighbourAddress;
+}
+```
+
+#### Response: Amount reservation
+
+
 
 # Operation result codes
 This section describes result codes, that are erported on the coordinator node to its interfaces (UI, API interface, etc)
