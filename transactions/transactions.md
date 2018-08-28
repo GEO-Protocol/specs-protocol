@@ -51,6 +51,16 @@ This section lists the functional and design requirements for the proposed algor
     1. time-predictable (ideally about a few seconds).
     1. safe towards other operations (launched in parallel).
     1. agnostic towards nodes internal code modifications (hacking) and destructive motivation of the involved participants (fraud attempts).
+    
+  1. _Predicted time window._    
+  Transaction time window — `1-15` seconds for non-fraud operations, and up to `~20 minutes` [#6] for processing problematic operations. It is expected, that more than 90% of all operations in the network would be non-fraud. This assumption is only related to the estimated network throughput.
+
+  1. _Routes agnostic._
+  Transactions must be able to use up to several hundreds of different payment paths. [# todo: provide link to the Routing specification].
+
+  1. _Token / Commisions independence._  
+  Transactions must be able to proceed without any internal token. Participants must not be enforced to charge any commissions for the middle ware operations processing.
+
 
 **3. Requirements for end-point devices (nodes):**
   1. _Applicability for modern smartphones._  
@@ -60,10 +70,10 @@ This section lists the functional and design requirements for the proposed algor
   Algorithm should have low computational complexity. The mechanism for achieving consensus must avoid frequent calling of complex cryptographic operations (as, for example, Proof Of Work mechanics assumes in some blockchain-based solutions).
   
 **4. Requirements for anonymity of operations:**
-  1. _Network addressation agnostic_  
+  1. _Network addressation agnostic._  
   Algorithm must be agnostic on addressation mechanics, so the participants might be present by any kind of addresses (IP / any kind of name resolutions services / prosy services, etc). As a consequence - algorithm should support anonimization via tor and other similar networks.
   
-  1. _Lack of a common ledger and common operations history_
+  1. _Lack of a common ledger and common operations history._
   The outcome of the operation must be determined and distributed only within the participants of this operation. The remaining nodes of the network, who do not participate in the operation, must not be able to retrieve the data about operation, and/or its content.
   
 **5. Requirements for network resources:**
@@ -77,7 +87,7 @@ This section lists the functional and design requirements for the proposed algor
   1. _Strict operation completion guarantee_  
   Algorithm in conjunction with the rest of the GEO protocol ecosystem solutions, must be ablr to ensure the finality of any running operation on the network. Scenarios under which the operation was started, but can not be completed (dead locks) must be striclty documnted and excluded.
   
-  1. _Automatic synchronization_  
+  1. _Automatic synchronization._  
   Algorithm must be able to automatically resolve possible conflicts between participants of the network, leading them back to the synchronization state, via strit logic of cryptographically-based solutions.
   
   
@@ -125,20 +135,7 @@ Along with other finalists of the NIST SHA-3 contest, it has proven and reliable
 
 
 # Protocol decription
-## Requirements
-* **[R1]** Transaction time window — `1-15` seconds for non-fraud operations, and up to `~10 minutes` for processing problematic operations. It is expected, that more than 90% of all operations in the network would be non-fraud. This assumption is only related to the estimated network throughput.
 
-* **[R2]** Each transaction must collect `100% consensus` of all participants, involved into the operation, to be considered as done, or rejected. Reject of even one of participants must lead to whole transaction rejecting.
-
-* **[R3]** Transactions must be able to involve up to several hundreds of participants at the same time.
-
-* **[R4]** Transactions must be able to use up to several hundreds of different payment paths. `todo: add link to the Routing specification`
-
-* **[R5]** Transactions must be able to proceed without any internal token. Participants must not be enforced to charge any commissions for the middle ware operations processing.
-
-# Source assumptions
-
-* **[SA1]** Due to proposed [network topology, based on trust lines]() `[#todo: add link to proposed network design]`, double spending is impossible, by design. Please, see [trust lines specifications]() `[#todo: add link to TL architecture]` for the details.
 
 # Abstract
 *At this point, it is assumed that reader is familiar with basic [Trust Lines]() `[#todo: add link to TL architecture]` mechanics and [economic model]() `todo: link`. This section only provides explanation for the payment mechanics itself, without any base-level ideas explanation.*
@@ -581,6 +578,21 @@ During operation processing, there is non zero-probability, that some node invol
 * For the protocol simplicity reasons, nodes that enter "recover" state and has not signed the operation, must not vote for transaction approving any more. Only "reject" is allowed.
 * For the signed operation — node must check for the final decision about the operation from its neighbour(s) involved and the `Coordinator`. In case if no response from any one of them in time of 10 minutes — `Delegate` arbitration must be requested `[Stage 5]`.
 
+
+# "Double Spending" prevention
+Due to proposed [network topology, based on trust lines / channels]() [#todo: add link to trust lines protocol] — there is no common balance of the node, or ledger of the node. There are only relateions of the node with its contractors (other nodes), and balances of this relations. There is no single point of asstets storing. There are only relative balances. As a result — there is no possibility to perform so called "double spending" towards several nodes at the time. There is only a possibility to try to cheat against some first-level node and to try to force it to use some debt twice or more. But, there is no way to do it without approval of this node, and obviously it would not agree to approve it. 
+
+To help nodes prevent double spending attempts — so called "distributed lock" is used. It is a separated component with a  simple map of type `node` → `total reserved amount` in its core. This map **must** be permanent and **must** be atomically updated and restored between each one node restarts, so each one operation on the node would have amount reservations related to it. 
+
+On each one transaction, node **must** check this component and enshure that current `total reserved amount` on the requested trust line / channel is **less** than `(total available amount) - (reservation request)`. In other words, this check **must** enshure node would not reserve more amount than is available by the trust line / channel.
+
+This check is **required part of each one operation.** (See [Stage 1: Amount reservation](https://github.com/GEO-Project/specs-protocol/blob/master/transactions/transactions.md#stage-1-amount-reservation) for the details).    
+While node follows this specification and it's internal behaviour was not modified (hacked) — there is no way to force remote node to accept more debts, than it was envisaged by the trust line / channel.
+ 
+`Related specs:`
+* [Trust lines;]() [#todo: provide link]
+
+
 # Data types used
 This section provides explanation of used data structures in developers friendly format.
 
@@ -647,18 +659,6 @@ Special node, that cares most of computational load of the operation, and coordi
 
 ### Receiver
 Node, that takes part into the operation as a transfer destination node.
-
-
-# Contribution
-#### How to join discussion?
-* Please, follow commits history for details about changes.
-* Please, use commits comments to propose changes.
-
-#### Technical requirements
-* This specification uses mermaid charts, so, please, ensure your environment supports them for correct document render.
-
-# Credentials
-`todo: list ideators`
 
 # License
 [<img src="https://opensource.org/files/osi_keyhole_300X300_90ppi_0.png" height=90 style="float: left; padding: 20px">]()
