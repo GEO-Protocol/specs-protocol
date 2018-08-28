@@ -27,7 +27,7 @@ Proposed solution provides ability for up to 1024 network participants [※ 1] t
 The objectives of this document are:
 1. to provide comprehensive info about proposed method of consensus;
 1. to describe [guaranteed double spending impossibility](https://github.com/GEO-Project/specs-protocol/blob/master/transactions/transactions.md#double-spending-prevention), and distributed locks mechanics;
-1. to describe the cryptographic primitives used and the provide motivation for including ech of them into the protocol;
+1. to describe the [cryptographic primitives used](https://github.com/GEO-Project/specs-protocol/blob/master/transactions/transactions.md#cryptographic-primitives) and the provide motivation for including each of them into the protocol;
 1. to describe the method of mathematical and cryptographic confirmation of operations (consensus checking);
 1. to prodive mathematical confirmation of the impossibility (or extreme complexity) of the operations compromising;
 1. to provide a list of possible edge cases and to describe the ways to avoid/resovle them, as well as possible outcomes of operations.
