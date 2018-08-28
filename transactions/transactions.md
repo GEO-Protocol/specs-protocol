@@ -180,7 +180,9 @@ _to provide information about **final** state of the transaction to all the part
 
 ## Terms
 
-* `Transaction Amount`  — (`tr. amount`) — amount of accounting units that `Coordinator` tries to send to the `Receiver`;
+* `Transaction Amount` — (`tr. amount`) — amount of accounting units that `Coordinator` tries to send to the `Receiver`;
+
+* `Network Hop Timeout` — (`hop time`) — time range, expected time that is needed for the network packet to be delivered to the destination node. By default should be set to `2 sec`.
 
 ## Stage 1 — Amount collecting and reservation
 1. _Paths discovering._  
@@ -189,14 +191,13 @@ _to provide information about **final** state of the transaction to all the part
 1. _Paths processing._  
 `Coordinator` **must** attempt to reserve `tr. amount` to the `Receiver` on several (or all, if needed, but at least one) discovered paths.
 
-For each path, and for each node on this path (except `Receiver` and itself), `Coordinator` sequentially, starting from its neighvours, must send [reservation requests messages](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#request-reservation-messages). 
+For each path, and for each node on this path (except itself), `Coordinator` sequentially, starting from its neighvours, must send [reservation requests messages](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#request-amount-reservation). `Coordinator (D)` knows whole path `{(D), (C), (B), (A)}`, but it doesn't know and can't predict [`max. common amount`](https://en.wikipedia.org/wiki/Maximum_flow_problem) between all nodes on this path (due to the [network volatility]() [#todo: add link for describtion about network volatility]), so it must send requests in sequential manner.
 
-    * `Coordinator (D)` knows whole path `{(D), (C), (B), (A)}` (`todo: describe also scenarios with several concurrent paths`), but it doesn't knows and can't predict `max. common amount` between all nodes on this path (due to the network volatility `todo: describe network volatility`), so it sends requests to the nodes in sequential manner.
-    * `todo: Analise if coord. can send requests to all nodes in parallel`
-    * `todo: Analise if coord. can recommend timeout for middle ware nodes`
-    * Each middle-ware node `{(C), (B)}` and `Receiver (A)`, on reservation request received, does one of 3 things possible:
-        1. Accepts reservation fully, **if there is enough free amount on requested trust line**. In this case, node
-            1. Creates local reserve on the trust line with specified neighbour for the specified amount.
+After each request sent, `Coordinator` **must** wait for the reponse from the node at least 1 `hop time`. In case if no response has been received during this time window — remote node **must** be considered as "unavailable". **All paths** with this node included **must** be dropped from the processing. If there are nodes, that has confirmed reservation request, then this nodes should receive reservation cancel request from the `Coordinator`.
+  
+  * Each middle-ware node `{(C), (B)}` and `Receiver (A)`, on reservation request received, **must** do one of 3 things possible:
+        1. Accept reservation fully, **if there is enough free amount on requested trust line**. In this case, node
+            1. **Atomically** creates [amount reservation](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#double-spending-prevention) on the trust line with specified neighbour and for the specified amount.
             1. Sets timeout for the created reservation to ? seconds `todo: replace ? with real world seconds parameter from the source`. Created timeout avoids eternal reservation and is used for canceling the operation, in case of occurred unpredictability.
             1. Sends `approve` to the `Coordinator` with amount reserved;
         1. Accepts reservation partially, **if there is some free amount on requested trust line is present, but it is less, than required.** In this case node
@@ -631,8 +632,6 @@ struct Amount {
 # Messages
 
 #### Request: Amount reservation 
-Request for amount reservation.
-
 ```c++
 struct RequestAmountReservation {
     TransactionID transactionID;
