@@ -249,10 +249,9 @@ During paths processing, `Coordinator` handles so called `paths map` — interna
 ### Reservations prolongation
 During processing of long paths, or significant amount of paths in total — there is a non-zero probability, that one, or several middle-ware nodes `{(B), (C)}` and `Receiver (A)` (one, or several times) would ask `Coordinator (D)` for the transaction state to be able to know what to do with their active reservations. 
 
-#### Case 1: Transaction is still in progress:
-
+#### Case 1: Transaction is still in progress
 * `Coordinator` **must** report transaction state via [Transaction State Message](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#response-transaction-state).
-* `Node`, that requested the state **must** prolong reservations up to [30 seconds](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#amount-reservation-timeout)
+* `Node`, that requested the state **must** prolong **all related** reservations for up to [30 seconds](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#amount-reservation-timeout)
 
 ```mermaid
 sequenceDiagram
@@ -270,7 +269,11 @@ In case if `Coordinator (D)` responds with "active" state — it is recommended 
 
 **WARN:** There is an ability for the `Coordinator` to hang reservation for a long time and decrease nodes liquidity. To avoid this - node must keep counting of prolongations done. In case if next one prolongation begins to be not comfortable for the node (for example, `Coordinator` responds too long) — it might simply reject the transaction `[Stage B]` Max amount of prolongations should be decided by each one node for itself, based on it's internal trust to the coordinator.
 
-#### Case 2: Transaction has not collected required amount:
+#### Case 2: Transaction has not collected required amount
+
+* `Coordinator` **must** report transaction state via [Transaction State Message](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#response-transaction-state).
+* `Node`, that requested the state **must** process the reponse and in case if `Coordinator` responds with state that differs from "active" (for example, because required amount could not be collected on discovered paths) — `node` must rejecte transaction [(Stage B)](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-b-middle-wares-node-behaviour-after-transaction-reject). Amount reservations might be dropped safely at this stage.
+
 ```mermaid
 sequenceDiagram
     B->>Coordinator (D): Is TA (ID) still alive?
@@ -283,11 +286,16 @@ sequenceDiagram
 ```
 <img src="https://github.com/GEO-Project/specs-protocol/blob/master/transactions/resources/chart4.svg">
     
-In case if `Coordinator` responds with `abort` (for example, because required amount could not be collected on discovered paths) — transaction must be simply rejected `[Stage B]`. Amounts reservations might be safely dropped as well.
-
-**Warn:** all other requests, related to this operation (for example, from other nodes) must be dropped, so each one node must remember this transaction for some period of time, and reject all requests, related to it. `todo: specify memory timeout from source`.
+**Warn:** all other requests, related to this operation (for example, from other nodes) **must** be ignored.
    
-#### Case 3: No coordinator response:
+#### Case 3: No coordinator response
+In case if no response was received from the `Coordinator` — one of 3 things might take place:
+  1. `Coordinator` goes offline unexpectedly and/or is unable to proceed.
+  1. Network segmentation takes place and no network packets are delivered/received to/from the node/`Coordinator`.
+  1. `Coordinator` behaves destructively and doesn't responds to the nodes requests.
+        
+In all cases, it is safe for the middle-ware node to drop the transaction and related amounts reserves [(Stage B)](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-b-middle-wares-node-behaviour-after-transaction-reject).
+
 ```mermaid
 sequenceDiagram
     B->>Coordinator (D): Is TA still alive?
@@ -300,15 +308,9 @@ sequenceDiagram
 ```
 <img src="https://github.com/GEO-Project/specs-protocol/blob/master/transactions/resources/chart5.svg">
 
-In case if no response was received from the `Coordinator` — one of 3 things might take place:
-  1. `Coordinator` goes offline unexpectedly and/or is unable to proceed.
-  1. Network segmentation takes place and no network packets are delivered / received to / from the node / `Coordinator`.
-  1. `Coordinator` behaves destructively and doesn't responds to the nodes requests.
-        
-In all cases, it is safe for the middle-ware node to drop the transaction and related amounts reserves `[Stage B]`.
+**Warn:** all other requests, related to this operation (for example, from other nodes) **must** be ignored.
 
-**Warn:** all other requests related to this operation (for example, from other nodes) must be dropped, so each one node must remember this transaction for some period of time, and reject all requests, related to it. `todo: specify timeout`.
-
+### Amount reservations processing
 1. On response from middle ware node, or `Receiver` - `Coordinator (D)` checks the response:
     * In case of `approve` - `Coordinator (D)`:
         1. Updates it's internal `paths map`;
