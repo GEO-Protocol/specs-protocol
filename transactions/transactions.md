@@ -206,7 +206,7 @@ Each middle-ware node `{(C), (B)}` and `Receiver (A)`, on reservation request re
   
 1. If there is some free amount on requested trust line present, but it is less, than required — **accept reservation partially**:
       1. **Atomically** create [amount reservation](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#double-spending-prevention) on the trust line with specified neighbour for the **available** amount.
-      1. Similarly, to the previous case, sets timeout for the created reservation to ? seconds `todo: replace ? with real world seconds parameter from the source`.
+      1. Similarly, to the previous case, sets timeout for the created reservation to 30 seconds.
       1. Reports `approve` to the `Coordinator`, but with less amount reserved, than was requested;
 
 1. Reports `reject` to the `Coordinator` in case if
@@ -668,6 +668,8 @@ Operation was committed well.
 There is no any route discovered between `Coordinator` and `Receiver`;
 
 
+[ # todo: remove this table ]
+
 |Code|Mnemonic|Description|
 |----|--------|-----------|
 |252 |Duplicated Addresses| `todo`|
@@ -675,6 +677,11 @@ There is no any route discovered between `Coordinator` and `Receiver`;
 |254 |Out Of Common Trust| `todo`|
 |255 |Inoperable Delegate| `todo`|
 --------------------
+
+# Timeouts
+#### Amount reservation timeout 
+`30 seconds`
+
 
 # Index
 
