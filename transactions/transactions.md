@@ -198,29 +198,31 @@ After each request sent, `Coordinator` **must** wait for the reponse from the no
 #### _Reservation requests processing_
 Each middle-ware node `{(C), (B)}` and `Receiver (A)`, on reservation request received, **must** check possibility to approve the request and **must** do one of 3 things possible:
 
-1. If there is enough free amount on requested trust line — **accept reservation fully**:
+1. If there is enough free amount on requested trust line — **must accept reservation fully**:
     1. **Atomically** create [amount reservation](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#double-spending-prevention) on the trust line with specified neighbour and for the specified amount;
-    1. Set timeout for the created reservation to 30 seconds.  
+    1. Set timeout for the created reservation to [30 seconds](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#amount-reservation-timeout).  
     Created timeout avoids eternal reservation and is used for canceling the operation, in case of occurred unpredictability.
-    1. Send reservation response with approve to the `Coordinator`;
+    1. Send [reservation response](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#response-amount-reservation) with approved amound to the `Coordinator`;
   
-1. If there is some free amount on requested trust line present, but it is less, than required — **accept reservation partially**:
+1. If there is some free amount on requested trust line present, but it is less, than required — **must accept reservation partially**:
       1. **Atomically** create [amount reservation](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#double-spending-prevention) on the trust line with specified neighbour for the **available** amount.
-      1. Similarly, to the previous case, sets timeout for the created reservation to 30 seconds.
-      1. Reports `approve` to the `Coordinator`, but with less amount reserved, than was requested;
+      1. Similarly, to the previous case, sets timeout for the created reservation to [30 seconds](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#amount-reservation-timeout).
+      1. Sends [reservation response](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#response-amount-reservation) to the `Coordinator`, but with amount reserved (less than was requested);
 
-1. Reports `reject` to the `Coordinator` in case if
+1. In **all** other cases — **must reject reservation** — send [reservation response](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#response-amount-reservation) with 0 to the `Coordinator`. Several, _but not all_ cases possible, are:
     1. no more/any reservation is possible;
     1. node received reservation request towards some other node, that is not listed as it's neighbour;
     1. node received reservation request that contains info about reservations, that was not done by this node;
-    
-**Note:** it is possible, that some node would be several times requested by the `Coordinator`, to create several different reservations towards several different neighbours. This case is probable, when some middle ware node is present on several concurrent payment paths at the same time. `todo: add diagram`.
 
-**Note:** Created reserves are only temporary locks on the trust lines, and must not be considered as committed changes (debts). This locks are important mechanism for preventing usage of greater trust amount, that was initially granted, so it is expected that each one node would very carefully accounts this reservations.
+**Note:** it is possible, that some node would be requested by the `Coordinator` several times, to create several different reservations towards several different neighbours. This case is probable, when some middle ware node is present on several concurrent payment paths at the same time.
 
-**WARN:** Trust lines reservations and related transactions must be implemented in ACID manner. Transactions and related trust lines locks must be restored after each one unexpected node failure and/or exit.
+<img width=400 src="https://github.com/GEO-Project/specs-protocol/blob/master/transactions/resources/chart10.svg">
 
-**WARN:** Each one payment transaction, that was restored after node failure, must be automatically continued from `Stage Z: Recover`.
+**Note:** Created reserves are only temporary locks on the trust lines, and must not be considered as committed changes (debts). This locks are important mechanism for preventing usage of greater amount of trust line / channel, that was initially granted, so it is expected that each one node would very carefully account this reservations.
+
+**WARN:** Trust lines reservations and related transactions must be implemented in [**ACID** manner](https://en.wikipedia.org/wiki/ACID_(computer_science)). Transactions and related trust lines / channels locks must be restored after each one unexpected node failure and/or exit.
+
+**WARN:** Each one payment transaction, that was restored after node failure, must be automatically continued from [Stage Z: Recover](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-z-recover). 
 
 ```mermaid
 sequenceDiagram
