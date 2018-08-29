@@ -26,18 +26,18 @@ Proposed solution provides ability for up to 1024 network participants [※ 1] t
 # Overview
 The objectives of this document are:
 1. to provide comprehensive info about proposed method of consensus;
-1. to describe guaranteed double spending impossibility, and distributed locks mechanics;
-1. to describe the cryptographic primitives used and the provide motivation for including ech of them into the protocol;
+1. to describe [guaranteed double spending impossibility](https://github.com/GEO-Project/specs-protocol/blob/master/transactions/transactions.md#double-spending-prevention), and distributed locks mechanics;
+1. to describe the [cryptographic primitives used](https://github.com/GEO-Project/specs-protocol/blob/master/transactions/transactions.md#cryptographic-primitives) and the provide motivation for including each of them into the protocol;
 1. to describe the method of mathematical and cryptographic confirmation of operations (consensus checking);
 1. to prodive mathematical confirmation of the impossibility (or extreme complexity) of the operations compromising;
 1. to provide a list of possible edge cases and to describe the ways to avoid/resovle them, as well as possible outcomes of operations.
 
-# Source conditions
+# Source conditions and requirements
 This section lists the functional and design requirements for the proposed algorithm — the metrics, that were used to analyze all found and potentially applicable solutions for their applicability in the final protocol.
 
 **1. Requirements for cryptographic primitives:**
   1. _Quantum-resistant cryptography._  
-  Algorithm must be avare of usage of cryptographic solutions, which are potentially easily compromised in quantum-based environment (RSA / ECDSA, and other solutions that are based on similar mathematical problems).  
+  Algorithm must be avare of usage of cryptographic solutions, which are potentially [easily compromised in quantum-based environment](https://csrc.nist.gov/Projects/Post-Quantum-Cryptography) (RSA / ECDSA, and other solutions that are based on similar mathematical problems).  
   
   1. _Strict minimum of crypto-primitives._  
   Algorithm must use strict minimum of the crypto systems. The role of each of them must be strictly defined and clearly motivated. 
@@ -51,6 +51,16 @@ This section lists the functional and design requirements for the proposed algor
     1. time-predictable (ideally about a few seconds).
     1. safe towards other operations (launched in parallel).
     1. agnostic towards nodes internal code modifications (hacking) and destructive motivation of the involved participants (fraud attempts).
+    
+  1. _Predicted time window._    
+  Transaction time window — `1-15` seconds for non-fraud operations, and up to `~20 minutes` [#6] for processing problematic operations. It is expected, that more than 90% of all operations in the network would be non-fraud. This assumption is only related to the estimated network throughput.
+
+  1. _Routes agnostic._
+  Transactions must be able to use up to several hundreds of different payment paths. [# todo: provide link to the Routing specification].
+
+  1. _Token / Commisions independence._  
+  Transactions must be able to proceed without any internal token. Participants must not be enforced to charge any commissions for the middle ware operations processing.
+
 
 **3. Requirements for end-point devices (nodes):**
   1. _Applicability for modern smartphones._  
@@ -60,10 +70,10 @@ This section lists the functional and design requirements for the proposed algor
   Algorithm should have low computational complexity. The mechanism for achieving consensus must avoid frequent calling of complex cryptographic operations (as, for example, Proof Of Work mechanics assumes in some blockchain-based solutions).
   
 **4. Requirements for anonymity of operations:**
-  1. _Network addressation agnostic_  
+  1. _Network addressation agnostic._  
   Algorithm must be agnostic on addressation mechanics, so the participants might be present by any kind of addresses (IP / any kind of name resolutions services / prosy services, etc). As a consequence - algorithm should support anonimization via tor and other similar networks.
   
-  1. _Lack of a common ledger and common operations history_
+  1. _Lack of a common ledger and common operations history._
   The outcome of the operation must be determined and distributed only within the participants of this operation. The remaining nodes of the network, who do not participate in the operation, must not be able to retrieve the data about operation, and/or its content.
   
 **5. Requirements for network resources:**
@@ -77,7 +87,7 @@ This section lists the functional and design requirements for the proposed algor
   1. _Strict operation completion guarantee_  
   Algorithm in conjunction with the rest of the GEO protocol ecosystem solutions, must be ablr to ensure the finality of any running operation on the network. Scenarios under which the operation was started, but can not be completed (dead locks) must be striclty documnted and excluded.
   
-  1. _Automatic synchronization_  
+  1. _Automatic synchronization._  
   Algorithm must be able to automatically resolve possible conflicts between participants of the network, leading them back to the synchronization state, via strit logic of cryptographically-based solutions.
   
   
@@ -125,25 +135,13 @@ Along with other finalists of the NIST SHA-3 contest, it has proven and reliable
 
 
 # Protocol decription
-## Requirements
-* **[R1]** Transaction time window — `1-15` seconds for non-fraud operations, and up to `~10 minutes` for processing problematic operations. It is expected, that more than 90% of all operations in the network would be non-fraud. This assumption is only related to the estimated network throughput.
+## Abstract
 
-* **[R2]** Each transaction must collect `100% consensus` of all participants, involved into the operation, to be considered as done, or rejected. Reject of even one of participants must lead to whole transaction rejecting.
+`Related specs:`
+* [Trust Lines;]() [#todo: add link]
+* [Economic model;]() [#todo: add link]
 
-* **[R3]** Transactions must be able to involve up to several hundreds of participants at the same time.
-
-* **[R4]** Transactions must be able to use up to several hundreds of different payment paths. `todo: add link to the Routing specification`
-
-* **[R5]** Transactions must be able to proceed without any internal token. Participants must not be enforced to charge any commissions for the middle ware operations processing.
-
-# Source assumptions
-
-* **[SA1]** Due to proposed [network topology, based on trust lines]() `[#todo: add link to proposed network design]`, double spending is impossible, by design. Please, see [trust lines specifications]() `[#todo: add link to TL architecture]` for the details.
-
-# Abstract
-*At this point, it is assumed that reader is familiar with basic [Trust Lines]() `[#todo: add link to TL architecture]` mechanics and [economic model]() `todo: link`. This section only provides explanation for the payment mechanics itself, without any base-level ideas explanation.*
-
-Let's assume, there is a network with 4 attendees `{(A), (B), (C), (D)}` involved into the next topology:
+Lets assume that there is a network with 4 attendees `{(A), (B), (C), (D)}` involved into the next topology:
 
 ```mermaid
 graph LR;
@@ -151,152 +149,165 @@ graph LR;
     B-- 100 -->C;
     C-- 200 -->D;
 ```
-* *(A) trusts (B) 50 (of some equivalent);*
-* *(B) trusts (C) 100 (of some equivalent);*
-* *(C) trusts (D) 200 (of some equivalent);*
+<img width=400 src="https://github.com/GEO-Project/specs-protocol/blob/master/transactions/resources/chart1.svg">
 
-The initial task looks simple:
-* provide ability for `(D)` to pay `(A)` 50  of some equivalent through nodes `{(C), (B)}`;
-* provide strong guaranties for `(A)` and `(D)` about transaction's state, for example that it was approved/rejected, and would not change it's state any more, so `(A)` would be able to react on it (for example, ship some goods to `(D)`).
-For `{(B), (C)}` it is important, that transaction would not be partially committed (committed on some trust lines, and doesn't committed on the rest).
+* _(A) trusts / opens channels with (B) 50 (accounting units of some value);_
+* _(B) trusts / opens channels with (C) 100 (accounting units of some value);_
+* _(C) trusts / opens channels with (D) 200 (accounting units of some value);_
 
-The challenge itself is to provide information about **final** state of the transaction to all the participant in *secure Byzantine-resistant manner, and in predictable time window*.
+The base task looks simple:
+* to provide ability for the `(D)` to send 50 accounting units to the `(A)` through nodes `{(C), (B)}`;
+* to provide strong guaranties for the `(A)` and `(D)` about transaction's state: trunsaction **must** be finally approved or rejected by all participants, and **must not** change it's state any more in future, so `(A)` would be able to react on it (for example, ship some goods to `(D)`).
 
-`todo: add CAP Theorem analyzing`
+For nodes `{(B), (C)}` it is very important to be shure that transaction would not be partially committed (committed on some trust lines, and not committed on the whole path).
 
-`todo: add description for the scenarios with several concurrent paths used`
+The challenge itself is: 
+
+---
+
+_to provide information about **final** state of the transaction to all the participant in **secure Byzantine-resistant manner, and in predictable time window**_.
+
+---
+
+## Roles
+
+* `Coordinator` — node, that initiates the transaction (node `(D)` in example scheme). Coordinates all other nodes, involved into the operation during its life cycle. `Coordinator` utilizes significantly more network traffic in comparison with other participants, but it has economic motivation to do so — it wants to transfer assets to some node and is ready to "pay for it by its resources";
+
+* `Receiver` — node that receives the transfer (node `A` in the example scheme);
+
+* `Middleware` node — node that takes part into the operation as common participant, and provides its trust lines / channels as transport for assets (nodes `(C)` and `(B)`);
 
 
-# Stage 1: Amount reservation
-Node, that initiates the transaction, takes part in it as `Coordinator`,
-(node `(D)` in example scheme) — special node, that cares most of computational load of the operation, and coordinates all other nodes during whole life cycle of the transaction.
+## Terms
 
-* **Note:** `Coordinator` uses significantly more network traffic, in comparison with other nodes, involved into the operation, but it has economic motivation to do so — it wants to transfer assets to some node.
+* `Transaction Amount` — (`tr. amount`) — amount of accounting units that `Coordinator` tries to send to the `Receiver`;
 
-1. `Coordinator`, in cooperation with `Receiver` (node `A` in the example scheme), discovers all possible network paths `{Coordinator -> Receiver}`. In case if no paths are available — algorithm execution stops with error code `No routes`.
-Please, see [Routing]() `[#todo: link]` for the details on paths discovering.
+* `Network Hop Timeout` — (`hop time`) — time range, expected time that is needed for the network packet to be delivered to the destination node. By default should be set to `2 sec`.
 
-1. `Coordinator` attempts to reserve required `transaction amount` to the `Receiver` on several (or all, if needed) discovered paths. For each path, `Coordinator` sequentially sends requests for amount reservation to all intermediate nodes on this path. Each request contains required reservation amount and address of the node, to which the reservation should be created.
-    * `Coordinator (D)` knows whole path `{(D), (C), (B), (A)}` (`todo: describe also scenarios with several concurrent paths`), but it doesn't knows and can't predict `max. common amount` between all nodes on this path (due to the network volatility `todo: describe network volatility`), so it sends requests to the nodes in sequential manner.
-    * `todo: Analise if coord. can send requests to all nodes in parallel`
-    * `todo: Analise if coord. can recommend timeout for middle ware nodes`
-    * Each middle-ware node `{(C), (B)}` and `Receiver (A)`, on reservation request received, does one of 3 things possible:
-        1. Accepts reservation fully, **if there is enough free amount on requested trust line**. In this case, node
-            1. Creates local reserve on the trust line with specified neighbour for the specified amount.
-            1. Sets timeout for the created reservation to ? seconds `todo: replace ? with real world seconds parameter from the source`. Created timeout avoids eternal reservation and is used for canceling the operation, in case of occurred unpredictability.
-            1. Sends `approve` to the `Coordinator` with amount reserved;
-        1. Accepts reservation partially, **if there is some free amount on requested trust line is present, but it is less, than required.** In this case node
-            1. Creates local reserve on the trust line with specified neighbour for the **available** amount.
-            1. Similarly, to the previous case, sets timeout for the created reservation to ? seconds `todo: replace ? with real world seconds parameter from the source`.
-            1. Reports `approve` to the `Coordinator`, but with less amount reserved, than was requested;
-        1. Reports `reject` to the `Coordinator` in case if
-            1. no [more/any] reservation is possible;
-            1. node received reservation request towards some other node, that is not listed as it's neighbour;
-            1. node received reservation request that contains info about reservations, that was not done by this node;
-        * **Note:** it is possible, that some node would be several times requested by the `Coordinator`, to create several different reservations towards several different neighbours. This case is probable, when some middle ware node is present on several concurrent payment paths at the same time. `todo: add diagram`.
-    * **Note:** Created reserves are only temporary locks on the trust lines, and must not be considered as committed changes (debts). This locks are important mechanism for preventing usage of greater trust amount, that was initially granted, so it is expected that each one node would very carefully accounts this reservations.
-    * **WARN:** Trust lines reservations and related transactions must be implemented in ACID manner. Transactions and related trust lines locks must be restored after each one unexpected node failure and/or exit.
-    * **WARN:** Each one payment transaction, that was restored after node failure, must be automatically continued from `Stage Z: Recover`.
+## Stage 1 — Amount collecting and reservation
+#### _Paths discovering._  
+`Coordinator` in cooperation with `Receiver` must discover all (or some part of) possible network paths `{Coordinator -> Receiver}`. In case if no paths are found — algorithm execution **must** stop with error code [`No routes`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#no-routes). Please, see [Routing]() `[#todo: link]` for the details on paths discovering.
 
-    ```mermaid
-    sequenceDiagram
-        Coordinator (D)->>C: Reserve 200
-        C->>B: Reserve 200
-        B->>C: OK, only 100 reserved
-        C->>Coordinator (D): OK, only 100 reserved
+#### _Paths processing._  
+`Coordinator` **must** attempt to reserve `tr. amount` to the `Receiver` on several (or all, if needed, but at least one) discovered paths.
 
-        Coordinator (D)->>B: Reserve 100
-        B->> Receiver (A): Reserve 100
-        Receiver (A)->>B: OK, only 50 reserved
-        B->>Coordinator (D): OK, only 50 reserved
+For each path, and for each node on this path (except itself), `Coordinator` sequentially, starting from its neighvours, must send [reservation requests messages](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#request-amount-reservation). `Coordinator (D)` knows whole path `{(D), (C), (B), (A)}`, but it doesn't know and can't predict [`max. common amount`](https://en.wikipedia.org/wiki/Maximum_flow_problem) between all nodes on this path (due to the [network volatility]() [#todo: add link for describtion about network volatility]), so it must send requests in sequential manner.
 
-        Coordinator (D)->>Receiver (A): Reserve 50
-        Receiver (A)->>Coordinator (D): OK, only 50 reserved
-    ```
+After each request sent, `Coordinator` **must** wait for the reponse from the node at least 1 `hop time`. In case if no response has been received during this time window — remote node **must** be considered as "unavailable". **All paths** with this node included **must** be dropped from the processing. If there are nodes, that has confirmed reservation request, then this nodes should receive reservation cancel request from the `Coordinator`.
 
-    ```c++
-    struct RequestAmountReservation {
-        TransactionID transactionID;
-        Amount amount;
-        Address neighbourAddress;
-    }
-    ```
-    `todo: link source`
+#### _Reservation requests processing_
+Each middle-ware node `{(C), (B)}` and `Receiver (A)`, on reservation request received, **must** check possibility to approve the request and **must** do one of 3 things possible:
 
-    ```c++
-    struct ResponseAmountReservation {
-        TransactionID transactionID;
-        Amount amount;
-    }
-    ```
-    `todo: link source`
+1. If there is enough free amount on requested trust line — **accept reservation fully**:
+    1. **Atomically** create [amount reservation](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#double-spending-prevention) on the trust line with specified neighbour and for the specified amount;
+    1. Set timeout for the created reservation to 30 seconds.  
+    Created timeout avoids eternal reservation and is used for canceling the operation, in case of occurred unpredictability.
+    1. Send reservation response with approve to the `Coordinator`;
+  
+1. If there is some free amount on requested trust line present, but it is less, than required — **accept reservation partially**:
+      1. **Atomically** create [amount reservation](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#double-spending-prevention) on the trust line with specified neighbour for the **available** amount.
+      1. Similarly, to the previous case, sets timeout for the created reservation to 30 seconds.
+      1. Reports `approve` to the `Coordinator`, but with less amount reserved, than was requested;
 
-1. During paths processing, `Coordinator` handles so called `paths map` — internal data structure with information about all nodes, all neighbours (first level nodes), and all reservations created on all used payment paths.
+1. Reports `reject` to the `Coordinator` in case if
+    1. no more/any reservation is possible;
+    1. node received reservation request towards some other node, that is not listed as it's neighbour;
+    1. node received reservation request that contains info about reservations, that was not done by this node;
+    
+**Note:** it is possible, that some node would be several times requested by the `Coordinator`, to create several different reservations towards several different neighbours. This case is probable, when some middle ware node is present on several concurrent payment paths at the same time. `todo: add diagram`.
+
+**Note:** Created reserves are only temporary locks on the trust lines, and must not be considered as committed changes (debts). This locks are important mechanism for preventing usage of greater trust amount, that was initially granted, so it is expected that each one node would very carefully accounts this reservations.
+
+**WARN:** Trust lines reservations and related transactions must be implemented in ACID manner. Transactions and related trust lines locks must be restored after each one unexpected node failure and/or exit.
+
+**WARN:** Each one payment transaction, that was restored after node failure, must be automatically continued from `Stage Z: Recover`.
+
+```mermaid
+sequenceDiagram
+    Coordinator (D)->>C: Reserve 200
+    C->>B: Reserve 200
+    B->>C: OK, only 100 reserved
+    C->>Coordinator (D): OK, only 100 reserved
+
+    Coordinator (D)->>B: Reserve 100
+    B->> Receiver (A): Reserve 100
+    Receiver (A)->>B: OK, only 50 reserved
+    B->>Coordinator (D): OK, only 50 reserved
+
+    Coordinator (D)->>Receiver (A): Reserve 50
+    Receiver (A)->>Coordinator (D): OK, only 50 reserved
+```
+<img src="https://github.com/GEO-Project/specs-protocol/blob/master/transactions/resources/chart2.svg">
+
+During paths processing, `Coordinator` handles so called `paths map` — internal data structure with information about all nodes, all neighbours (first level nodes), and all reservations created on all used payment paths.
 During amount reservation, it is very probable, that amount reservations, that was created earlier on this path, would be greater, than amount reservations, that was created later (for example, amount reservations on `Coordinator's` neighbours (first level nodes) probably would be greater, than reserved amount on the `Receiver's` neighbours). But it is important to shortage all created reservations, on all used trust lines of the paths to the **common amount**. That's why `Coordinator` remembers amounts of all reservations of all used trust lines, so it is able to inform any node of this path, about necessity to shortage its reservation(s).
-    * **Note:** it is expected, that middleware nodes `{(C), (D)}` and `Receiver` would have economic motivation to update their reservation amounts as quickly, as possible, because each one reservation created freezes some part of nodes liquidity.  `todo: add mermaid diagram`
+    
+**Note:** it is expected, that middleware nodes `{(C), (D)}` and `Receiver` would have economic motivation to update their reservation amounts as quickly, as possible, because each one reservation created freezes some part of nodes liquidity.  `todo: add mermaid diagram`
 
-1. During processing of long paths, or significant amount of paths in total — there is a non-zero probability, that one, or several middle-ware nodes `{(B), (C)}` and `Receiver (A)` (one, or several times) would ask `Coordinator (D)` for the transaction state:
+During processing of long paths, or significant amount of paths in total — there is a non-zero probability, that one, or several middle-ware nodes `{(B), (C)}` and `Receiver (A)` (one, or several times) would ask `Coordinator (D)` for the transaction state:
 
-    **Case 1: Transaction is still in progress:**
-    ```mermaid
-    sequenceDiagram
-        B->>Coordinator (D): Is TA (ID) still alive?
-        C->>Coordinator (D): Is TA (ID) still alive?
-        Receiver (A)->>Coordinator (D): Is TA (ID) still alive?
-       
-        Coordinator (D)->>B: Yes, wait some more
-        Coordinator (D)->>C: Yes, wait some more
-        Coordinator (D)->>Receiver (A): Yes, wait some more
-    ```
+#### Case 1: Transaction is still in progress:
+```mermaid
+sequenceDiagram
+    B->>Coordinator (D): Is TA (ID) still alive?
+    C->>Coordinator (D): Is TA (ID) still alive?
+    Receiver (A)->>Coordinator (D): Is TA (ID) still alive?
 
-    ```c++
-    struct RequestTransactionState {
-      TransactionID transactionID;
-    }
-    ```
-    `todo: link source`
+    Coordinator (D)->>B: Yes, wait some more
+    Coordinator (D)->>C: Yes, wait some more
+    Coordinator (D)->>Receiver (A): Yes, wait some more
+```
+<img src="https://github.com/GEO-Project/specs-protocol/blob/master/transactions/resources/chart3.svg">
 
-    ```c++
-    struct ResponseTransactionState {
-      TransactionID transactionID;
-      byte state; // [0 — Wait; 1..255 — Reject]
-    }
-    ```
-    `todo: link source`
-    * In case if `Coordinator (D)` responds with "Yes, TA is still in progress" - it is recommended for the node to keep processing it. In this case node simply reinitialize it's internal timeout and keeps waiting. This stage might be repeated several more times. **It is important for middle-ware nodes to wait as long as `Coordinator (D)` asks to, otherwise - whole transaction would be dropped.** `todo: implement paths re-collecting`.
-    * **WARN:** There is an ability for the `Coordinator` to hang reservation for a long time and decrease nodes liquidity. To avoid this - node must keep counting of prolongations done. In case if next one prolongation begins to be not comfortable for the node (for example, `Coordinator` responds too long) — it might simply reject the transaction `[Stage B]` Max amount of prolongations should be decided by each one node for itself, based on it's internal trust to the coordinator.
-
-    **Case 2: Transaction has not collected required amount:**
-    ```mermaid
-    sequenceDiagram
-        B->>Coordinator (D): Is TA (ID) still alive?
-        C->>Coordinator (D): Is TA (ID) still alive?
-        Receiver (A)->>Coordinator (D): Is TA (ID) still alive?
-       
-        Coordinator (D)->>B: No, abort it!
-        Coordinator (D)->>C: No, abort it!
-        Coordinator (D)->>Receiver (A): No, abort it!
-    ```
-    * In case if `Coordinator` responds with `abort` (for example, because required amount could not be collected on discovered paths) — transaction must be simply rejected `[Stage B]`. Amounts reservations might be safely dropped as well.
-    * **Warn:** all other requests, related to this operation (for example, from other nodes) must be dropped, so each one node must remember this transaction for some period of time, and reject all requests, related to it. `todo: specify memory timeout from source`.
+```c++
+struct ResponseTransactionState {
+  TransactionID transactionID;
+  byte state; // [0 — Wait; 1..255 — Reject]
+}
+```
    
-    **Case 3: No coordinator response:**
-    ```mermaid
-    sequenceDiagram
-        B->>Coordinator (D): Is TA still alive?
-        C->>Coordinator (D): Is TA still alive?
-        Receiver (A)->>Coordinator (D): Is TA (ID) still alive?
-       
-        Coordinator (D)-->>B: (?)
-        Coordinator (D)-->>C: (?)
-        Coordinator (D)-->>Receiver (A): (?)
-    ```
-    * In case if no response was received from the `Coordinator` — one of 3 things might take place:
-        1. `Coordinator` goes offline unexpectedly and/or is unable to proceed.
-        1. Network segmentation takes place and no network packets are delivered / received to / from the node / `Coordinator`.
-        1. `Coordinator` behaves destructively and doesn't responds to the nodes requests.
-        In all cases, it is safe for the middle-ware node to drop the transaction and related amounts reserves `[Stage B]`.
-    * **Warn:** all other requests related to this operation (for example, from other nodes) must be dropped, so each one node must remember this transaction for some period of time, and reject all requests, related to it. `todo: specify timeout`.
+In case if `Coordinator (D)` responds with "Yes, TA is still in progress" - it is recommended for the node to keep processing it. In this case node simply reinitialize it's internal timeout and keeps waiting. This stage might be repeated several more times. **It is important for middle-ware nodes to wait as long as `Coordinator (D)` asks to, otherwise - whole transaction would be dropped.** `todo: implement paths re-collecting`.
+
+**WARN:** There is an ability for the `Coordinator` to hang reservation for a long time and decrease nodes liquidity. To avoid this - node must keep counting of prolongations done. In case if next one prolongation begins to be not comfortable for the node (for example, `Coordinator` responds too long) — it might simply reject the transaction `[Stage B]` Max amount of prolongations should be decided by each one node for itself, based on it's internal trust to the coordinator.
+
+#### Case 2: Transaction has not collected required amount:
+```mermaid
+sequenceDiagram
+    B->>Coordinator (D): Is TA (ID) still alive?
+    C->>Coordinator (D): Is TA (ID) still alive?
+    Receiver (A)->>Coordinator (D): Is TA (ID) still alive?
+
+    Coordinator (D)->>B: No, abort it!
+    Coordinator (D)->>C: No, abort it!
+    Coordinator (D)->>Receiver (A): No, abort it!
+```
+<img src="https://github.com/GEO-Project/specs-protocol/blob/master/transactions/resources/chart4.svg">
+    
+In case if `Coordinator` responds with `abort` (for example, because required amount could not be collected on discovered paths) — transaction must be simply rejected `[Stage B]`. Amounts reservations might be safely dropped as well.
+
+**Warn:** all other requests, related to this operation (for example, from other nodes) must be dropped, so each one node must remember this transaction for some period of time, and reject all requests, related to it. `todo: specify memory timeout from source`.
+   
+#### Case 3: No coordinator response:
+```mermaid
+sequenceDiagram
+    B->>Coordinator (D): Is TA still alive?
+    C->>Coordinator (D): Is TA still alive?
+    Receiver (A)->>Coordinator (D): Is TA (ID) still alive?
+
+    Coordinator (D)-->>B: (?)
+    Coordinator (D)-->>C: (?)
+    Coordinator (D)-->>Receiver (A): (?)
+```
+<img src="https://github.com/GEO-Project/specs-protocol/blob/master/transactions/resources/chart5.svg">
+
+In case if no response was received from the `Coordinator` — one of 3 things might take place:
+  1. `Coordinator` goes offline unexpectedly and/or is unable to proceed.
+  1. Network segmentation takes place and no network packets are delivered / received to / from the node / `Coordinator`.
+  1. `Coordinator` behaves destructively and doesn't responds to the nodes requests.
+        
+In all cases, it is safe for the middle-ware node to drop the transaction and related amounts reserves `[Stage B]`.
+
+**Warn:** all other requests related to this operation (for example, from other nodes) must be dropped, so each one node must remember this transaction for some period of time, and reject all requests, related to it. `todo: specify timeout`.
 
 1. On response from middle ware node, or `Receiver` - `Coordinator (D)` checks the response:
     * In case of `approve` - `Coordinator (D)`:
@@ -317,6 +328,7 @@ During amount reservation, it is very probable, that amount reservations, that w
           B->>C: OK, reserved 100 (without sign yet)
           C->>Coordinator (D): OK, only 100 reserved
     ```
+    <img src="https://github.com/GEO-Project/specs-protocol/blob/master/transactions/resources/chart6.svg">
 
 1. Node `(C)` reserves required amount on its side first. In case of success - it suspects for successful reservation on the neighbour node (`(B)` in the example), and sends the appropriate request to it. In case of received confirmation response from the neighbour node - `(C)` reports success to the `Coordinator`.
 1. Coordinator then updates it's internal `paths map`, calculates updated trust lines configuration for each one node involved into the path, and sends it to the nodes, via transferring them (trust lines configurations) through the neighbour nodes. `todo: think about optimization for this logic` `todo: possible vulnerability: intermediate node might fake the original TL configuration. This would be discovered on the next stage, but currently it leads to possibility to dos the network and hang transactions and reserves for some time`. For example, final configuration for the `Receiver` would be sent by the coordinator via node `(B)`, final configuration for the node `(B)` - would be sent via the node `(C)` and so one.
@@ -380,6 +392,7 @@ During amount reservation, it is very probable, that amount reservations, that w
         C->>Coordinator (D): [PubK + delegates list, ~9kB]
         Receiver (A)->>Coordinator (D): [PubK + delegates list, ~9kB]
     ```
+    <img src="https://github.com/GEO-Project/specs-protocol/blob/master/transactions/resources/chart7.svg">
 
     `todo: request structure`
 
@@ -406,6 +419,7 @@ During amount reservation, it is very probable, that amount reservations, that w
         Coordinator (D)->>C: Votes List
         Coordinator (D)->>Receiver (A): Votes List
     ```
+    <img src="https://github.com/GEO-Project/specs-protocol/blob/master/transactions/resources/chart8.svg">
 
     ```c++
     struct VotesList {
@@ -462,6 +476,7 @@ During amount reservation, it is very probable, that amount reservations, that w
         Receiver (A)->>B: PubKey Digest
         C->>B: PubKey Digest
     ```
+    <img src="https://github.com/GEO-Project/specs-protocol/blob/master/transactions/resources/chart9.svg">
 
     ```c++
     struct RequestPubKeyDigest {
@@ -571,6 +586,21 @@ During operation processing, there is non zero-probability, that some node invol
 * For the protocol simplicity reasons, nodes that enter "recover" state and has not signed the operation, must not vote for transaction approving any more. Only "reject" is allowed.
 * For the signed operation — node must check for the final decision about the operation from its neighbour(s) involved and the `Coordinator`. In case if no response from any one of them in time of 10 minutes — `Delegate` arbitration must be requested `[Stage 5]`.
 
+
+# "Double Spending" prevention
+Due to proposed [network topology, based on trust lines / channels]() [#todo: add link to trust lines protocol] — there is no common balance of the node, or ledger of the node. There are only relations of the node with its neighbours (other nodes), and balances of this relations. There is no single point of assets storing. There are only relative balances of the node. As a result — there is no possibility to perform so called "double spending" towards several neighbours or remote nodes at a time. There is only a possibility to try to cheat against some neighbour node and to try to force it to use some debt twice or more. But, there is no way to do it without approval of this node (cryptographic sign), and obviously remote node would not be agree to approve such kind of malicious operation. 
+
+To help nodes prevent double spending attempts — so called "distributed lock" is used. It is a separated component with a  simple map of type `node` → `total reserved amount` in its core. This map **must** be permanent and **must** be atomically updated and restored between each one node restarts, so each one operation on the node would have amount reservations related to it. 
+
+On each one transaction, node **must** check this component and enshure that current `total reserved amount` on the requested trust line / channel is **less** than `(total available amount) - (reservation request)`. In other words, this check **must** enshure node would not reserve more amount than is available by the trust line / channel.
+
+This check is **required part of each one operation.** (See [Stage 1: Amount reservation](https://github.com/GEO-Project/specs-protocol/blob/master/transactions/transactions.md#stage-1-amount-reservation) for the details).    
+While node follows this specification and it's internal behaviour was not modified (hacked) — there is no way to force remote node to accept more debts, than it was envisaged by the trust line / channel.
+ 
+`Related specs:`
+* [Trust lines;]() [#todo: provide link]
+
+
 # Data types used
 This section provides explanation of used data structures in developers friendly format.
 
@@ -600,17 +630,58 @@ struct Amount {
 
 ```
 
+# Messages
+
+#### Request: Amount reservation 
+```c++
+struct RequestAmountReservation {
+    TransactionID transactionID;
+    
+    // Specifies amount, that should be reserved.
+    Amount amount;
+    
+    // Specifies address of the node, towards which reservation must be done.
+    Address neighbourAddress;
+}
+```
+
+#### Response: Amount reservation
+```c++
+struct ResponseAmountReservation {
+    TransactionID transactionID;
+    
+    // Specifies amount, that was reserved.
+    Amount amount;
+}
+```
+
+
 # Operation result codes
+This section describes result codes, that are erported on the coordinator node to its interfaces (UI, API interface, etc)
+
+#### OK
+`code: 0`  
+Operation was committed well. 
+
+#### No routes
+`code: 403`  
+There is no any route discovered between `Coordinator` and `Receiver`;
+
+
+[ # todo: remove this table ]
 
 |Code|Mnemonic|Description|
 |----|--------|-----------|
-|0   |OK| |
-|... |...|...|
 |252 |Duplicated Addresses| `todo`|
 |253 |Duplicated Pub Keys| `todo`|
 |254 |Out Of Common Trust| `todo`|
 |255 |Inoperable Delegate| `todo`|
 --------------------
+
+# Timeouts
+#### Amount reservation timeout 
+`30 seconds`
+
 
 # Index
 
@@ -637,18 +708,6 @@ Special node, that cares most of computational load of the operation, and coordi
 
 ### Receiver
 Node, that takes part into the operation as a transfer destination node.
-
-
-# Contribution
-#### How to join discussion?
-* Please, follow commits history for details about changes.
-* Please, use commits comments to propose changes.
-
-#### Technical requirements
-* This specification uses mermaid charts, so, please, ensure your environment supports them for correct document render.
-
-# Credentials
-`todo: list ideators`
 
 # License
 [<img src="https://opensource.org/files/osi_keyhole_300X300_90ppi_0.png" height=90 style="float: left; padding: 20px">]()
