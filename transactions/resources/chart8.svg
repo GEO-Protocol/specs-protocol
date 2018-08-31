@@ -1,40 +1,40 @@
-<svg id="mermaid-1535382859924" width="100%" xmlns="http://www.w3.org/2000/svg" height="100%" style="max-width:850px;" viewBox="-50 -10 850 266"><style>
+<svg id="mermaid-1535722265751" width="100%" xmlns="http://www.w3.org/2000/svg" height="100%" style="max-width:850px;" viewBox="-50 -10 850 266"><style>
 
 
-#mermaid-1535382859924 .label {
+#mermaid-1535722265751 .label {
   font-family: 'trebuchet ms', verdana, arial;
   color: #333; }
 
-#mermaid-1535382859924 .node rect,
-#mermaid-1535382859924 .node circle,
-#mermaid-1535382859924 .node ellipse,
-#mermaid-1535382859924 .node polygon {
+#mermaid-1535722265751 .node rect,
+#mermaid-1535722265751 .node circle,
+#mermaid-1535722265751 .node ellipse,
+#mermaid-1535722265751 .node polygon {
   fill: #ECECFF;
   stroke: #9370DB;
   stroke-width: 1px; }
 
-#mermaid-1535382859924 .node.clickable {
+#mermaid-1535722265751 .node.clickable {
   cursor: pointer; }
 
-#mermaid-1535382859924 .arrowheadPath {
+#mermaid-1535722265751 .arrowheadPath {
   fill: #333333; }
 
-#mermaid-1535382859924 .edgePath .path {
+#mermaid-1535722265751 .edgePath .path {
   stroke: #333333;
   stroke-width: 1.5px; }
 
-#mermaid-1535382859924 .edgeLabel {
+#mermaid-1535722265751 .edgeLabel {
   background-color: #e8e8e8; }
 
-#mermaid-1535382859924 .cluster rect {
+#mermaid-1535722265751 .cluster rect {
   fill: #ffffde !important;
   stroke: #aaaa33 !important;
   stroke-width: 1px !important; }
 
-#mermaid-1535382859924 .cluster text {
+#mermaid-1535722265751 .cluster text {
   fill: #333; }
 
-#mermaid-1535382859924 div.mermaidTooltip {
+#mermaid-1535722265751 div.mermaidTooltip {
   position: absolute;
   text-align: center;
   max-width: 200px;
@@ -47,304 +47,304 @@
   pointer-events: none;
   z-index: 100; }
 
-#mermaid-1535382859924 .actor {
+#mermaid-1535722265751 .actor {
   stroke: #CCCCFF;
   fill: #ECECFF; }
 
-#mermaid-1535382859924 text.actor {
+#mermaid-1535722265751 text.actor {
   fill: black;
   stroke: none; }
 
-#mermaid-1535382859924 .actor-line {
+#mermaid-1535722265751 .actor-line {
   stroke: grey; }
 
-#mermaid-1535382859924 .messageLine0 {
+#mermaid-1535722265751 .messageLine0 {
   stroke-width: 1.5;
   stroke-dasharray: '2 2';
   marker-end: 'url(#arrowhead)';
   stroke: #333; }
 
-#mermaid-1535382859924 .messageLine1 {
+#mermaid-1535722265751 .messageLine1 {
   stroke-width: 1.5;
   stroke-dasharray: '2 2';
   stroke: #333; }
 
-#mermaid-1535382859924 #arrowhead {
+#mermaid-1535722265751 #arrowhead {
   fill: #333; }
 
-#mermaid-1535382859924 #crosshead path {
+#mermaid-1535722265751 #crosshead path {
   fill: #333 !important;
   stroke: #333 !important; }
 
-#mermaid-1535382859924 .messageText {
+#mermaid-1535722265751 .messageText {
   fill: #333;
   stroke: none; }
 
-#mermaid-1535382859924 .labelBox {
+#mermaid-1535722265751 .labelBox {
   stroke: #CCCCFF;
   fill: #ECECFF; }
 
-#mermaid-1535382859924 .labelText {
+#mermaid-1535722265751 .labelText {
   fill: black;
   stroke: none; }
 
-#mermaid-1535382859924 .loopText {
+#mermaid-1535722265751 .loopText {
   fill: black;
   stroke: none; }
 
-#mermaid-1535382859924 .loopLine {
+#mermaid-1535722265751 .loopLine {
   stroke-width: 2;
   stroke-dasharray: '2 2';
   marker-end: 'url(#arrowhead)';
   stroke: #CCCCFF; }
 
-#mermaid-1535382859924 .note {
+#mermaid-1535722265751 .note {
   stroke: #aaaa33;
   fill: #fff5ad; }
 
-#mermaid-1535382859924 .noteText {
+#mermaid-1535722265751 .noteText {
   fill: black;
   stroke: none;
   font-family: 'trebuchet ms', verdana, arial;
   font-size: 14px; }
 
 
-#mermaid-1535382859924 .section {
+#mermaid-1535722265751 .section {
   stroke: none;
   opacity: 0.2; }
 
-#mermaid-1535382859924 .section0 {
+#mermaid-1535722265751 .section0 {
   fill: rgba(102, 102, 255, 0.49); }
 
-#mermaid-1535382859924 .section2 {
+#mermaid-1535722265751 .section2 {
   fill: #fff400; }
 
-#mermaid-1535382859924 .section1,
-#mermaid-1535382859924 .section3 {
+#mermaid-1535722265751 .section1,
+#mermaid-1535722265751 .section3 {
   fill: white;
   opacity: 0.2; }
 
-#mermaid-1535382859924 .sectionTitle0 {
+#mermaid-1535722265751 .sectionTitle0 {
   fill: #333; }
 
-#mermaid-1535382859924 .sectionTitle1 {
+#mermaid-1535722265751 .sectionTitle1 {
   fill: #333; }
 
-#mermaid-1535382859924 .sectionTitle2 {
+#mermaid-1535722265751 .sectionTitle2 {
   fill: #333; }
 
-#mermaid-1535382859924 .sectionTitle3 {
+#mermaid-1535722265751 .sectionTitle3 {
   fill: #333; }
 
-#mermaid-1535382859924 .sectionTitle {
+#mermaid-1535722265751 .sectionTitle {
   text-anchor: start;
   font-size: 11px;
   text-height: 14px; }
 
 
-#mermaid-1535382859924 .grid .tick {
+#mermaid-1535722265751 .grid .tick {
   stroke: lightgrey;
   opacity: 0.3;
   shape-rendering: crispEdges; }
 
-#mermaid-1535382859924 .grid path {
+#mermaid-1535722265751 .grid path {
   stroke-width: 0; }
 
 
-#mermaid-1535382859924 .today {
+#mermaid-1535722265751 .today {
   fill: none;
   stroke: red;
   stroke-width: 2px; }
 
 
 
-#mermaid-1535382859924 .task {
+#mermaid-1535722265751 .task {
   stroke-width: 2; }
 
-#mermaid-1535382859924 .taskText {
+#mermaid-1535722265751 .taskText {
   text-anchor: middle;
   font-size: 11px; }
 
-#mermaid-1535382859924 .taskTextOutsideRight {
+#mermaid-1535722265751 .taskTextOutsideRight {
   fill: black;
   text-anchor: start;
   font-size: 11px; }
 
-#mermaid-1535382859924 .taskTextOutsideLeft {
+#mermaid-1535722265751 .taskTextOutsideLeft {
   fill: black;
   text-anchor: end;
   font-size: 11px; }
 
 
-#mermaid-1535382859924 .taskText0,
-#mermaid-1535382859924 .taskText1,
-#mermaid-1535382859924 .taskText2,
-#mermaid-1535382859924 .taskText3 {
+#mermaid-1535722265751 .taskText0,
+#mermaid-1535722265751 .taskText1,
+#mermaid-1535722265751 .taskText2,
+#mermaid-1535722265751 .taskText3 {
   fill: white; }
 
-#mermaid-1535382859924 .task0,
-#mermaid-1535382859924 .task1,
-#mermaid-1535382859924 .task2,
-#mermaid-1535382859924 .task3 {
+#mermaid-1535722265751 .task0,
+#mermaid-1535722265751 .task1,
+#mermaid-1535722265751 .task2,
+#mermaid-1535722265751 .task3 {
   fill: #8a90dd;
   stroke: #534fbc; }
 
-#mermaid-1535382859924 .taskTextOutside0,
-#mermaid-1535382859924 .taskTextOutside2 {
+#mermaid-1535722265751 .taskTextOutside0,
+#mermaid-1535722265751 .taskTextOutside2 {
   fill: black; }
 
-#mermaid-1535382859924 .taskTextOutside1,
-#mermaid-1535382859924 .taskTextOutside3 {
+#mermaid-1535722265751 .taskTextOutside1,
+#mermaid-1535722265751 .taskTextOutside3 {
   fill: black; }
 
 
-#mermaid-1535382859924 .active0,
-#mermaid-1535382859924 .active1,
-#mermaid-1535382859924 .active2,
-#mermaid-1535382859924 .active3 {
+#mermaid-1535722265751 .active0,
+#mermaid-1535722265751 .active1,
+#mermaid-1535722265751 .active2,
+#mermaid-1535722265751 .active3 {
   fill: #bfc7ff;
   stroke: #534fbc; }
 
-#mermaid-1535382859924 .activeText0,
-#mermaid-1535382859924 .activeText1,
-#mermaid-1535382859924 .activeText2,
-#mermaid-1535382859924 .activeText3 {
+#mermaid-1535722265751 .activeText0,
+#mermaid-1535722265751 .activeText1,
+#mermaid-1535722265751 .activeText2,
+#mermaid-1535722265751 .activeText3 {
   fill: black !important; }
 
 
-#mermaid-1535382859924 .done0,
-#mermaid-1535382859924 .done1,
-#mermaid-1535382859924 .done2,
-#mermaid-1535382859924 .done3 {
+#mermaid-1535722265751 .done0,
+#mermaid-1535722265751 .done1,
+#mermaid-1535722265751 .done2,
+#mermaid-1535722265751 .done3 {
   stroke: grey;
   fill: lightgrey;
   stroke-width: 2; }
 
-#mermaid-1535382859924 .doneText0,
-#mermaid-1535382859924 .doneText1,
-#mermaid-1535382859924 .doneText2,
-#mermaid-1535382859924 .doneText3 {
+#mermaid-1535722265751 .doneText0,
+#mermaid-1535722265751 .doneText1,
+#mermaid-1535722265751 .doneText2,
+#mermaid-1535722265751 .doneText3 {
   fill: black !important; }
 
 
-#mermaid-1535382859924 .crit0,
-#mermaid-1535382859924 .crit1,
-#mermaid-1535382859924 .crit2,
-#mermaid-1535382859924 .crit3 {
+#mermaid-1535722265751 .crit0,
+#mermaid-1535722265751 .crit1,
+#mermaid-1535722265751 .crit2,
+#mermaid-1535722265751 .crit3 {
   stroke: #ff8888;
   fill: red;
   stroke-width: 2; }
 
-#mermaid-1535382859924 .activeCrit0,
-#mermaid-1535382859924 .activeCrit1,
-#mermaid-1535382859924 .activeCrit2,
-#mermaid-1535382859924 .activeCrit3 {
+#mermaid-1535722265751 .activeCrit0,
+#mermaid-1535722265751 .activeCrit1,
+#mermaid-1535722265751 .activeCrit2,
+#mermaid-1535722265751 .activeCrit3 {
   stroke: #ff8888;
   fill: #bfc7ff;
   stroke-width: 2; }
 
-#mermaid-1535382859924 .doneCrit0,
-#mermaid-1535382859924 .doneCrit1,
-#mermaid-1535382859924 .doneCrit2,
-#mermaid-1535382859924 .doneCrit3 {
+#mermaid-1535722265751 .doneCrit0,
+#mermaid-1535722265751 .doneCrit1,
+#mermaid-1535722265751 .doneCrit2,
+#mermaid-1535722265751 .doneCrit3 {
   stroke: #ff8888;
   fill: lightgrey;
   stroke-width: 2;
   cursor: pointer;
   shape-rendering: crispEdges; }
 
-#mermaid-1535382859924 .doneCritText0,
-#mermaid-1535382859924 .doneCritText1,
-#mermaid-1535382859924 .doneCritText2,
-#mermaid-1535382859924 .doneCritText3 {
+#mermaid-1535722265751 .doneCritText0,
+#mermaid-1535722265751 .doneCritText1,
+#mermaid-1535722265751 .doneCritText2,
+#mermaid-1535722265751 .doneCritText3 {
   fill: black !important; }
 
-#mermaid-1535382859924 .activeCritText0,
-#mermaid-1535382859924 .activeCritText1,
-#mermaid-1535382859924 .activeCritText2,
-#mermaid-1535382859924 .activeCritText3 {
+#mermaid-1535722265751 .activeCritText0,
+#mermaid-1535722265751 .activeCritText1,
+#mermaid-1535722265751 .activeCritText2,
+#mermaid-1535722265751 .activeCritText3 {
   fill: black !important; }
 
-#mermaid-1535382859924 .titleText {
+#mermaid-1535722265751 .titleText {
   text-anchor: middle;
   font-size: 18px;
   fill: black; }
 
-#mermaid-1535382859924 g.classGroup text {
+#mermaid-1535722265751 g.classGroup text {
   fill: #9370DB;
   stroke: none;
   font-family: 'trebuchet ms', verdana, arial;
   font-size: 10px; }
 
-#mermaid-1535382859924 g.classGroup rect {
+#mermaid-1535722265751 g.classGroup rect {
   fill: #ECECFF;
   stroke: #9370DB; }
 
-#mermaid-1535382859924 g.classGroup line {
+#mermaid-1535722265751 g.classGroup line {
   stroke: #9370DB;
   stroke-width: 1; }
 
-#mermaid-1535382859924 .classLabel .box {
+#mermaid-1535722265751 .classLabel .box {
   stroke: none;
   stroke-width: 0;
   fill: #ECECFF;
   opacity: 0.5; }
 
-#mermaid-1535382859924 .classLabel .label {
+#mermaid-1535722265751 .classLabel .label {
   fill: #9370DB;
   font-size: 10px; }
 
-#mermaid-1535382859924 .relation {
+#mermaid-1535722265751 .relation {
   stroke: #9370DB;
   stroke-width: 1;
   fill: none; }
 
-#mermaid-1535382859924 #compositionStart {
+#mermaid-1535722265751 #compositionStart {
   fill: #9370DB;
   stroke: #9370DB;
   stroke-width: 1; }
 
-#mermaid-1535382859924 #compositionEnd {
+#mermaid-1535722265751 #compositionEnd {
   fill: #9370DB;
   stroke: #9370DB;
   stroke-width: 1; }
 
-#mermaid-1535382859924 #aggregationStart {
+#mermaid-1535722265751 #aggregationStart {
   fill: #ECECFF;
   stroke: #9370DB;
   stroke-width: 1; }
 
-#mermaid-1535382859924 #aggregationEnd {
+#mermaid-1535722265751 #aggregationEnd {
   fill: #ECECFF;
   stroke: #9370DB;
   stroke-width: 1; }
 
-#mermaid-1535382859924 #dependencyStart {
+#mermaid-1535722265751 #dependencyStart {
   fill: #9370DB;
   stroke: #9370DB;
   stroke-width: 1; }
 
-#mermaid-1535382859924 #dependencyEnd {
+#mermaid-1535722265751 #dependencyEnd {
   fill: #9370DB;
   stroke: #9370DB;
   stroke-width: 1; }
 
-#mermaid-1535382859924 #extensionStart {
+#mermaid-1535722265751 #extensionStart {
   fill: #9370DB;
   stroke: #9370DB;
   stroke-width: 1; }
 
-#mermaid-1535382859924 #extensionEnd {
+#mermaid-1535722265751 #extensionEnd {
   fill: #9370DB;
   stroke: #9370DB;
   stroke-width: 1; }
 
-#mermaid-1535382859924 .commit-id,
-#mermaid-1535382859924 .commit-msg,
-#mermaid-1535382859924 .branch-label {
+#mermaid-1535722265751 .commit-id,
+#mermaid-1535722265751 .commit-msg,
+#mermaid-1535722265751 .branch-label {
   fill: lightgrey;
   color: lightgrey; }
-</style><style>#mermaid-1535382859924 {
+</style><style>#mermaid-1535722265751 {
     color: rgba(0, 0, 0, 0.65);
     font: normal normal 400 normal 14px / 21px "Monospaced Number", "Chinese Quote", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Helvetica Neue", Helvetica, Arial, sans-serif;
-  }</style><g></g><g><line id="actor23" x1="75" y1="5" x2="75" y2="255" class="actor-line" stroke-width="0.5px" stroke="#999"></line><rect x="0" y="0" fill="#eaeaea" stroke="#666" width="150" height="65" rx="3" ry="3" class="actor"></rect><text x="75" y="32.5" dominant-baseline="central" alignment-baseline="central" class="actor" style="text-anchor: middle;"><tspan x="75" dy="0">Coordinator (D)</tspan></text></g><g><line id="actor24" x1="275" y1="5" x2="275" y2="255" class="actor-line" stroke-width="0.5px" stroke="#999"></line><rect x="200" y="0" fill="#eaeaea" stroke="#666" width="150" height="65" rx="3" ry="3" class="actor"></rect><text x="275" y="32.5" dominant-baseline="central" alignment-baseline="central" class="actor" style="text-anchor: middle;"><tspan x="275" dy="0">B</tspan></text></g><g><line id="actor25" x1="475" y1="5" x2="475" y2="255" class="actor-line" stroke-width="0.5px" stroke="#999"></line><rect x="400" y="0" fill="#eaeaea" stroke="#666" width="150" height="65" rx="3" ry="3" class="actor"></rect><text x="475" y="32.5" dominant-baseline="central" alignment-baseline="central" class="actor" style="text-anchor: middle;"><tspan x="475" dy="0">C</tspan></text></g><g><line id="actor26" x1="675" y1="5" x2="675" y2="255" class="actor-line" stroke-width="0.5px" stroke="#999"></line><rect x="600" y="0" fill="#eaeaea" stroke="#666" width="150" height="65" rx="3" ry="3" class="actor"></rect><text x="675" y="32.5" dominant-baseline="central" alignment-baseline="central" class="actor" style="text-anchor: middle;"><tspan x="675" dy="0">Receiver (A)</tspan></text></g><defs><marker id="arrowhead" refX="5" refY="2" markerWidth="6" markerHeight="4" orient="auto"><path d="M 0,0 V 4 L6,2 Z"></path></marker></defs><defs><marker id="crosshead" markerWidth="15" markerHeight="8" orient="auto" refX="16" refY="4"><path fill="black" stroke="#000000" stroke-width="1px" d="M 9,2 V 6 L16,4 Z" style="stroke-dasharray: 0, 0;"></path><path fill="none" stroke="#000000" stroke-width="1px" d="M 0,1 L 6,7 M 6,1 L 0,7" style="stroke-dasharray: 0, 0;"></path></marker></defs><g><text x="175" y="93" class="messageText" style="text-anchor: middle;">Votes List</text><line x1="75" y1="100" x2="275" y2="100" class="messageLine0" stroke-width="2" stroke="black" marker-end="url(#arrowhead)" style="fill: none;"></line></g><g><text x="275" y="128" class="messageText" style="text-anchor: middle;">Votes List</text><line x1="75" y1="135" x2="475" y2="135" class="messageLine0" stroke-width="2" stroke="black" marker-end="url(#arrowhead)" style="fill: none;"></line></g><g><text x="375" y="163" class="messageText" style="text-anchor: middle;">Votes List</text><line x1="75" y1="170" x2="675" y2="170" class="messageLine0" stroke-width="2" stroke="black" marker-end="url(#arrowhead)" style="fill: none;"></line></g><g><rect x="0" y="190" fill="#eaeaea" stroke="#666" width="150" height="65" rx="3" ry="3" class="actor"></rect><text x="75" y="222.5" dominant-baseline="central" alignment-baseline="central" class="actor" style="text-anchor: middle;"><tspan x="75" dy="0">Coordinator (D)</tspan></text></g><g><rect x="200" y="190" fill="#eaeaea" stroke="#666" width="150" height="65" rx="3" ry="3" class="actor"></rect><text x="275" y="222.5" dominant-baseline="central" alignment-baseline="central" class="actor" style="text-anchor: middle;"><tspan x="275" dy="0">B</tspan></text></g><g><rect x="400" y="190" fill="#eaeaea" stroke="#666" width="150" height="65" rx="3" ry="3" class="actor"></rect><text x="475" y="222.5" dominant-baseline="central" alignment-baseline="central" class="actor" style="text-anchor: middle;"><tspan x="475" dy="0">C</tspan></text></g><g><rect x="600" y="190" fill="#eaeaea" stroke="#666" width="150" height="65" rx="3" ry="3" class="actor"></rect><text x="675" y="222.5" dominant-baseline="central" alignment-baseline="central" class="actor" style="text-anchor: middle;"><tspan x="675" dy="0">Receiver (A)</tspan></text></g></svg>
+  }</style><g></g><g><line id="actor114" x1="75" y1="5" x2="75" y2="255" class="actor-line" stroke-width="0.5px" stroke="#999"></line><rect x="0" y="0" fill="#eaeaea" stroke="#666" width="150" height="65" rx="3" ry="3" class="actor"></rect><text x="75" y="32.5" dominant-baseline="central" alignment-baseline="central" class="actor" style="text-anchor: middle;"><tspan x="75" dy="0">Coordinator (D)</tspan></text></g><g><line id="actor115" x1="275" y1="5" x2="275" y2="255" class="actor-line" stroke-width="0.5px" stroke="#999"></line><rect x="200" y="0" fill="#eaeaea" stroke="#666" width="150" height="65" rx="3" ry="3" class="actor"></rect><text x="275" y="32.5" dominant-baseline="central" alignment-baseline="central" class="actor" style="text-anchor: middle;"><tspan x="275" dy="0">B</tspan></text></g><g><line id="actor116" x1="475" y1="5" x2="475" y2="255" class="actor-line" stroke-width="0.5px" stroke="#999"></line><rect x="400" y="0" fill="#eaeaea" stroke="#666" width="150" height="65" rx="3" ry="3" class="actor"></rect><text x="475" y="32.5" dominant-baseline="central" alignment-baseline="central" class="actor" style="text-anchor: middle;"><tspan x="475" dy="0">C</tspan></text></g><g><line id="actor117" x1="675" y1="5" x2="675" y2="255" class="actor-line" stroke-width="0.5px" stroke="#999"></line><rect x="600" y="0" fill="#eaeaea" stroke="#666" width="150" height="65" rx="3" ry="3" class="actor"></rect><text x="675" y="32.5" dominant-baseline="central" alignment-baseline="central" class="actor" style="text-anchor: middle;"><tspan x="675" dy="0">Receiver (A)</tspan></text></g><defs><marker id="arrowhead" refX="5" refY="2" markerWidth="6" markerHeight="4" orient="auto"><path d="M 0,0 V 4 L6,2 Z"></path></marker></defs><defs><marker id="crosshead" markerWidth="15" markerHeight="8" orient="auto" refX="16" refY="4"><path fill="black" stroke="#000000" stroke-width="1px" d="M 9,2 V 6 L16,4 Z" style="stroke-dasharray: 0, 0;"></path><path fill="none" stroke="#000000" stroke-width="1px" d="M 0,1 L 6,7 M 6,1 L 0,7" style="stroke-dasharray: 0, 0;"></path></marker></defs><g><text x="175" y="93" class="messageText" style="text-anchor: middle;">Signatures List</text><line x1="75" y1="100" x2="275" y2="100" class="messageLine0" stroke-width="2" stroke="black" marker-end="url(#arrowhead)" style="fill: none;"></line></g><g><text x="275" y="128" class="messageText" style="text-anchor: middle;">Signatures List</text><line x1="75" y1="135" x2="475" y2="135" class="messageLine0" stroke-width="2" stroke="black" marker-end="url(#arrowhead)" style="fill: none;"></line></g><g><text x="375" y="163" class="messageText" style="text-anchor: middle;">Signatures List</text><line x1="75" y1="170" x2="675" y2="170" class="messageLine0" stroke-width="2" stroke="black" marker-end="url(#arrowhead)" style="fill: none;"></line></g><g><rect x="0" y="190" fill="#eaeaea" stroke="#666" width="150" height="65" rx="3" ry="3" class="actor"></rect><text x="75" y="222.5" dominant-baseline="central" alignment-baseline="central" class="actor" style="text-anchor: middle;"><tspan x="75" dy="0">Coordinator (D)</tspan></text></g><g><rect x="200" y="190" fill="#eaeaea" stroke="#666" width="150" height="65" rx="3" ry="3" class="actor"></rect><text x="275" y="222.5" dominant-baseline="central" alignment-baseline="central" class="actor" style="text-anchor: middle;"><tspan x="275" dy="0">B</tspan></text></g><g><rect x="400" y="190" fill="#eaeaea" stroke="#666" width="150" height="65" rx="3" ry="3" class="actor"></rect><text x="475" y="222.5" dominant-baseline="central" alignment-baseline="central" class="actor" style="text-anchor: middle;"><tspan x="475" dy="0">C</tspan></text></g><g><rect x="600" y="190" fill="#eaeaea" stroke="#666" width="150" height="65" rx="3" ry="3" class="actor"></rect><text x="675" y="222.5" dominant-baseline="central" alignment-baseline="central" class="actor" style="text-anchor: middle;"><tspan x="675" dy="0">Receiver (A)</tspan></text></g></svg>
