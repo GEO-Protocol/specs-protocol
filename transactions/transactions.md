@@ -184,6 +184,12 @@ _to provide information about **final** state of the transaction to all the part
 
 * `Network Hop Timeout` — (`hop time`) — time range, expected time that is needed for the network packet to be delivered to the destination node. By default should be set to `2 sec`.
 
+
+* `Least common amount` — common reservation amount, that might be reserved by _all_ nodes in the path. Least common amount == max. flow of the path.  
+
+* `Paths map` — coordinator-specific internal data structure for storing information about all reservations created on all paths used. During amount reservation, each one newly created amount reservation always would be less (or equal) to previously created reservation on the same path. This structure helps maintain path topology and help nodes to achieve _least common amount_ reserved.
+
+
 ## Stage 1 — Amount collecting and reservation
 #### _Paths discovering._  
 `Coordinator` in cooperation with `Receiver` must discover all (or some part of) possible network paths `{Coordinator -> Receiver}`. In case if no paths are found — algorithm execution **must** stop with error code [`No routes`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#no-routes). Please, see [Routing]() `[#todo: link]` for the details on paths discovering.
@@ -241,13 +247,24 @@ sequenceDiagram
 ```
 <img src="https://github.com/GEO-Project/specs-protocol/blob/master/transactions/resources/chart2.svg">
 
-### Reservations shortening
-During paths processing, `Coordinator` handles so called `paths map` — internal data structure with information about all nodes, all neighbours (first level nodes), and all reservations created on all used payment paths. During amount reservation, it is very probable, that amount reservations, that was created earlier on this path, would be greater, than amount reservations, that was created later (for example, amount reservations on `Coordinator's` neighbours (first level nodes) probably would be greater, than reserved amount on the `Receiver's` neighbours). So, it is important to shortage all created reservations, on all used trust lines of the paths to the **common path amount**. That's why `Coordinator` remembers amounts of all reservations of all used trust lines, so it is able to inform any node of this path, about necessity to shortage its reservation(s).
+### Amount reservations processing
+1. On response from node, `Coordinator (D)` **must** check the response:
+  * In case if reservation was "approved" — `Coordinator (D)`:
+      1. Updates it's internal `paths map`;
+      1. (re)calculates (probably shortated) least common reservations;
+      1. In case if node, that sent `approve` to the `Coordinator` is the last node in the path — then `Coordinator` sends current reservations configuration (list of neighbours nodes and amount reservations towards them) to all nodes, in this path, including `Receiver`. This info is very important, because there is a non-zero probability of the case, when some path from a collection of discovered paths, would be dropped during amount reservation (for example, because some trust line on it has no enough amount). In this case, it is very probable, that some amount reservations towards some nodes would not be needed any more, but the others would stay necessary. It is even possible, that this configuration changes would take place on the same node. That's why `Coordinator` reports whole new amounts configuration state to all nodes.
+    * In case of `reject` — `Coordinator (D)` drops this path at all from payment, and starts collecting amount on one of other available paths. During path dropping — it also informs all the nodes, that are involved into it, about dropped reservations, via sending  current reservations configuration to them.
     
-**Note:** it is expected, that middleware nodes `{(C), (D)}` and `Receiver` would have economic motivation to update their reservation amounts as quickly, as possible, because each one reservation created freezes some part of nodes liquidity.
+1. In case if all paths are processed, but no required amount was collected — `Coordinator` **must** suspend current operation and (re)try to collect more paths from the network. `[todo: describe paths complementing process]``[todo: routing]`.
+
+1. In case if `collected amount == needed amount` — stage 1 is considered as complete.
+
+
+### Reservations shortening
+**Note:** All middleware nodes (`{(C), (D)}`) and `Receiver` (`(R)`) are motivated to update their reservations as quickly, as possible, because each one reservation present freezes some part of their liquidity. It is expected that some part of nodes, from to time, during operation processing, would be asked by the `Coordinator` (`(D)`) to update their reservations to achieve _least common reservation amount_. From `Coordinator` prespective this process is sequntial, so it might take some time to update all nodes and find _least common reservation amount_. From the nodes perspective — this process requires some timeout after initial reservation creation and furter updates.
 
 ### Reservations prolongation
-During processing of long paths, or significant amount of paths in total — there is a non-zero probability, that one, or several middle-ware nodes `{(B), (C)}` and `Receiver (A)` (one, or several times) would ask `Coordinator (D)` for the transaction state to be able to know what to do with their active reservations. 
+During processing of long paths, or significant amount of paths in total — there is a non-zero probability, that some nodes one, or several times would fall in state, when their reservation timeouts would be burned up, but the transaction itself would be still in amount collecting stage. In this case, to prevent transaction disruption —it is reccomended for the this nodes to ask `Coordinator` about current transactino state to be able to know what to do with their active reservations. 
 
 #### Case 1: Transaction is still in progress
 * `Coordinator` **must** report transaction state via [Transaction State Message](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#response-transaction-state).
@@ -267,12 +284,12 @@ sequenceDiagram
    
 In case if `Coordinator (D)` responds with "active" state — it is recommended for the node to keep processing of the transaction. In this case node simply reinitialize it's internal timeout and keeps waiting. This stage might be repeated several more times. It is important for middle-ware nodes to wait as long as `Coordinator (D)` asks to, otherwise - whole transaction would be dropped. [#8](https://github.com/GEO-Protocol/specs-protocol/issues/8)
 
-**WARN:** There is an ability for the `Coordinator` to hang reservation for a long time and decrease nodes liquidity. To avoid this - node must keep counting of prolongations done. In case if next one prolongation begins to be not comfortable for the node (for example, `Coordinator` responds too long) — it might simply reject the transaction `[Stage B]` Max amount of prolongations should be decided by each one node for itself, based on it's internal trust to the coordinator.
+**WARN:** There is an ability for the `Coordinator` to hang reservation for a long time and harm network liquidity. To avoid this — node must keep counting of prolongations done. In case if next one prolongation begins to be uncomfortable for the node — it might simply reject the transaction `[Stage B]`. Max amount of prolongations should be decided by each one node for itself, based on it's internal trust to the coordinator. Recommended amount of prolongations is `6` (3 minutes).  
 
 #### Case 2: Transaction has not collected required amount
 
 * `Coordinator` **must** report transaction state via [Transaction State Message](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#response-transaction-state).
-* `Node`, that requested the state **must** process the reponse and in case if `Coordinator` responds with state that differs from "active" (for example, because required amount could not be collected on discovered paths) — `node` must rejecte transaction [(Stage B)](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-b-middle-wares-node-behaviour-after-transaction-reject). Amount reservations might be dropped safely at this stage.
+* `Node`, that requested the state, **must** process the reponse and in case if `Coordinator` responds with state that differs from "active" (for example, because required amount could not be collected on discovered paths) — `node` must reject the transaction [(Stage B)](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-b-middle-wares-node-behaviour-after-transaction-reject). Amount reservations might be dropped safely at this stage.
 
 ```mermaid
 sequenceDiagram
@@ -285,16 +302,12 @@ sequenceDiagram
     Coordinator (D)->>Receiver (A): No, abort it!
 ```
 <img src="https://github.com/GEO-Project/specs-protocol/blob/master/transactions/resources/chart4.svg">
-    
-**Warn:** all other requests, related to this operation (for example, from other nodes) **must** be ignored.
-   
-#### Case 3: No coordinator response
+
+#### Case 3: No coordinator response at all
 In case if no response was received from the `Coordinator` — one of 3 things might take place:
   1. `Coordinator` goes offline unexpectedly and/or is unable to proceed.
   1. Network segmentation takes place and no network packets are delivered/received to/from the node/`Coordinator`.
   1. `Coordinator` behaves destructively and doesn't responds to the nodes requests.
-        
-In all cases, it is safe for the middle-ware node to drop the transaction and related amounts reserves [(Stage B)](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-b-middle-wares-node-behaviour-after-transaction-reject).
 
 ```mermaid
 sequenceDiagram
@@ -308,29 +321,20 @@ sequenceDiagram
 ```
 <img src="https://github.com/GEO-Project/specs-protocol/blob/master/transactions/resources/chart5.svg">
 
-**Warn:** all other requests, related to this operation (for example, from other nodes) **must** be ignored.
+In all cases, it is safe for any node to drop the transaction and it's related amounts reserves [(Stage B)](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-b-middle-wares-node-behaviour-after-transaction-reject).
 
-### Amount reservations processing
-1. On response from middle ware node, or `Receiver` - `Coordinator (D)` checks the response:
-    * In case of `approve` - `Coordinator (D)`:
-        1. Updates it's internal `paths map`;
-        1. (re)calculates (probably shortates) max common available amount;
-        1. In case if node, that sent `approve` to the `Coordinator` is last node in its path - then `Coordinator` current reservations configuration (list of neighbours nodes and amount reservations towards them) to all nodes, on this path, including `Receiver`. This info is important, because there is a non-zero probability of the case, when some path from a collection of discovered paths, would be dropped during amount reservation (for example, because some trust line on it has no enough amount). In this case, it is very probable, that some amount reservations towards some nodes would not be needed any more, but the others would stay necessary. It is even possible, that this configuration changes would take place on the same node. That's why `Coordinator` reports whole new amounts configuration state to all middle ware nodes.
-    * In case of `reject` - `Coordinator (D)` drops this path at all from payment, and starts collecting amount on one of other available paths. During path dropping - it also informs all the nodes, that are involved into it about dropped reservations, via sending  current reservations configuration to them.
-    * **Note:** in case if all paths are processed, but no required amount was collected - `Coordinator` suspends current operation and re-tries to collect more paths from the network. `[todo: describe paths complementing process]`.
-1. In case if `collected amount == needed amount` — stage 1 is considered as complete.
 
 # Stage 1.1: Debts receipts exchange
 1. From middle-ware nodes perspective, processing of the amount reservation requests could be schematically explained in the next way:
    
-    ```mermaid
-      sequenceDiagram
-          Coordinator (D)->>C: Reserve 200
-          C->>B: Reserve 200
-          B->>C: OK, reserved 100 (without sign yet)
-          C->>Coordinator (D): OK, only 100 reserved
-    ```
-    <img src="https://github.com/GEO-Project/specs-protocol/blob/master/transactions/resources/chart6.svg">
+```mermaid
+sequenceDiagram
+    Coordinator (D)->>C: Reserve 200
+    C->>B: Reserve 200
+    B->>C: OK, reserved 100 (without sign yet)
+    C->>Coordinator (D): OK, only 100 reserved
+```
+<img src="https://github.com/GEO-Project/specs-protocol/blob/master/transactions/resources/chart6.svg">
 
 1. Node `(C)` reserves required amount on its side first. In case of success - it suspects for successful reservation on the neighbour node (`(B)` in the example), and sends the appropriate request to it. In case of received confirmation response from the neighbour node - `(C)` reports success to the `Coordinator`.
 1. Coordinator then updates it's internal `paths map`, calculates updated trust lines configuration for each one node involved into the path, and sends it to the nodes, via transferring them (trust lines configurations) through the neighbour nodes. `todo: think about optimization for this logic` `todo: possible vulnerability: intermediate node might fake the original TL configuration. This would be discovered on the next stage, but currently it leads to possibility to dos the network and hang transactions and reserves for some time`. For example, final configuration for the `Receiver` would be sent by the coordinator via node `(B)`, final configuration for the node `(B)` - would be sent via the node `(C)` and so one.
@@ -381,7 +385,7 @@ sequenceDiagram
                                 |  1024 | 0xbb63989a1643..5c5edbf6 |
                                 |-------|--------------------------|
         ```
-    1. Checks received TrustLineReceipt for sign validity and in case if not - rejects the operation `[Stage B]` 
+    1. Checks received TrustLineReceipt for sign validity and in case if it's not valid  - rejects the operation `[Stage B]` 
 
 1. Each one midleware node `{(A), (B)}` and `Receiver`, after signed receipts receiving and checking — sends to the `Coordinator`
      * its Public Key which this particular node would use for signing the  transaction;
