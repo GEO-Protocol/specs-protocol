@@ -327,26 +327,67 @@ In all cases, it is safe for any node to drop the transaction and it's related a
 # Stage 1.1: Debts receipts exchange
 1. From middle-ware nodes perspective, processing of the amount reservation requests could be schematically explained in the next way:
    
-```mermaid
-sequenceDiagram
-    Coordinator (D)->>C: Reserve 200
-    C->>B: Reserve 200
-    B->>C: OK, reserved 100 (without sign yet)
-    C->>Coordinator (D): OK, only 100 reserved
 ```
+sequenceDiagram
+      Coordinator (D)->>C: Reserve 200
+      C->>B: Reserve 200
+      B->>C: OK, reserved 100 (without sign yet)
+      C->>Coordinator (D): OK, only 100 reserved
+```   
+
 <img src="https://github.com/GEO-Project/specs-protocol/blob/master/transactions/resources/chart6.svg">
 
-1. Node `(C)` reserves required amount on its side first. In case of success - it suspects for successful reservation on the neighbour node (`(B)` in the example), and sends the appropriate request to it. In case of received confirmation response from the neighbour node - `(C)` reports success to the `Coordinator`.
-1. Coordinator then updates it's internal `paths map`, calculates updated trust lines configuration for each one node involved into the path, and sends it to the nodes, via transferring them (trust lines configurations) through the neighbour nodes. `todo: think about optimization for this logic` `todo: possible vulnerability: intermediate node might fake the original TL configuration. This would be discovered on the next stage, but currently it leads to possibility to dos the network and hang transactions and reserves for some time`. For example, final configuration for the `Receiver` would be sent by the coordinator via node `(B)`, final configuration for the node `(B)` - would be sent via the node `(C)` and so one.
+1. Node `(C)` attempts to reserve required amount on its side first. 
+  1. If no required amount may be reserved — node responds with reject.
+  1. If reservation is possible and was done successfully - node suspects for successful reservation on the neighbour node as well (`(B)` in the example), and sends the appropriate request to it. In case of received confirmation response from the neighbour node — `(C)` reports success to the `Coordinator`.
+  
+  
+# Stage 2 — Trust context establishing
+`Coordinator` **must**: 
+1. Finalize it's paths map.
+1. Send final reservations configuration to all nodes, involved into the operation. 
 
-# Stage 2: Trust context establishing
-1. After `Stage 1`, `Coordinator` sends final trust lines configuration to all nodes, involved into the operation. On final configuration receiving, each one node goes through the next steps:
-    1. Checks received final configuration.
-    * If there are any trust lines, reserved amount of which must be shortened - then node shortates them.
-    * If there are any trust lines, amount of which must be increased — then transaction must be rejected, because it is a malicious operation (reservations increasing).
-    * In case if some reservations, that are present on the node, are absent in the reservations list — then this reservations must be also dropped on the nodes side.
-    * In case if some reservations from the request are not present on the node - then the operation must be rejected, because this is a malicious operation (reservations increasing).
-    1. Fetches signed debt receipts from all nodes, that would increase their debt after the operation would be performed.
+Each one node, involved into the operation **must** check received final configuration.
+
+* If there are any trust lines, reserved amount of which must be shortened — then node shortates them.
+
+* If there are any trust lines, amount of which are asked to be increased — then transaction **must be rejected**, because it is a malicious operation (reservations increasing).
+
+* In case if some reservations, that are present on the node, are absent in the reservations list — then this reservations must be also dropped on the nodes side.
+
+* In case if some reservations from the request are not present on the node — then the operation **must be** rejected, because this is a malicious operation (reservations increasing).
+
+
+# Stage 2.1 — Signed debts exchange
+Each one node, **must** send **signed debt receipts** to all it's neighbours, involved into the operation. 
+Total debt receipts for the nodes from the example would be the next:
+```mermaid
+sequenceDiagram
+    C->>D: [Signed debt receipt]
+    B->>C: [Signed debt receipt]
+    A->>B: [Signed debt receipt]
+```
+<img src="https://github.com/GEO-Project/specs-protocol/blob/master/transactions/resources/chartDebtsReceptExchange.svg">
+
+**Note:** Signed debt receipt is only valid in case if whole transaction is signed, so node might sign and send it to the neighbour without any doubt. in case if any other node would not sign the operation — no one debt receipt would be valid and must not be demanded.
+
+Each one node, **must** check all received signed debt receipts for the next reuirements:
+* Amount of the receipt **must** be equal to the reserved amount.
+* Signature of the receipt **must** be used from common pull of PubKeys, that was established between the nodes prveiosly (see [Trust Lines]() [#todo: provide link] specification for the details).
+* There are no signed debt receipts for this operation already present on the node.
+
+Stage 2.1 is considered as completed when all nodes would exchange signed debt receipts with each of it's neighbours involved into the operation.
+
+# Stage 2.2 — Public keys exchange
+Each one node, **must**:
+  1. Fetch signed debt receipts from all nodes, that would increase their debt. 
+      ```mermaid
+      sequenceDiagram
+          B->>Coordinator (D): [PubK + delegates list, ~9kB]
+          C->>Coordinator (D): [PubK + delegates list, ~9kB]
+          Receiver (A)->>Coordinator (D): [PubK + delegates list, ~9kB]
+      ```
+
         ```c++
         struct TrustLineReceipt {
         TransactionID transactionID;
@@ -662,6 +703,7 @@ struct ResponseAmountReservation {
 ```
 
 #### Request: Transaction State
+[#todo: add declaration]
 
 #### Response Transaction State
 ```c++
@@ -672,6 +714,26 @@ struct ResponseTransactionState {
   // 1 — Committed — Transaction is has bin processed now; 
   // 2 — Unknown — node knows nothing about transaction with such id;
   byte state;
+}
+```
+
+#### Signed Debt Receipt
+```c++
+struct SignedDebtReceipt {
+  TransactionID transactionID;
+
+  // Amount of the receipt. 
+  // MUST be equal to previous reservations.
+  Amount amount; 
+
+  // Index of Public Key, that was used by the node for signing current receipt;
+  byte[4] transactionPubKeyIndex;
+
+  // Crytographic sign of the receipt,
+  // generated by the Public Key with positional number ==
+  // (transactionPubKeyIndex - 1).
+  // Please, see scheme further for the details.
+  Sign sign;
 }
 ```
 
