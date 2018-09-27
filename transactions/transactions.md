@@ -6,11 +6,13 @@ Fast, safe, double-spending resistant, multi-attendee crypto-protocol
 for atomic and consistent assets transfers.
 <br/>
 <br/>
+<br/>
 [`Max Demiyan`](https://github.com/MaxDemyan)
 [`Dima Chizhevsky`](https://github.com/haysaycheese/) 
 [`Mykola Ilashchuk`](https://github.com/MukolaIlashchuk) 
-
-Contributors:
+<br/>
+<br/>
+**Contributors:**
 [`Denis Vasilov`](https://github.com/Vasilov345)
 <br/>
 <br/>
