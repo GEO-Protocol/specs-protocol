@@ -9,6 +9,8 @@ for atomic and consistent assets transfers.
 [`Max Demiyan`](https://github.com/MaxDemyan)
 [`Dima Chizhevsky`](https://github.com/haysaycheese/) 
 [`Mykola Ilashchuk`](https://github.com/MukolaIlashchuk) 
+
+Contributors:
 [`Denis Vasilov`](https://github.com/Vasilov345)
 <br/>
 <br/>
