@@ -375,19 +375,27 @@ If any of this checks fails — node **must** reject the operation [(Stage B)](h
 
 
 # Stage 2.1 — Signed debts exchange
-Each one node, **must** send **signed debt receipts** to all it's neighbours, involved into the operation. 
-Total debt receipts for the nodes from the example would be the next:
-```mermaid
-sequenceDiagram
-    C->>D: [Signed debt receipt]
-    B->>C: [Signed debt receipt]
-    A->>B: [Signed debt receipt]
-```
-<img src="https://github.com/GEO-Project/specs-protocol/blob/master/transactions/resources/chartDebtsReceptExchange.svg">
+### Signed debts receipts 
+∀(`node` in {`nodes. inv`+ `Coordinator`}):
+  * ∀(`neighbor` in {`neighbors of node`}): 
+    * `node` **must** create debt receipt (#todo: link to struct) for the `neighbor` with amount according to the reserved amount on the trust line with the `neighbour`.
+    * `node` **must** sign it with one of it's public keys from pool of public keys with `neighbour`.
+    * `node` **must** send signed debt receipt to the `neighbor`. 
+      ```mermaid
+      sequenceDiagram
+          C->>D: [Signed debt receipt]
+          B->>C: [Signed debt receipt]
+          A->>B: [Signed debt receipt]
+      ```
+      <img src="https://github.com/GEO-Project/specs-protocol/blob/master/transactions/resources/chartDebtsReceptExchange.svg">
 
-**Note:** Signed debt receipt is only valid in case if whole transaction is signed, so node might sign and send it to the neighbour without any doubt. in case if any other node would not sign the operation — no one debt receipt would be valid and must not be demanded.
+**Note:** Signed debt receipt is only valid in case if whole transaction is signed (separate message with separate signature), so node might sign and send it to the neighbour without any doubt. In case if any other node would not sign the operation — no one debt receipt would be valid and must not be demanded.
 
-Each one node, **must** check all received signed debt receipts for the next reuirements:
+∀(`node` in {`nodes. inv`+ `Coordinator`}):
+  * `node` **must** receive signed debt receipts from **all** neighbours. In case if even one signed debt receipt wasn't received — node **must** reject the operation [(Stage B)](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-b-middle-wares-node-behaviour-after-transaction-reject).
+  
+  (# todo: fix validation checks !!!!!)
+  * `node` **must** check **all** received signed debt receipts for the next reuirements:
 * Amount of the receipt **must** be equal to the reserved amount.
 * Signature of the receipt **must** be used from common pull of PubKeys, that was established between the nodes prveiosly (see [Trust Lines]() [#todo: provide link] specification for the details).
 * There are no signed debt receipts for this operation already present on the node.
