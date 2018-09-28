@@ -359,7 +359,7 @@ sequenceDiagram
 # Stage 2 — Trust context establishing (coordinator)
 `Coordinator` **must**: 
 1. Finalize it's paths map.
-1. Send final reservations configuration (`FCR`) to ∀{`nodes inv.`}. 
+1. Send final reservations configuration (`FRC`) to ∀{`nodes inv.`}. 
 
 # Stage 2 — Trust context establishing (nodes)
 ∀{`nodes. inv`} **must** wait for final reservations configuration (`FRC`) from the `Coordinator`.  
