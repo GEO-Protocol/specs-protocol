@@ -6,9 +6,13 @@ Fast, safe, double-spending resistant, multi-attendee crypto-protocol
 for atomic and consistent assets transfers.
 <br/>
 <br/>
+<br/>
+[`Max Demiyan`](https://github.com/MaxDemyan)
 [`Dima Chizhevsky`](https://github.com/haysaycheese/) 
 [`Mykola Ilashchuk`](https://github.com/MukolaIlashchuk) 
-[`Max Demiyan`](https://github.com/MaxDemyan)
+<br/>
+<br/>
+**Contributors:**
 [`Denis Vasilov`](https://github.com/Vasilov345)
 <br/>
 <br/>
@@ -180,14 +184,20 @@ _to provide information about **final** state of the transaction to all the part
 
 ## Terms
 
-* `Transaction Amount` — (`tr. amount`) — amount of accounting units that `Coordinator` tries to send to the `Receiver`;
+#### Transaction Amount
+(`tr. amount`) — amount of accounting units that `Coordinator` tries to send to the `Receiver`;
 
-* `Network Hop Timeout` — (`hop time`) — time range, expected time that is needed for the network packet to be delivered to the destination node. By default should be set to `2 sec`.
+#### Network Hop Timeout
+(`hop time`) — time range, expected time that is needed for the network packet to be delivered to the destination node. By default should be set to `2 sec`.
 
+#### Least common amount
+Common reservation amount, that might be reserved by _all_ nodes in the path. Least common amount == max. flow of the path.  
+#### Paths map
+Coordinator-specific internal data structure for storing information about all reservations created on all paths used. During amount reservation, each one newly created amount reservation always would be less (or equal) to previously created reservation on the same path. This structure helps maintain path topology and help nodes to achieve _least common amount_ reserved.
 
-* `Least common amount` — common reservation amount, that might be reserved by _all_ nodes in the path. Least common amount == max. flow of the path.  
-
-* `Paths map` — coordinator-specific internal data structure for storing information about all reservations created on all paths used. During amount reservation, each one newly created amount reservation always would be less (or equal) to previously created reservation on the same path. This structure helps maintain path topology and help nodes to achieve _least common amount_ reserved.
+#### Signatures list
+List of all participants of the operation and their signatures.  
+Presence of all signatures approves 100% consensus and must be interpret as finalised operation. 
 
 
 ## Stage 1 — Amount collecting and reservation
@@ -226,7 +236,8 @@ Each middle-ware node `{(C), (B)}` and `Receiver (A)`, on reservation request re
 
 **Note:** Created reserves are only temporary locks on the trust lines, and must not be considered as committed changes (debts). This locks are important mechanism for preventing usage of greater amount of trust line / channel, that was initially granted, so it is expected that each one node would very carefully account this reservations.
 
-**WARN:** Trust lines reservations and related transactions must be implemented in [**ACID** manner](https://en.wikipedia.org/wiki/ACID_(computer_science)). Transactions and related trust lines / channels locks must be restored after each one unexpected node failure and/or exit.
+**WARN:** Trust lines reservations and related transactions must be implemented in [**ACID** manner](https://en.wikipedia.org/wiki/ACID_(computer_science)).  
+Transactions and related {trust lines, channels} locks must be restored after each one unexpected node failure and/or exit.
 
 **WARN:** Each one payment transaction, that was restored after node failure, must be automatically continued from [Stage Z: Recover](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-z-recover). 
 
@@ -378,8 +389,9 @@ Each one node, **must** check all received signed debt receipts for the next reu
 
 Stage 2.1 is considered as completed when all nodes would exchange signed debt receipts with each of it's neighbours involved into the operation.
 
-# Stage 2.2 — Public keys exchange
-1. Each one node, except `Coordinator` **must** send to the `Coordinator` its Public Key which this particular node would use for signing the whole transaction;
+
+# Stage 2.2 — Public keys exchange (node)
+Node **must** send to the `Coordinator` its Public Key, which this particular node would use for signing whole the transaction.
      
 ```mermaid
 sequenceDiagram
@@ -388,63 +400,67 @@ sequenceDiagram
     Receiver (A)->>Coordinator (D): [PubK]
 ```
 <img src="https://github.com/GEO-Project/specs-protocol/blob/master/transactions/resources/chart7.svg">
-
-`Coordinator` **must** collect Public Keys from all participants.
- 
-In case if not all expected keys was collected — `Coordinator` rejects the operation with code "No Consensus" [(Stage: A)](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-a-coordinators-behaviour-after-transaction-reject);
   
-In case if all expected records was collected — `Coordinator`:
-        1. finds common `delegate` for the transaction. To do it, `Coordinator` joins received delegates lists from other participants with its own list of proposed delegates. Intersects generated list and finds common one, or several common delegates.
-            * In case if no common delegate if found, but one, or more nodes, including the `Coordinator` itself, has been delegated non-empty delegates lists — then `Coordinator` rejects operation with code `Out Of Common Trust` even without signing it `[Stage: A]`.
-            * In case if there are several common delegates present after the intersection — `Coordinator` is able to choose one it prefers more.
-            * **Note:** `Coordinator`, similarly to other nodes, might not delegate any `delegates` for the operation. Please, see `Delegate` detailed description, for the details about consequences of such decision.
-        1. fetches Pub Key of selected `delegate` and attaches it to the list of other nodes Pub Keys. In case if no Pub Key was received from the `delegate`, and there is no other common candidate(s) for the delegating — then `Coordinator` rejects the operation with code `Inoperable Delegate` even without signing it `[Stage: A]`.
-        1. creates `votes list` and includes selected delegate address into it; `todo: describe format of the vote list`
-        1. includes received Pub Keys into it alongside with its own Pub Key;
-        1. sorts generated `votes list` by the participants Pub Keys in ascending order.
-        Sorting must be done byte-by-byte. In case if 2 (or more) equal Pub Keys are present — transaction must be rejected with code `Duplicated Pub Keys` `[Stage: A]`.
-        1. does all the checks from `Stage 4: Voting`. In case of **positive decision** — goes forward and signs generated `votes list` by its Sign [`Stage: 4.1`].
-        In case of **negative decision** - `Coordinator` rejects operation with relevant code even without signing it `[Stage: A]`.
-        1. Sends signed `votes list` to all other nodes.
-        1. Begins waiting for nodes votes for the operation. `todo: if no votes are received - go to the delegate`.
+  
+# Stage 2.2 — Public keys exchange (coordinator)
+`Coordinator` **must** collect Public Keys [#todo: link to crypto] from all participants.
 
+In case if not all expected keys was collected — `Coordinator` rejects the operation with code "[No Consensus](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#not-enough-amount)" [(Stage: A)](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-a-coordinators-behaviour-after-transaction-reject);
+
+In case if all expected keys was collected — `Coordinator` **must**:
+1. Generate PubKeys list.
+2. Send generated PubKeys list to all nodes.
+
+
+# Stage 2.3 — Trust context checking (node)
+If `PubKeys list` was not received during `3 net. hops` — node **must** reject the operation ([Stage B](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-b-middle-wares-node-behaviour-after-transaction-reject)). 
+
+If `PubKeys list` was received:
+1. `Node` **must** check `PubKeys list` (steps of check are provided further). 
+
+If check doesn't pass — `node` **must** reject the operation ([Stage B](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-b-middle-wares-node-behaviour-after-transaction-reject)).
+
+If check passed — stage 2.3 is considered as completed.
+
+
+# Stage 2.3 — Trust context checking (coordinator)
+`Coordinator` collects Public Keys right fro mthe nodes.  
+There is no need for additional check of them on the `Coordinator's` side.
+
+
+# Stage 3 — Signing (coordinator)
+1. **Must** generate `Signatures List`.
+1. **Must** sign the operation (add its own signature to the signatures list).
+1. **Must** send `Signatures List` to all participant involved.
     ```mermaid
     sequenceDiagram
-        Coordinator (D)->>B: Votes List
-        Coordinator (D)->>C: Votes List
-        Coordinator (D)->>Receiver (A): Votes List
+        Coordinator (D)->>B: Signatures List
+        Coordinator (D)->>C: Signatures List
+        Coordinator (D)->>Receiver (A): Signatures List
     ```
     <img src="https://github.com/GEO-Project/specs-protocol/blob/master/transactions/resources/chart8.svg">
-
-    ```c++
-    struct VotesList {
-        TransactionID transactionID;
-
-        // Total participants count, including the Coordinator.
-        byte[2] participantsCount; // 65534 at max
-
-        Address coordinatorAddress;
-        PubKey coordinatorPubKey;
-
-        Address participant1Address;
-        PubKey participant1PubKey;
-
-        // ...
-        // Other participants data goes here
-        // ...
-
-        Address participantNAddress;
-        PubKey participantNPubKey;
-
-        Sign coordinatorSign;
-    }
-    ```
-    `todo: is custom sorting order stil needed here?`
+1. **Must** commit operation.
+1. Should report OK to the user interface.
 
 
-# Stage 3: Trust context checking
+# Stage 3 — Signing (node)
+`Node` **must**:
+1. Generate `Signatures List`.
+1. Sign the operation (add its own signature to the signatures list).
+1. Send `Signatures List` to all participant involved.
+  ```mermaid
+  sequenceDiagram
+      Coordinator (D)->>B: Signatures List
+      Coordinator (D)->>C: Signatures List
+      Coordinator (D)->>Receiver (A): Signatures List
+  ```
+  <img src="https://github.com/GEO-Project/specs-protocol/blob/master/transactions/resources/chart8.svg">
+1. Commit operation.
+1. _[Optional]_ Report OK to the user interface.
 
-`todo: swap this stage with voting. It is much more efficient for nodes to vote after pub keys digests checking. `
+
+
+# Votes list
 
 1. On `votes list` received, each one middle ware node `{(B), (C)}` and `Receiver`:
     1. Checks that received message contains declared count of participants records (PubKeys and addresses). In case if this check fails — node must reject transaction, `[Stage B]`.
@@ -685,6 +701,31 @@ struct SignedDebtReceipt {
 }
 ```
 
+#### Signatures list
+```c++
+struct SignaturesList {
+    TransactionID transactionID;
+
+    // Total participants count, including the Coordinator.
+    byte[2] participantsCount; // 65534 at max
+
+    Address coordinatorAddress;
+    PubKey coordinatorPubKey;
+
+    Address participant1Address;
+    PubKey participant1Signature;
+
+    // ...
+    // Other participants data goes here
+    // ...
+
+    Address participantNAddress;
+    PubKey participantNSignature;
+
+    Sign coordinatorSign;
+}
+```
+
 # Operation result codes
 This section describes result codes, that are erported on the coordinator node to its interfaces (UI, API interface, etc)
 
@@ -693,14 +734,16 @@ This section describes result codes, that are erported on the coordinator node t
 Operation was committed well. 
 
 #### No routes
-`code: 403`  
+`code: 400`  
 There is no any route discovered between `Coordinator` and `Receiver`;
 
 #### Not Enough Amount
-`code: ` [#todo: add code here]
+`code: 401`
+There is no enough amount can be collected on all paths discovered.
 
 #### No Consensus
-`code: 403`
+`code: 402`
+Some node, that participated in the operation did not provided its signature for it.
 
 # Timeouts
 #### Amount reservation timeout 
