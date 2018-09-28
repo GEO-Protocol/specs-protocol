@@ -236,7 +236,8 @@ Each middle-ware node `{(C), (B)}` and `Receiver (A)`, on reservation request re
 
 **Note:** Created reserves are only temporary locks on the trust lines, and must not be considered as committed changes (debts). This locks are important mechanism for preventing usage of greater amount of trust line / channel, that was initially granted, so it is expected that each one node would very carefully account this reservations.
 
-**WARN:** Trust lines reservations and related transactions must be implemented in [**ACID** manner](https://en.wikipedia.org/wiki/ACID_(computer_science)). Transactions and related trust lines / channels locks must be restored after each one unexpected node failure and/or exit.
+**WARN:** Trust lines reservations and related transactions must be implemented in [**ACID** manner](https://en.wikipedia.org/wiki/ACID_(computer_science)).  
+Transactions and related {trust lines, channels} locks must be restored after each one unexpected node failure and/or exit.
 
 **WARN:** Each one payment transaction, that was restored after node failure, must be automatically continued from [Stage Z: Recover](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-z-recover). 
 
