@@ -184,6 +184,9 @@ _to provide information about **final** state of the transaction to all the part
 
 ## Terms
 
+#### Nodes involved
+(`nodes. in`) — list of nodes, that are involved into the operation, except `Coordinator`.
+
 #### Transaction Amount
 (`tr. amount`) — amount of accounting units that `Coordinator` tries to send to the `Receiver`;
 
@@ -353,20 +356,23 @@ sequenceDiagram
   1. If reservation is possible and was done successfully - node suspects for successful reservation on the neighbour node as well (`(B)` in the example), and sends the appropriate request to it. In case of received confirmation response from the neighbour node — `(C)` reports success to the `Coordinator`.
   
   
-# Stage 2 — Trust context establishing
+# Stage 2 — Trust context establishing (coordinator)
 `Coordinator` **must**: 
 1. Finalize it's paths map.
-1. Send final reservations configuration to all nodes, involved into the operation. 
+1. Send final reservations configuration to all `nodes. inv`. 
 
-Each one node, involved into the operation **must** check received final configuration.
+# Stage 2 — Trust context establishing (nodes)
+∀(`nodes. inv`) **must** wait for final reservations configuration (`FRC`) from the coordinator.  
+If no `FRC` was received during (#todo: specify timeout) — node **must** reject the operation [(Stage B)](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-b-middle-wares-node-behaviour-after-transaction-reject).
 
-* If there are any trust lines, reserved amount of which must be shortened — then node shortates them.
-
-* If there are any trust lines, amount of which are asked to be increased — then transaction **must be rejected**, because it is a malicious operation (reservations increasing).
-
-* In case if some reservations, that are present on the node, are absent in the reservations list — then this reservations must be also dropped on the nodes side.
-
-* In case if some reservations from the request are not present on the node — then the operation **must be** rejected, because this is a malicious operation (reservations increasing).
+* If `FRC` was received — node **must** validate it throught the next checks (provided further).  
+If any of this checks fails — node must reject the operation [(Stage B)](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-b-middle-wares-node-behaviour-after-transaction-reject).
+  * ∀(trust line in `FRC`, `{TLRS1, .. TLRSn} ∋ TLRS`):
+    * (amount of `TLRSi`) **must** be ≤ (reserved amount on this trust line on the node).
+  
+* ∀(trust line in `TLI`, `{TLI1, .. TLIn} ∋ TLI`):
+  * If `TLIi` is not present in `FRC` — reservations on `TLIi` **must** be dropped.  
+  After this correction `TLI` must be equal to `FRC`.
 
 
 # Stage 2.1 — Signed debts exchange
@@ -424,7 +430,13 @@ If check passed — stage 2.3 is considered as completed.
 
 
 # Stage 2.3 — Trust context checking (coordinator)
-`Coordinator` collects Public Keys right fro mthe nodes.  
+`Coordinator` collects `PubKeys list` from the nodes.  
+
+1. Received `PubKeys list` **must** contains public keys of _**all** neighbours nodes, of the `Coordinator`, that are involved into the operation; (`neig. PKl`);_
+1. `Coordinator` **must** check **each one** key from `neig. PKl` for validity through next checks:
+  * Key length **must** be `16Kb`;
+  * Key must be included
+
 There is no need for additional check of them on the `Coordinator's` side.
 
 
@@ -444,8 +456,7 @@ There is no need for additional check of them on the `Coordinator's` side.
 
 
 # Stage 3 — Signing (node)
-`Node` **must**:
-1. Generate `Signatures List`.
+1. **Must** generate `Signatures List`.
 1. Sign the operation (add its own signature to the signatures list).
 1. Send `Signatures List` to all participant involved.
   ```mermaid
