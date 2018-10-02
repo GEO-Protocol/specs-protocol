@@ -1,4 +1,4 @@
-`GEO Protocol / 2018`  `DRAFT`
+`GEO Protocol / 2018`  `DRAFT [todo: remove it]`
 
 ![Twin Spark Logo](https://github.com/GEO-Project/specs-protocol/blob/master/transactions/resources/twin_spark.png)
 
@@ -458,6 +458,8 @@ There is no need for additional check of them on the `Coordinator's` side.
     ```
     <img src="https://github.com/GEO-Project/specs-protocol/blob/master/transactions/resources/chart8.svg">
 
+* [Optional] `Coordinator` might exlude addressee from the [_PPKL_](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#participants-public-keys-list).  
+  For example, in case if nodes {`Coordinator`, `A`, `B`, `Receiver`} take part into the operation, and `Coordinator` now performs [_PPKL_](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#participants-public-keys-list) for the `A` — then `Coordinator` might exclude `A` from the [_PPKL_](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#participants-public-keys-list) and _save network traffic for itself and for the `A`_.
 
 # Stage 3.1 — Signing prepearing (node)
 1. **Must** receive [Participants Public Keys List _(PPKL)_](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#participants-public-keys-list) from the `Coordinator`;
