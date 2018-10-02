@@ -669,7 +669,7 @@ using TransactionID = byte[24];
 ### Particpant Public Key
 [todo: link to the crypto description]
 
-```c+++
+```c++
 const uint16 kPubKeyLength = 1024 * 16;
 using PubKey = byte[kPubKeyLength];
 ```
