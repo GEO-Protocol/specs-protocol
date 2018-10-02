@@ -185,13 +185,13 @@ _to provide information about **final** state of the transaction to all the part
 ## Terms
 
 #### Nodes involved
-(`nodes. in`) — list of nodes, that are involved into the operation, except `Coordinator`.
+`nodes. inv` — list of nodes, that are involved into the operation, except `Coordinator`.
 
 #### Transaction Amount
-(`tr. amount`) — amount of accounting units that `Coordinator` tries to send to the `Receiver`;
+`tr. amount` — amount of accounting units that `Coordinator` tries to send to the `Receiver`;
 
 #### Network Hop Timeout
-(`hop time`) — time range, expected time that is needed for the network packet to be delivered to the destination node. By default should be set to `2 sec`.
+`hop time` — time range, expected time that is needed for the network packet to be delivered to the destination node. By default should be set to `2 sec`.
 
 #### Least common amount
 Common reservation amount, that might be reserved by _all_ nodes in the path. Least common amount == max. flow of the path.  
@@ -448,7 +448,7 @@ There is no need for additional check of them on the `Coordinator's` side.
 
 
 # Stage 3.1 — Signing prepearing (coordinator)
-1. **Must** generate [Participants Public Keys List _PPKL_](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#participants-public-keys-list) for each one participant included into the operation;
+1. **Must** generate [Participants Public Keys List _(PPKL)_](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#participants-public-keys-list) for each one participant included into the operation;
 1. **Must** send related _PPKL_ to all participant involved.
     ```mermaid
     sequenceDiagram
@@ -461,10 +461,12 @@ There is no need for additional check of them on the `Coordinator's` side.
 
 # Stage 3.1 — Signing (node)
 1. **Must** receive [Participants Public Keys List _PPKL_](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#participants-public-keys-list) from the `Coordinator`;
-1. **Must** check received _PPKL_ through next checks provided forward;
+1. **Must** check received _PPKL_ through the checks provided forward;
 1. **Must** approve operation in case if _all checks passed_;
 1. **Must** reject operation [(Stage B)](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-b-middle-wares-node-behaviour-after-transaction-reject) in case if _some **(even one)** checks failed_; 
 
+### Checks for PPKL
+1. ∀(`node` ∈ [`nodes. inv`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#nodes-involved)):
 
 # Stage 3.2 — Approving (node)
 1. 
