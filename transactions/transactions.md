@@ -174,13 +174,22 @@ _to provide information about **final** state of the transaction to all the part
 ---
 
 ## Roles
+#### Coordinator 
+_Coordinator_ — node, that initiates the transaction (node `(D)` in example scheme).  
+Coordinates all other nodes, involved into the operation during its life cycle.  
+_Coordinator_ utilizes significantly more network traffic in comparison with other participants, but it has economic motivation to do so — it wants to transfer assets to some node and is ready to "pay for it by its resources";
+</br>
+</br>
 
-* `Coordinator` — node, that initiates the transaction (node `(D)` in example scheme). Coordinates all other nodes, involved into the operation during its life cycle. `Coordinator` utilizes significantly more network traffic in comparison with other participants, but it has economic motivation to do so — it wants to transfer assets to some node and is ready to "pay for it by its resources";
+#### Receiver
+_Receiver_ — node that receives the transfer (node `A` in the example scheme).
+</br>
+</br>
 
-* `Receiver` — node that receives the transfer (node `A` in the example scheme);
-
-* `Middleware` node — node that takes part into the operation as common participant, and provides its trust lines / channels as transport for assets (nodes `(C)` and `(B)`);
-
+#### Middleware node
+_Middleware node_ — node that takes part into the operation as common participant, and provides its trust lines / channels as transport for assets (nodes `C` and `B` in the example scheme);
+</br>
+</br>
 
 ## Terms
 
