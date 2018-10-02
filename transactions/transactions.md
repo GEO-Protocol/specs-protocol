@@ -665,6 +665,7 @@ This section provides explanation of used data structures in developers friendly
 // would be randomly generated 24 bytes long sequence.
 using TransactionID = byte[24];
 ```
+<br/>
 
 ### Particpant Public Key
 [todo: link to the crypto description]
@@ -673,13 +674,14 @@ using TransactionID = byte[24];
 const uint16 kPubKeyLength = 1024 * 16;
 using PubKey = byte[kPubKeyLength];
 ```
+<br/>
 
 ### Participant Signature
 ```c++
 const uint16 kSignatureLength = 1024 * 8;
 using Sign = byte[kSignatureLength];
 ```
-
+<br/>
 
 ### Particpant Address
 [todo: move this into the addressation doc]
@@ -691,6 +693,7 @@ struct Address {
     byte[1..256] data;
 }
 ```
+<br/>
 
 ### Amount
 _Amount_ specifies transaction amount or trust line amount, or channel amount.
@@ -703,6 +706,7 @@ struct Amount {
     byte[1..32] value;
 }
 ```
+<br/>
 
 # Messages
 
