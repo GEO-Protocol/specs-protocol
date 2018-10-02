@@ -447,34 +447,44 @@ If check passed — stage 2.3 is considered as completed.
 There is no need for additional check of them on the `Coordinator's` side.
 
 
-# Stage 3 — Signing (coordinator)
-1. **Must** generate `Signatures List`.
-1. **Must** sign the operation (add its own signature to the signatures list).
-1. **Must** send `Signatures List` to all participant involved.
+# Stage 3.1 — Signing prepearing (coordinator)
+1. **Must** generate [Participants Public Keys List _PPKL_](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#participants-public-keys-list) for each one participant included into the operation;
+1. **Must** send related _PPKL_ to all participant involved.
     ```mermaid
     sequenceDiagram
-        Coordinator (D)->>B: Signatures List
-        Coordinator (D)->>C: Signatures List
-        Coordinator (D)->>Receiver (A): Signatures List
+        Coordinator (D)->>B: PPKL
+        Coordinator (D)->>C: PPKL
+        Coordinator (D)->>Receiver (A): PPKL
     ```
     <img src="https://github.com/GEO-Project/specs-protocol/blob/master/transactions/resources/chart8.svg">
-1. **Must** commit operation.
-1. Should report OK to the user interface.
 
 
-# Stage 3 — Signing (node)
-1. **Must** generate `Signatures List`.
-1. Sign the operation (add its own signature to the signatures list).
-1. Send `Signatures List` to all participant involved.
-  ```mermaid
-  sequenceDiagram
-      Coordinator (D)->>B: Signatures List
-      Coordinator (D)->>C: Signatures List
-      Coordinator (D)->>Receiver (A): Signatures List
-  ```
-  <img src="https://github.com/GEO-Project/specs-protocol/blob/master/transactions/resources/chart8.svg">
-1. Commit operation.
-1. _[Optional]_ Report OK to the user interface.
+# Stage 3.1 — Signing (node)
+1. **Must** receive [Participants Public Keys List _PPKL_](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#participants-public-keys-list) from the `Coordinator`;
+1. **Must** check received _PPKL_ through next checks provided forward;
+1. **Must** approve operation in case if _all checks passed_;
+1. **Must** reject operation [(Stage B)](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-b-middle-wares-node-behaviour-after-transaction-reject) in case if _some **(even one)** checks failed_; 
+
+
+# Stage 3.2 — Approving (node)
+1. 
+
+
+
+# Stage 3.2 — Approving (coordinator)
+1. 
+
+
+1. **Must** generate [Participants Public Keys List _PPKL_](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#participants-public-keys-list) for each one participant included into the operation;
+1. **Must** send related _PPKL_ to all participant involved.
+    ```mermaid
+    sequenceDiagram
+        Coordinator (D)->>B: PPKL
+        Coordinator (D)->>C: PPKL
+        Coordinator (D)->>Receiver (A): PPKL
+    ```
+    <img src="https://github.com/GEO-Project/specs-protocol/blob/master/transactions/resources/chart8.svg">
+
 
 
 
@@ -631,10 +641,11 @@ While node follows this specification and it's internal behaviour was not modifi
 
 
 # Data types used
-This section provides developers friendly description of data structures used.
+This section provides explanation of used data structures in developers friendly format.
 
 ```c++
-// It is expected that TAID would be randomly generated 24B long sequence.
+// It is expected that TAID
+// would be randomly generated 24 bytes long sequence.
 using TransactionID = byte[24];
 
 // todo: link to the crypto description.
@@ -657,28 +668,6 @@ struct Amount {
 }
 
 ```
-
-## Participants Public Keys List
-_Participants Public Keys List (PPKL)_ is used by the `Coordinator` to populate each one participant of the transaction with public keys of each other participant of this transaction. 
-
-* **[Optional]** `Coordinator` might exclude the addressee from the _PPKL_. For example, if there are 3 participants in the transaction {`Coordinator`, `A`, `B`, `C`}, and `Coordinator` prepeares _PPKL_ for `A` — then it could exclude `A` from the _PPKL_ and optimize network traffic usage.
-
-```c++
-struct ParticipantRecord {
-  // Member ID within the transaction.
-  // Members IDs are assigned by the Coordinator for each one particpant, 
-  // sequentially from 0 up to (2**16)-1;
-  uint16  memberID;
-  PubKey  pubKey;  
-}
-
-struct ParticipantsPublicKeys {
-    uint16 totalMembersCount;
-    ParticipantRecord keys[<totalMembersCount>];
-}
-```
-
-
 
 # Messages
 
