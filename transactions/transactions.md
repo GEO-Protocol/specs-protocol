@@ -631,11 +631,10 @@ While node follows this specification and it's internal behaviour was not modifi
 
 
 # Data types used
-This section provides explanation of used data structures in developers friendly format.
+This section provides developers friendly description of data structures used.
 
 ```c++
-// It is expected that TAID
-// would be randomly generated 24 bytes long sequence.
+// It is expected that TAID would be randomly generated 24B long sequence.
 using TransactionID = byte[24];
 
 // todo: link to the crypto description.
@@ -658,6 +657,28 @@ struct Amount {
 }
 
 ```
+
+## Participants Public Keys List
+_Participants Public Keys List (PPKL)_ is used by the `Coordinator` to populate each one participant of the transaction with public keys of each other participant of this transaction. 
+
+* **[Optional]** `Coordinator` might exclude the addressee from the _PPKL_. For example, if there are 3 participants in the transaction {`Coordinator`, `A`, `B`, `C`}, and `Coordinator` prepeares _PPKL_ for `A` — then it could exclude `A` from the _PPKL_ and optimize network traffic usage.
+
+```c++
+struct ParticipantRecord {
+  // Member ID within the transaction.
+  // Members IDs are assigned by the Coordinator for each one particpant, 
+  // sequentially from 0 up to (2**16)-1;
+  uint16  memberID;
+  PubKey  pubKey;  
+}
+
+struct ParticipantsPublicKeys {
+    uint16 totalMembersCount;
+    ParticipantRecord keys[<totalMembersCount>];
+}
+```
+
+
 
 # Messages
 
