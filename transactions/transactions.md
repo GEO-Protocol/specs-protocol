@@ -185,7 +185,7 @@ _to provide information about **final** state of the transaction to all the part
 ## Terms
 
 #### Nodes involved
-`nodes. inv` — list of nodes, that are involved into the operation, except `Coordinator`.
+`nodes_inv` — list of nodes, that are involved into the operation, except `Coordinator`.
 
 #### Transaction Amount
 `tr. amount` — amount of accounting units that `Coordinator` tries to send to the `Receiver`;
@@ -358,10 +358,10 @@ sequenceDiagram
   
 # Stage 2 — Trust context establishing (coordinator)
 1. **Must** finalize it's paths map.
-1. **Must** send final reservations configuration (`FRC`) to ∀{`nodes inv.`}. 
+1. **Must** send final reservations configuration (`FRC`) to ∀{`nodes_inv`}. 
 
 # Stage 2 — Trust context establishing (nodes)
-∀{`nodes. inv`} **must** wait for final reservations configuration (`FRC`) from the `Coordinator`.  
+∀{`nodes_inv`} **must** wait for final reservations configuration (`FRC`) from the `Coordinator`.  
 If no `FRC` was received during (#todo: specify timeout) — node **must** reject the operation [(Stage B)](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-b-middle-wares-node-behaviour-after-transaction-reject).
 
 * If `FRC` was received — node **must** validate it throught the checks provided further.  
@@ -376,7 +376,7 @@ If any of this checks fails — node **must** reject the operation [(Stage B)](h
 
 # Stage 2.1 — Signed debts exchange
 ### Signed debts receipts 
-∀(`node` in {`nodes. inv`+ `Coordinator`}):
+∀(`node` in {`nodes_inv`+ `Coordinator`}):
   * ∀(`neighbor` in {`neighbors of node`}): 
     * `node` **must** create debt receipt (#todo: link to struct) for the `neighbor` with amount according to the reserved amount on the trust line with the `neighbour`.
     * `node` **must** sign it with one of it's public keys from pool of public keys with `neighbour`.
@@ -391,7 +391,7 @@ If any of this checks fails — node **must** reject the operation [(Stage B)](h
 
 **Note:** Signed debt receipt is only valid in case if whole transaction is signed (separate message with separate signature), so node might sign and send it to the neighbour without any doubt. In case if any other node would not sign the operation — no one debt receipt would be valid and must not be demanded.
 
-∀(`node` in {`nodes. inv`+ `Coordinator`}):
+∀(`node` in {`nodes_inv`+ `Coordinator`}):
   * `node` **must** receive signed debt receipts from **all** neighbours. In case if even one signed debt receipt wasn't received — node **must** reject the operation [(Stage B)](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-b-middle-wares-node-behaviour-after-transaction-reject).
   
   (# todo: fix validation checks !!!!!)
@@ -460,13 +460,16 @@ There is no need for additional check of them on the `Coordinator's` side.
 
 
 # Stage 3.1 — Signing (node)
-1. **Must** receive [Participants Public Keys List _PPKL_](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#participants-public-keys-list) from the `Coordinator`;
+1. **Must** receive [Participants Public Keys List _(PPKL)_](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#participants-public-keys-list) from the `Coordinator`;
 1. **Must** check received _PPKL_ through the checks provided forward;
 1. **Must** approve operation in case if _all checks passed_;
 1. **Must** reject operation [(Stage B)](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-b-middle-wares-node-behaviour-after-transaction-reject) in case if _some **(even one)** checks failed_; 
 
 ### Checks for PPKL
-1. ∀(`node` ∈ [`nodes. inv`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#nodes-involved)):
+1. ∀(`node` ∈ [`nodes_inv`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#nodes-involved)):
+    1. `node.memberID` is present in PPKL; 
+    1. BLAKE2(`node.pubKey`, received on [Stage 2](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-2--trust-context-establishing-nodes)) == BLAKE2(`n.PubKey`, where `n` = related by "memberID" node from PPKL).
+    
 
 # Stage 3.2 — Approving (node)
 1. 
