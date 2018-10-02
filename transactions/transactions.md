@@ -480,9 +480,9 @@ There is no need for additional check of them on the `Coordinator's` side.
 ### Checks for PPKL:
 1. ∀(`node` ∈ [`nodes_inv`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#nodes-involved)):
     1. `node.memberID` is present in _PPKL_; 
-    1. _H_ == BLAKE2(`n.PubKey`), where  
-    _H_ — BLAKE2(`node.pubKey`, received on [Stage 2](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-2--trust-context-establishing-nodes)),  
-    n — related by "memberID" node from _PPKL_.
+    1. _H_ == [HASH](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#blake2b)(`n.PubKey`), where  
+    _H_ — [HASH](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#blake2b)(`node.pubKey`, received on [Stage 2](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-2--trust-context-establishing-nodes)),  
+    _n_ — node from _PPKL_, related by "memberID".
     
 
 # Stage 3.2 — Signing (node)
