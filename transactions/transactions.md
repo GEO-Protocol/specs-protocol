@@ -459,25 +459,36 @@ There is no need for additional check of them on the `Coordinator's` side.
     <img src="https://github.com/GEO-Project/specs-protocol/blob/master/transactions/resources/chart8.svg">
 
 
-# Stage 3.1 — Signing (node)
+# Stage 3.1 — Signing prepearing (node)
 1. **Must** receive [Participants Public Keys List _(PPKL)_](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#participants-public-keys-list) from the `Coordinator`;
 1. **Must** check received _PPKL_ through the checks provided forward;
-1. **Must** approve operation in case if _all checks passed_;
+1. **Must** sign the operation in case if _all checks passed_;
 1. **Must** reject operation [(Stage B)](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-b-middle-wares-node-behaviour-after-transaction-reject) in case if _some **(even one)** checks failed_; 
 
-### Checks for PPKL
+### Checks for PPKL:
 1. ∀(`node` ∈ [`nodes_inv`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#nodes-involved)):
-    1. `node.memberID` is present in PPKL; 
-    1. BLAKE2(`node.pubKey`, received on [Stage 2](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-2--trust-context-establishing-nodes)) == BLAKE2(`n.PubKey`, where `n` = related by "memberID" node from PPKL).
+    1. `node.memberID` is present in _PPKL_; 
+    1. _H_ == BLAKE2(`n.PubKey`), where  
+    _H_ — BLAKE2(`node.pubKey`, received on [Stage 2](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-2--trust-context-establishing-nodes)),  
+    n — related by "memberID" node from _PPKL_.
     
 
-# Stage 3.2 — Approving (node)
+# Stage 3.2 — Signing (node)
+1. **Must** create transaction signature.
+
+
+
+# Stage 3.2 — Signing (coordinator)
 1. 
 
 
+# Stage 3.3 — Commiting
+1.
 
-# Stage 3.2 — Approving (coordinator)
-1. 
+
+
+
+
 
 
 1. **Must** generate [Participants Public Keys List _PPKL_](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#participants-public-keys-list) for each one participant included into the operation;
