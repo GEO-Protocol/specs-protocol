@@ -184,6 +184,9 @@ _to provide information about **final** state of the transaction to all the part
 
 ## Terms
 
+#### Nodes involved
+(`nodes. in`) — list of nodes, that are involved into the operation, except `Coordinator`.
+
 #### Transaction Amount
 (`tr. amount`) — amount of accounting units that `Coordinator` tries to send to the `Receiver`;
 
@@ -353,36 +356,46 @@ sequenceDiagram
   1. If reservation is possible and was done successfully - node suspects for successful reservation on the neighbour node as well (`(B)` in the example), and sends the appropriate request to it. In case of received confirmation response from the neighbour node — `(C)` reports success to the `Coordinator`.
   
   
-# Stage 2 — Trust context establishing
-`Coordinator` **must**: 
-1. Finalize it's paths map.
-1. Send final reservations configuration to all nodes, involved into the operation. 
+# Stage 2 — Trust context establishing (coordinator)
+1. **Must** finalize it's paths map.
+1. **Must** send final reservations configuration (`FRC`) to ∀{`nodes inv.`}. 
 
-Each one node, involved into the operation **must** check received final configuration.
+# Stage 2 — Trust context establishing (nodes)
+∀{`nodes. inv`} **must** wait for final reservations configuration (`FRC`) from the `Coordinator`.  
+If no `FRC` was received during (#todo: specify timeout) — node **must** reject the operation [(Stage B)](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-b-middle-wares-node-behaviour-after-transaction-reject).
 
-* If there are any trust lines, reserved amount of which must be shortened — then node shortates them.
-
-* If there are any trust lines, amount of which are asked to be increased — then transaction **must be rejected**, because it is a malicious operation (reservations increasing).
-
-* In case if some reservations, that are present on the node, are absent in the reservations list — then this reservations must be also dropped on the nodes side.
-
-* In case if some reservations from the request are not present on the node — then the operation **must be** rejected, because this is a malicious operation (reservations increasing).
+* If `FRC` was received — node **must** validate it throught the checks provided further.  
+If any of this checks fails — node **must** reject the operation [(Stage B)](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-b-middle-wares-node-behaviour-after-transaction-reject).
+  * ∀{trust line in `FRC`, `{TLRS1, .. TLRSn} ∋ TLRS`}:
+    * amount of `TLRSi` **must** be ≤ reserved amount on this trust line on the node.
+  
+* ∀{trust line in `TLI`, `{TLI1, .. TLIn} ∋ TLI`}:
+  * If `TLIi` is not present in `FRC` — reservations on `TLIi` **must** be dropped.  
+  After this correction `TLI` **must** be equal to `FRC`.
 
 
 # Stage 2.1 — Signed debts exchange
-Each one node, **must** send **signed debt receipts** to all it's neighbours, involved into the operation. 
-Total debt receipts for the nodes from the example would be the next:
-```mermaid
-sequenceDiagram
-    C->>D: [Signed debt receipt]
-    B->>C: [Signed debt receipt]
-    A->>B: [Signed debt receipt]
-```
-<img src="https://github.com/GEO-Project/specs-protocol/blob/master/transactions/resources/chartDebtsReceptExchange.svg">
+### Signed debts receipts 
+∀(`node` in {`nodes. inv`+ `Coordinator`}):
+  * ∀(`neighbor` in {`neighbors of node`}): 
+    * `node` **must** create debt receipt (#todo: link to struct) for the `neighbor` with amount according to the reserved amount on the trust line with the `neighbour`.
+    * `node` **must** sign it with one of it's public keys from pool of public keys with `neighbour`.
+    * `node` **must** send signed debt receipt to the `neighbor`. 
+      ```mermaid
+      sequenceDiagram
+          C->>D: [Signed debt receipt]
+          B->>C: [Signed debt receipt]
+          A->>B: [Signed debt receipt]
+      ```
+      <img src="https://github.com/GEO-Project/specs-protocol/blob/master/transactions/resources/chartDebtsReceptExchange.svg">
 
-**Note:** Signed debt receipt is only valid in case if whole transaction is signed, so node might sign and send it to the neighbour without any doubt. in case if any other node would not sign the operation — no one debt receipt would be valid and must not be demanded.
+**Note:** Signed debt receipt is only valid in case if whole transaction is signed (separate message with separate signature), so node might sign and send it to the neighbour without any doubt. In case if any other node would not sign the operation — no one debt receipt would be valid and must not be demanded.
 
-Each one node, **must** check all received signed debt receipts for the next reuirements:
+∀(`node` in {`nodes. inv`+ `Coordinator`}):
+  * `node` **must** receive signed debt receipts from **all** neighbours. In case if even one signed debt receipt wasn't received — node **must** reject the operation [(Stage B)](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-b-middle-wares-node-behaviour-after-transaction-reject).
+  
+  (# todo: fix validation checks !!!!!)
+  * `node` **must** check **all** received signed debt receipts for the next reuirements:
 * Amount of the receipt **must** be equal to the reserved amount.
 * Signature of the receipt **must** be used from common pull of PubKeys, that was established between the nodes prveiosly (see [Trust Lines]() [#todo: provide link] specification for the details).
 * There are no signed debt receipts for this operation already present on the node.
@@ -424,7 +437,13 @@ If check passed — stage 2.3 is considered as completed.
 
 
 # Stage 2.3 — Trust context checking (coordinator)
-`Coordinator` collects Public Keys right fro mthe nodes.  
+`Coordinator` collects `PubKeys list` from the nodes.  
+
+1. Received `PubKeys list` **must** contains public keys of _**all** neighbours nodes, of the `Coordinator`, that are involved into the operation; (`neig. PKl`);_
+1. `Coordinator` **must** check **each one** key from `neig. PKl` for validity through next checks:
+  * Key length **must** be `16Kb`;
+  * Key must be included
+
 There is no need for additional check of them on the `Coordinator's` side.
 
 
@@ -444,8 +463,7 @@ There is no need for additional check of them on the `Coordinator's` side.
 
 
 # Stage 3 — Signing (node)
-`Node` **must**:
-1. Generate `Signatures List`.
+1. **Must** generate `Signatures List`.
 1. Sign the operation (add its own signature to the signatures list).
 1. Send `Signatures List` to all participant involved.
   ```mermaid
@@ -613,11 +631,10 @@ While node follows this specification and it's internal behaviour was not modifi
 
 
 # Data types used
-This section provides explanation of used data structures in developers friendly format.
+This section provides developers friendly description of data structures used.
 
 ```c++
-// It is expected that TAID
-// would be randomly generated 24 bytes long sequence.
+// It is expected that TAID would be randomly generated 24B long sequence.
 using TransactionID = byte[24];
 
 // todo: link to the crypto description.
@@ -640,6 +657,28 @@ struct Amount {
 }
 
 ```
+
+## Participants Public Keys List
+_Participants Public Keys List (PPKL)_ is used by the `Coordinator` to populate each one participant of the transaction with public keys of each other participant of this transaction. 
+
+* **[Optional]** `Coordinator` might exclude the addressee from the _PPKL_. For example, if there are 3 participants in the transaction {`Coordinator`, `A`, `B`, `C`}, and `Coordinator` prepeares _PPKL_ for `A` — then it could exclude `A` from the _PPKL_ and optimize network traffic usage.
+
+```c++
+struct ParticipantRecord {
+  // Member ID within the transaction.
+  // Members IDs are assigned by the Coordinator for each one particpant, 
+  // sequentially from 0 up to (2**16)-1;
+  uint16  memberID;
+  PubKey  pubKey;  
+}
+
+struct ParticipantsPublicKeys {
+    uint16 totalMembersCount;
+    ParticipantRecord keys[<totalMembersCount>];
+}
+```
+
+
 
 # Messages
 
