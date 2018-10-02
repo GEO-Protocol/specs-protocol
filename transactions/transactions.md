@@ -659,30 +659,49 @@ While node follows this specification and it's internal behaviour was not modifi
 # Data types used
 This section provides explanation of used data structures in developers friendly format.
 
+### TransactionID
 ```c++
 // It is expected that TAID
 // would be randomly generated 24 bytes long sequence.
 using TransactionID = byte[24];
+```
 
-// todo: link to the crypto description.
-using PubKey = byte[8192];
-using Sign = byte[8192];
+### Particpant Public Key
+[todo: link to the crypto description]
 
-// todo: move this into the addressation doc.
+```c+++
+const uint16 kPubKeyLength = 1024 * 16;
+using PubKey = byte[kPubKeyLength];
+```
+
+### Participant Signature
+```c++
+const uint16 kSignatureLength = 1024 * 8;
+using Sign = byte[kSignatureLength];
+```
+
+
+### Particpant Address
+[todo: move this into the addressation doc]
+
+```c++
 struct Address {
     byte typeID;
     byte length;
     byte[1..256] data;
 }
+```
 
-// "Amount" specifies transaction amount or trust line amount where it is needed.
-// Length field makes it possible, to transfer only significant bytes
-// through the network, and to ignore zeroed part of the amount.
+### Amount
+_Amount_ specifies transaction amount or trust line amount, or channel amount.
+"length" field makes it possible to transfer through the network only significant bytes, and to ignore zeroed part of the amount.
+
+
+```c++
 struct Amount {
-    byte lenth;
+    uint8 lenth;
     byte[1..32] value;
 }
-
 ```
 
 # Messages
