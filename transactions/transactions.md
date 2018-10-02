@@ -695,6 +695,23 @@ using Sign = byte[kSignatureLength];
 ```
 <br/>
 
+### Transaction Signature
+_Transaction Signature_ is used by the nodes to approve the transaction.
+
+```c++
+struct TransactionSignatureMember {
+    Address address;
+    uint16 transactionMemberID;
+}
+
+struct TransactionSignature {
+    TransactionID transactionID;
+    uint16 membersCount;
+    TransactionSignatureMember members[membersCount];
+}
+```
+<br/>
+
 ### Particpant Address
 [todo: move this into the addressation doc]
 
