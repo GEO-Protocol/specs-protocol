@@ -135,7 +135,7 @@ Lamport Signature is a one-time scheme (each one signing procedure discloses par
 
 ### Difficulties of Applicability in Existing Solutions
 A pair of Lamport keys (Private key and Public key) takes `32 kB`:
-* `16 kB` — Private key(https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#particpant-private-key).
+* `16 kB` — [Private key](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#particpant-private-key).
 * `16 kB` — [Public key](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#particpant-public-key).
 * `8 kB` — [Signature](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#participant-signature).
 
