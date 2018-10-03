@@ -209,7 +209,12 @@ _Middleware node_ — node that takes part into the operation as common particip
 ## Terms
 
 #### Nodes involved
-`nodes_inv` — list of nodes, that are involved into the operation, except `Coordinator`.
+`nodes_inv` — list of nodes, that are involved into the operation.
+
+#### Neighbors involved
+`neighbors_inv` — list of neighbor nodes, that are involved into the operation.  
+`neighbors_inv` is a subset of [`nodes_inv`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#nodes-involved)
+
 
 #### Transaction Amount
 `tr. amount` — amount of accounting units that `Coordinator` tries to send to the `Receiver`;
