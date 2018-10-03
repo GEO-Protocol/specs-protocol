@@ -107,6 +107,21 @@ This section lists the functional and design requirements for the proposed algor
 ※ To increase the probabilty of achieving consensus, and / or shorten the time of the algorithm execution, various traffic optimisation and correction techniques can be used as well. This protocol does not assumes any of them to be present, but obviously works better in the environments with stable network connections.
 
 
+# Double Spending Prevention
+Due to proposed [network topology, based on trust lines / channels]() [#todo: add link to trust lines protocol] — there is no common balance (or ledger) of the node. There are only relations of the node with its neighbours (other nodes in the network), and balances of this relations. There is no single point of assets storing. There are only relative balances of the node. As a result — there is no possibility to perform so called "double spending" towards several neighbours or remote nodes at a time. There is only a possibility to try to cheat against some neighbour and to try to force it to use some debt twice or more. But, there is no way to do it without approval (cryptographic sign) of that node, and obviously remote node would not be agree to approve such kind of malicious operation. 
+
+To help nodes prevent double spending attempts — so called "distributed lock" is used. It is a separated component with a  simple map of type `node` → `total reserved amount` in its core. This map **must** be permanent and **must** be atomically updated and restored between each one node restarts, so each one operation on the node would have amount reservations related to it. 
+
+On each one transaction, node **must** check this component and enshure that current `total reserved amount` on the requested trust line / channel is **less** than `(total available amount) - (reservation request)`. In other words, this check **must** enshure node would not reserve more amount than is available by the trust line / channel.
+
+This check is **required part of each one operation.** (See [Stage 1 — Amount collecting and reservation](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-1--amount-collecting-and-reservation) for the details).  
+While node follows this specification and it's internal behaviour was not modified (hacked) — there is no way to force remote node to accept more debts, than it was envisaged by the trust line / channel.
+ 
+`Related specs:`
+* [Trust lines;]() [#todo: provide link]
+
+
+
 # Cryptographic primitives
 This section describes the used cryptographic primitives and the motivation for their inclusion in the protocol.
 
@@ -666,20 +681,6 @@ Being applied to several neighbours, this mechanism has cascade influence and as
 During operation processing, there is non zero-probability, that some node involved (or all of them) would enter inoperable state in some reason (unexpected power off, network segmentation, etc). In this case, when operability of the node would be restored, such node(s) must proceed each one transaction that was initialized, but has no final decision yet.
 * For the protocol simplicity reasons, nodes that enter "recover" state and has not signed the operation, must not vote for transaction approving any more. Only "reject" is allowed.
 * For the signed operation — node must check for the final decision about the operation from its neighbour(s) involved and the `Coordinator`. In case if no response from any one of them in time of 10 minutes — `Delegate` arbitration must be requested `[Stage 5]`.
-
-
-# "Double Spending" prevention
-Due to proposed [network topology, based on trust lines / channels]() [#todo: add link to trust lines protocol] — there is no common balance of the node, or ledger of the node. There are only relations of the node with its neighbours (other nodes), and balances of this relations. There is no single point of assets storing. There are only relative balances of the node. As a result — there is no possibility to perform so called "double spending" towards several neighbours or remote nodes at a time. There is only a possibility to try to cheat against some neighbour node and to try to force it to use some debt twice or more. But, there is no way to do it without approval of this node (cryptographic sign), and obviously remote node would not be agree to approve such kind of malicious operation. 
-
-To help nodes prevent double spending attempts — so called "distributed lock" is used. It is a separated component with a  simple map of type `node` → `total reserved amount` in its core. This map **must** be permanent and **must** be atomically updated and restored between each one node restarts, so each one operation on the node would have amount reservations related to it. 
-
-On each one transaction, node **must** check this component and enshure that current `total reserved amount` on the requested trust line / channel is **less** than `(total available amount) - (reservation request)`. In other words, this check **must** enshure node would not reserve more amount than is available by the trust line / channel.
-
-This check is **required part of each one operation.** (See [Stage 1: Amount reservation](https://github.com/GEO-Project/specs-protocol/blob/master/transactions/transactions.md#stage-1-amount-reservation) for the details).    
-While node follows this specification and it's internal behaviour was not modified (hacked) — there is no way to force remote node to accept more debts, than it was envisaged by the trust line / channel.
- 
-`Related specs:`
-* [Trust lines;]() [#todo: provide link]
 
 
 # Data types used
