@@ -459,10 +459,10 @@ If no `FRC` was received during (#todo: specify timeout) — node **must** rejec
 
 * If `FRC` was received — node **must** validate it throught the checks provided further.  
 If any of this checks fails — node **must** reject the operation [(Stage B)](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-b-middle-wares-node-behaviour-after-transaction-reject).
-  * ∀{trust line in `FRC`, `{TLRS1, .. TLRSn} ∋ TLRS`}:
+  * ∀{trust line in `FRC`, `{TLRS1, .. TLRSn} ∈ TLRS`}:
     * amount of `TLRSi` **must** be ≤ reserved amount on this trust line on the node.
   
-* ∀{trust line in `TLI`, `{TLI1, .. TLIn} ∋ TLI`}:
+* ∀{trust line in `TLI`, `{TLI1, .. TLIn} ∈ TLI`}:
   * If `TLIi` is not present in `FRC` — reservations on `TLIi` **must** be dropped.  
   After this correction `TLI` **must** be equal to `FRC`.
 
