@@ -374,13 +374,13 @@ sequenceDiagram
 
 
 ### Reservations shortening
-**Note:** All middleware nodes (`{(C), (D)}`) and `Receiver` (`(R)`) are motivated to update their reservations as quickly, as possible, because each one reservation present freezes some part of their liquidity. It is expected that some part of nodes, from to time, during operation processing, would be asked by the `Coordinator` (`(D)`) to update their reservations to achieve _least common reservation amount_. From `Coordinator` prespective this process is sequntial, so it might take some time to update all nodes and find _least common reservation amount_. From the nodes perspective — this process requires some timeout after initial reservation creation and furter updates.
+**Note:** All middleware nodes (`{(C), (D)}`) and `Receiver` (`(R)`) are motivated to update their reservations as quickly, as possible, because each one reservation present freezes some part of their liquidity. It is expected that some part of nodes, from to time, during operation processing, would be asked by the [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) (`D`) to update their reservations to achieve _least common reservation amount_. From [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) prespective this process is sequntial, so it might take some time to update all nodes and find _least common reservation amount_. From the nodes perspective — this process requires some timeout after initial reservation creation and furter updates.
 
 ### Reservations prolongation
-During processing of long paths, or significant amount of paths in total — there is a non-zero probability, that some nodes one, or several times would fall in state, when their reservation timeouts would be burned up, but the transaction itself would be still in amount collecting stage. In this case, to prevent transaction disruption —it is reccomended for the this nodes to ask `Coordinator` about current transactino state to be able to know what to do with their active reservations. 
+During processing of long paths, or significant amount of paths in total — there is a non-zero probability, that some nodes one, or several times would fall in state, when their reservation timeouts would be burned up, but the transaction itself would be still in amount collecting stage. In this case, to prevent transaction disruption —it is reccomended for the this nodes to ask [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) about current transactino state to be able to know what to do with their active reservations. 
 
 #### Case 1: Transaction is still in progress
-* `Coordinator` **must** report transaction state via [Transaction State Message](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#response-transaction-state).
+* [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) **must** report transaction state via [Transaction State Message](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#response-transaction-state).
 * `Node`, that requested the state **must** prolong **all related** reservations for up to [30 seconds](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#amount-reservation-timeout)
 
 ```mermaid
@@ -395,14 +395,14 @@ sequenceDiagram
 ```
 <img src="https://github.com/GEO-Project/specs-protocol/blob/master/transactions/resources/chart3.svg">
    
-In case if `Coordinator (D)` responds with "active" state — it is recommended for the node to keep processing of the transaction. In this case node simply reinitialize it's internal timeout and keeps waiting. This stage might be repeated several more times. It is important for middle-ware nodes to wait as long as `Coordinator (D)` asks to, otherwise - whole transaction would be dropped. [#8](https://github.com/GEO-Protocol/specs-protocol/issues/8)
+In case if [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) responds with "active" state — it is recommended for the node to keep processing of the transaction. In this case node simply reinitialize it's internal timeout and keeps waiting. This stage might be repeated several more times. It is important for middle-ware nodes to wait as long as [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) asks to, otherwise - whole transaction would be dropped. [#8](https://github.com/GEO-Protocol/specs-protocol/issues/8)
 
-**WARN:** There is an ability for the `Coordinator` to hang reservation for a long time and harm network liquidity. To avoid this — node must keep counting of prolongations done. In case if next one prolongation begins to be uncomfortable for the node — it might simply reject the transaction `[Stage B]`. Max amount of prolongations should be decided by each one node for itself, based on it's internal trust to the coordinator. Recommended amount of prolongations is `6` (3 minutes).  
+**WARN:** There is an ability for the [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) to hang reservation for a long time and harm network liquidity. To avoid this — node must keep counting of prolongations done. In case if next one prolongation begins to be uncomfortable for the node — it might simply reject the transaction `[Stage B]`. Max amount of prolongations should be decided by each one node for itself, based on it's internal trust to the coordinator. Recommended amount of prolongations is `6` (3 minutes).  
 
 #### Case 2: Transaction has not collected required amount
 
-* `Coordinator` **must** report transaction state via [Transaction State Message](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#response-transaction-state).
-* `Node`, that requested the state, **must** process the reponse and in case if `Coordinator` responds with state that differs from "active" (for example, because required amount could not be collected on discovered paths) — `node` must reject the transaction [(Stage B)](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-b-middle-wares-node-behaviour-after-transaction-reject). Amount reservations might be dropped safely at this stage.
+* [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) **must** report transaction state via [Transaction State Message](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#response-transaction-state).
+* `Node`, that requested the state, **must** process the reponse and in case if [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) responds with state that differs from "active" (for example, because required amount could not be collected on discovered paths) — `node` must reject the transaction [(Stage B)](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-b-middle-wares-node-behaviour-after-transaction-reject). Amount reservations might be dropped safely at this stage.
 
 ```mermaid
 sequenceDiagram
@@ -417,10 +417,10 @@ sequenceDiagram
 <img src="https://github.com/GEO-Project/specs-protocol/blob/master/transactions/resources/chart4.svg">
 
 #### Case 3: No coordinator response at all
-In case if no response was received from the `Coordinator` — one of 3 things might take place:
-  1. `Coordinator` goes offline unexpectedly and/or is unable to proceed.
+In case if no response was received from the [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) — one of 3 things might take place:
+  1. [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) goes offline unexpectedly and/or is unable to proceed.
   1. Network segmentation takes place and no network packets are delivered/received to/from the node/`Coordinator`.
-  1. `Coordinator` behaves destructively and doesn't responds to the nodes requests.
+  1. [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) behaves destructively and doesn't responds to the nodes requests.
 
 ```mermaid
 sequenceDiagram
@@ -440,7 +440,9 @@ In all cases, it is safe for any node to drop the transaction and it's related a
 # Stage 1.1: Debts receipts exchange
 1. From middle-ware nodes perspective, processing of the amount reservation requests could be schematically explained in the next way:
    
-```
+<img src="https://github.com/GEO-Project/specs-protocol/blob/master/transactions/resources/chart6.svg">
+   
+```mermaid
 sequenceDiagram
       Coordinator (D)->>C: Reserve 200
       C->>B: Reserve 200
@@ -448,11 +450,9 @@ sequenceDiagram
       C->>Coordinator (D): OK, only 100 reserved
 ```   
 
-<img src="https://github.com/GEO-Project/specs-protocol/blob/master/transactions/resources/chart6.svg">
-
-1. Node `(C)` attempts to reserve required amount on its side first. 
+1. Node `C` attempts to reserve required amount on its side first. 
   1. If no required amount may be reserved — node responds with reject.
-  1. If reservation is possible and was done successfully - node suspects for successful reservation on the neighbour node as well (`(B)` in the example), and sends the appropriate request to it. In case of received confirmation response from the neighbour node — `(C)` reports success to the `Coordinator`.
+  1. If reservation is possible and was done successfully — node suspects for successful reservation on the neighbour node as well (node `B` in the example), and sends the appropriate request to it. In case of received confirmation response from the neighbour node — `C` reports "success" to the [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator).
   
   
 # Stage 2 — Trust context establishing (coordinator)
