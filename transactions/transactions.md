@@ -29,6 +29,12 @@ This specification describes transactions processing algorithm _("Algorithm" fur
 
 * _[1]_ — Up to `(2 ** 16)-1` in theory.
 
+
+<br/>
+<br/>
+<br/>
+<br/>
+
 # Overview
 The objectives of this document are:
 1. to provide comprehensive info about proposed method of consensus;
