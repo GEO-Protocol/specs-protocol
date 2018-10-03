@@ -35,11 +35,11 @@ The objectives of this document are:
 1. to describe [guaranteed double spending impossibility](https://github.com/GEO-Project/specs-protocol/blob/master/transactions/transactions.md#double-spending-prevention), and distributed locks mechanics;
 1. to describe the [cryptographic primitives used](https://github.com/GEO-Project/specs-protocol/blob/master/transactions/transactions.md#cryptographic-primitives) and the provide motivation for including each of them into the protocol;
 1. to describe the method of mathematical and cryptographic confirmation of operations (consensus checking);
-1. to prodive mathematical confirmation of the impossibility (or extreme complexity) of the operations compromising;
+1. to prodive mathematical confirmation of the impossibility (or extreme complexity) of the operations compromising [todo];
 1. to provide a list of possible edge cases and to describe the ways to avoid/resovle them, as well as possible outcomes of operations.
 
-# Source conditions and requirements
-This section lists the functional and design requirements for the proposed algorithm — the metrics, that were used to analyze all found and potentially applicable solutions for their applicability in the final protocol.
+# Source Conditions and Requirements
+This section lists the functional and design requirements for the proposed algorithm — the metrics, that were used to analyze all found and potentially applicable solutions for their applicability in to the final protocol.
 
 **1. Requirements for cryptographic primitives:**
   1. _Quantum-resistant cryptography._  
@@ -131,7 +131,7 @@ This section describes the used cryptographic primitives and the motivation for 
 [_Lamport signature_](https://en.wikipedia.org/wiki/Lamport_signature) or _Lamport one-time signature scheme_ is a method for constructing a digital signature. Lamport signatures can be built from any cryptographically secure one-way function; usually a cryptographic hash function is used [※ 1]. In Twin Spark, Lamport's signature is based on [_BLAKE2b_](https://blake2.net/).
 
 ### Limitations related to Lamport Signature
-Because Lamport signature is a one-time scheme (each one signing procedure discloses part of the private key), `n` key pairs are needed for `n` operations processing. Thus, each one pair of network members, who has common trust line, or channel, must generate a pool of keys, to be able to sign operations, before any other operations would be possible to process. By default, this pool contains `1024` key pairs. Detailed descriptions of the key exchange mechanics and channels establishment can be found in the trust lines specifications `[todo #5: provide link to TL specifications]`.
+Lamport Signature is a one-time scheme (each one signing procedure discloses part of the private key). Because of that `n` key pairs are needed for `n` operations processing. Thus, each one pair of network members, who has common trust line(s), or channel(s), must generate a pool of keys, to be able to sign operations, before any other operations would be possible to process. By default, this pool contains `1024` key pairs. Detailed descriptions of the key exchange mechanics and channels establishment can be found in the trust lines specifications `[todo #5: provide link to TL specifications]`.
 
 ### Difficulties of applicability in existing solutions
 A pair of Lamport keys (Private key and Public key) takes `32 kB`:
@@ -868,10 +868,15 @@ There is no enough amount can be collected on all paths discovered.
 `code: 402`
 Some node, that participated in the operation did not provided its signature for it.
 
+
 # Timeouts
 #### Amount reservation timeout 
 `30 seconds`
 
+
+# Constants
+### Keys pool size
+`1024`
 
 # License
 [<img src="https://opensource.org/files/osi_keyhole_300X300_90ppi_0.png" height=90 style="float: left; padding: 20px">]()
