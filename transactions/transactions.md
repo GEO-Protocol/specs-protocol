@@ -540,7 +540,7 @@ If even one check fails — `Coordinator` **must** reject the operation [Stage B
 Both, [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) and [`Receiver`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#receiver):
 1. **Must** serialize next data to the stable storage:
     * [Transaction ID](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#transactionid) 
-    * ∀(`node` ∈ [`neighbors_inv`]:
+    * ∀(`node` ∈ [`neighbors_inv`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#neighbors-involved):
         * `node.incoming_debt_receipt` (if present);
         * `node.outgoing_debt_receipt` (if present);
         
