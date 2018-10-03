@@ -21,7 +21,7 @@ for atomic and consistent assets transfers.
 <br/>
 <br/>
 # Abstract
-This specification describes transactions processing algorithm (Algorithm further in the doc) for the [GEO](https://github.com/GEO-Project) network. Proposed solution provides ability for up to several hundreds participants _[※ 1]_ to achieve **100% consensus** via communications through potentially unstable network, in untrusted environment and under active fraud attempts of malicious participants.
+This specification describes transactions processing algorithm _("Algorithm" further in the doc)_ for the [GEO Network](https://github.com/GEO-Project). Proposed solution provides ability for up to several hundreds of participants _[※ 1]_ to achieve **100% consensus** via communications through potentially unstable network, in untrusted environment and under active fraud attempts of malicious participants.
 
 <br/>
 
