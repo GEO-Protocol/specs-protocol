@@ -534,16 +534,21 @@ If even one check fails — `Coordinator` **must** reject the operation [Stage B
 # Stage 3.3 — Commiting
 Both, [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) and [`Receiver`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#receiver):
 1. **Must** serialize next data to the stable storage:
-   * [Transaction ID](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#transactionid) 
-   * ∀(`node` ∈ [`nodes_inv`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#nodes-involved)):
-      * `node.memberID`;
-      * `node.publicKey`;
-      * `node.signature`;
+    * [Transaction ID](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#transactionid) 
+    * ∀(`node` ∈ [`neighbors_inv`]:
+        * `node.incoming_debt_receipt` (if present);
+        * `node.outgoing_debt_receipt` (if present);
+        
+    * ∀(`node` ∈ [`nodes_inv`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#nodes-involved)):
+        * `node.memberID`;
+        * `node.publicKey`;
+        * `node.signature`;
+     
+1. **Must** turn all reserves into balances on all trust lines / channels that has reservations related to the transaction.
+1. **Must** drop all reserves, related to the transaction.
+1. **Must** drop related serialized transaction from stabel storage to prevent it restoring on node restart.
 
-
-
-
-
+**WARN:** all operations provided in this section **must** be performed in atomic manner, otherwise — there is a non-zero probability that operation would be committed, but the serialized transaction would not be dropped, that would lead to errorneus transaction recover attempt and balances corruption as a result.
 
 # Votes list
 
