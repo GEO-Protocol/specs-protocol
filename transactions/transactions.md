@@ -1,4 +1,4 @@
-`GEO Protocol / 2018`  `DRAFT`
+`GEO Protocol / 2018`  `DRAFT [todo: remove it]`
 
 ![Twin Spark Logo](https://github.com/GEO-Project/specs-protocol/blob/master/transactions/resources/twin_spark.png)
 
@@ -21,11 +21,13 @@ for atomic and consistent assets transfers.
 <br/>
 <br/>
 # Abstract
-This specification describes transactions processing algorithm (Algorithm further in the doc) for the [GEO](https://github.com/GEO-Project) network.  
-Proposed solution provides ability for up to 1024 network participants [※ 1] to achieve 100% consensus via potentially unstable network, in untrusted environment and under active fraud attempts of malicious participants.
+This specification describes transactions processing algorithm _("Algorithm" further in the doc)_ for the [GEO Network](https://github.com/GEO-Project). Proposed solution provides ability for up to several hundreds of participants _[※ 1]_ to achieve **100% consensus** via communications through potentially unstable network, in untrusted environment and under active fraud attempts of malicious participants.
 
 <br/>
-※ potentially much more.
+
+---
+
+* _[1]_ — Up to `(2 ** 16)-1` in theory.
 
 # Overview
 The objectives of this document are:
@@ -33,11 +35,11 @@ The objectives of this document are:
 1. to describe [guaranteed double spending impossibility](https://github.com/GEO-Project/specs-protocol/blob/master/transactions/transactions.md#double-spending-prevention), and distributed locks mechanics;
 1. to describe the [cryptographic primitives used](https://github.com/GEO-Project/specs-protocol/blob/master/transactions/transactions.md#cryptographic-primitives) and the provide motivation for including each of them into the protocol;
 1. to describe the method of mathematical and cryptographic confirmation of operations (consensus checking);
-1. to prodive mathematical confirmation of the impossibility (or extreme complexity) of the operations compromising;
+1. to prodive mathematical confirmation of the impossibility (or extreme complexity) of the operations compromising [todo];
 1. to provide a list of possible edge cases and to describe the ways to avoid/resovle them, as well as possible outcomes of operations.
 
-# Source conditions and requirements
-This section lists the functional and design requirements for the proposed algorithm — the metrics, that were used to analyze all found and potentially applicable solutions for their applicability in the final protocol.
+# Source Conditions and Requirements
+This section lists the functional and design requirements for the proposed algorithm — the metrics, that were used to analyze all found and potentially applicable solutions for their applicability in to the final protocol.
 
 **1. Requirements for cryptographic primitives:**
   1. _Quantum-resistant cryptography._  
@@ -107,24 +109,43 @@ This section lists the functional and design requirements for the proposed algor
 ※ To increase the probabilty of achieving consensus, and / or shorten the time of the algorithm execution, various traffic optimisation and correction techniques can be used as well. This protocol does not assumes any of them to be present, but obviously works better in the environments with stable network connections.
 
 
-# Cryptographic primitives
+# Double Spending Prevention
+Due to proposed [network topology, based on trust lines / channels]() [#todo: add link to trust lines protocol] — there is no common balance (or ledger) of the node. There are only relations of the node with its neighbours (other nodes in the network), and balances of this relations. There is no single point of assets storing. There are only relative balances of the node. As a result — there is no possibility to perform so called "double spending" towards several neighbours or remote nodes at a time. There is only a possibility to try to cheat against some neighbour and to try to force it to use some debt twice or more. But, there is no way to do it without approval (cryptographic sign) of that node, and obviously remote node would not be agree to approve such kind of malicious operation. 
+
+To help nodes prevent double spending attempts — so called "distributed lock" is used. It is a separated component with a  simple map of type `node` → `total reserved amount` in its core. This map **must** be permanent and **must** be atomically updated and restored between each one node restarts, so each one operation on the node would have amount reservations related to it. 
+
+On each one transaction, node **must** check this component and enshure that current `total reserved amount` on the requested trust line / channel is **less** than `(total available amount) - (reservation request)`. In other words, this check **must** enshure node would not reserve more amount than is available by the trust line / channel.
+
+This check is **required part of each one operation.** (See [Stage 1 — Amount collecting and reservation](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-1--amount-collecting-and-reservation) for the details).  
+While node follows this specification and it's internal behaviour was not modified (hacked) — there is no way to force remote node to accept more debts, than it was envisaged by the trust line / channel.
+ 
+`Related specs:`
+* [Trust lines;]() [#todo: provide link]
+
+
+
+# Cryptographic Primitives
 This section describes the used cryptographic primitives and the motivation for their inclusion in the protocol.
 
 ## Lamport Signature
-[_Lamport signature_](https://en.wikipedia.org/wiki/Lamport_signature) or _Lamport one-time signature scheme_ is a method for constructing a digital signature. Lamport signatures can be built from any cryptographically secure one-way function; usually a cryptographic hash function is used [※ 1]. In Twin Spark, Lamport's signature is based on [_BLAKE2b_](https://blake2.net/).
+[_Lamport signature_](https://en.wikipedia.org/wiki/Lamport_signature) or _Lamport one-time signature scheme_ is a method for constructing a digital signature. Lamport signatures can be built from any cryptographically secure one-way function; usually a cryptographic hash function is used _[※ 1]_. In Twin Spark, Lamport's signature is based on [_BLAKE2b_](https://blake2.net/).
+
+---
+
+_[1]_ — For each hash function that generates an n-bit digest, the ideal resiliency to restore the prototype and to restore the second prototype implies `2n` operations and `2n` bits of memory for each one execution of the hash function in the classical computational model. Using the Grover algorithm, restoring the pre-image of the ideal hash value is bounded from above by `O (2n / 2)` operations in the quantum computational model. At the moment, Lamport's signature is considered one of the most reliable digital signature algorithms, proved to be resistant to attacks using quantum computing.
+
+
 
 ### Limitations related to Lamport Signature
-Because Lamport signature is a one-time scheme (each one signing procedure discloses part of the private key), `n` key pairs are needed for `n` operations processing. Thus, each one pair of network members, who has common trust line, or channel, must generate a pool of keys, to be able to sign operations, before any other operations would be possible to process. By default, this pool contains `1024` key pairs. Detailed descriptions of the key exchange mechanics and channels establishment can be found in the trust lines specifications `[todo #5: provide link to TL specifications]`.
+Lamport Signature is a one-time scheme (each one signing procedure discloses part of the private key). Because of that `n` key pairs are needed for `n` operations processing. Thus, each one pair of network members, who has common trust line(s), or channel(s), must generate a pool of keys, to be able to sign operations, before any other operations would be possible to process. By default, this pool contains [`1024`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#keys-pool-size) key pairs. Detailed descriptions of the key exchange mechanics and channels establishment can be found in the trust lines specifications `[todo #5: provide link to TL specifications]`.
 
-### Difficulties of applicability in existing solutions
+### Difficulties of Applicability in Existing Solutions
 A pair of Lamport keys (Private key and Public key) takes `32 kB`:
-* `16 kB` — public key.
-* `16 kB` — private key.
-* `8 kB` — signature.
+* `16 kB` — [Private key](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#particpant-private-key).
+* `16 kB` — [Public key](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#particpant-public-key).
+* `8 kB` — [Signature](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#participant-signature).
 
 The size of signatures and related keys genarated via the Lamport Signature scheme, are a way more expensive than corresponding sizes of signatures and keys, which are based on classic async. cryptograpty solutions (RSA/ECDSA/etc). The relatively large size of signatures makes the Lamport crypto system a very unlikely candidate for the inclusion in existing blockchain solutions in the foreseeable future due to a significant increase in the ledgers growth rate. Also, Lamport's signature, has no practical sense in systems whose cryptographic strength directly depends on components built on classical approaches and are known to be vulnerable against quantum-based attacks. For example, the inclusion of the Lamport cryptosystem in solutions built on top of ethereum / bitcoin, or other popular blockchain solution, has no practical meaning due to the underlying potential vulnerability of the central ledgers of these systems.
-
-※ For each hash function that generates an n-bit digest, the ideal resiliency to restore the prototype and to restore the second prototype implies 2n operations and 2n bits of memory for each one execution of the hash function in the classical computational model. Using the Grover algorithm, restoring the pre-image of the ideal hash value is bounded from above by `O (2n / 2)` operations in the quantum computational model. At the moment, Lamport's signature is considered one of the most reliable digital signature algorithms, proved to be resistant to attacks using quantum computing.
 
 
 ### Motivation for inclusion in the protocol
@@ -174,24 +195,38 @@ _to provide information about **final** state of the transaction to all the part
 ---
 
 ## Roles
+#### Coordinator 
+_Coordinator_ — node, that initiates the transaction (node `(D)` in example scheme).  
+Coordinates all other nodes, involved into the operation during its life cycle.  
+_Coordinator_ utilizes significantly more network traffic in comparison with other participants, but it has economic motivation to do so — it wants to transfer assets to some node and is ready to "pay for it by its resources";
+</br>
+</br>
 
-* `Coordinator` — node, that initiates the transaction (node `(D)` in example scheme). Coordinates all other nodes, involved into the operation during its life cycle. `Coordinator` utilizes significantly more network traffic in comparison with other participants, but it has economic motivation to do so — it wants to transfer assets to some node and is ready to "pay for it by its resources";
+#### Receiver
+_Receiver_ — node that receives the transfer (node `A` in the example scheme).
+</br>
+</br>
 
-* `Receiver` — node that receives the transfer (node `A` in the example scheme);
-
-* `Middleware` node — node that takes part into the operation as common participant, and provides its trust lines / channels as transport for assets (nodes `(C)` and `(B)`);
-
+#### Middleware node
+_Middleware node_ — node that takes part into the operation as common participant, and provides its trust lines / channels as transport for assets (nodes `C` and `B` in the example scheme);
+</br>
+</br>
 
 ## Terms
 
 #### Nodes involved
-(`nodes. in`) — list of nodes, that are involved into the operation, except `Coordinator`.
+`nodes_inv` — list of nodes, that are involved into the operation.
+
+#### Neighbors involved
+`neighbors_inv` — list of neighbor nodes, that are involved into the operation.  
+`neighbors_inv` is a subset of [`nodes_inv`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#nodes-involved)
+
 
 #### Transaction Amount
-(`tr. amount`) — amount of accounting units that `Coordinator` tries to send to the `Receiver`;
+`tr. amount` — amount of accounting units that `Coordinator` tries to send to the `Receiver`;
 
 #### Network Hop Timeout
-(`hop time`) — time range, expected time that is needed for the network packet to be delivered to the destination node. By default should be set to `2 sec`.
+`hop time` — time range, expected time that is needed for the network packet to be delivered to the destination node. By default should be set to `2 sec`.
 
 #### Least common amount
 Common reservation amount, that might be reserved by _all_ nodes in the path. Least common amount == max. flow of the path.  
@@ -358,10 +393,10 @@ sequenceDiagram
   
 # Stage 2 — Trust context establishing (coordinator)
 1. **Must** finalize it's paths map.
-1. **Must** send final reservations configuration (`FRC`) to ∀{`nodes inv.`}. 
+1. **Must** send final reservations configuration (`FRC`) to ∀{`nodes_inv`}. 
 
 # Stage 2 — Trust context establishing (nodes)
-∀{`nodes. inv`} **must** wait for final reservations configuration (`FRC`) from the `Coordinator`.  
+∀{`nodes_inv`} **must** wait for final reservations configuration (`FRC`) from the `Coordinator`.  
 If no `FRC` was received during (#todo: specify timeout) — node **must** reject the operation [(Stage B)](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-b-middle-wares-node-behaviour-after-transaction-reject).
 
 * If `FRC` was received — node **must** validate it throught the checks provided further.  
@@ -376,7 +411,7 @@ If any of this checks fails — node **must** reject the operation [(Stage B)](h
 
 # Stage 2.1 — Signed debts exchange
 ### Signed debts receipts 
-∀(`node` in {`nodes. inv`+ `Coordinator`}):
+∀(`node` in {`nodes_inv`+ `Coordinator`}):
   * ∀(`neighbor` in {`neighbors of node`}): 
     * `node` **must** create debt receipt (#todo: link to struct) for the `neighbor` with amount according to the reserved amount on the trust line with the `neighbour`.
     * `node` **must** sign it with one of it's public keys from pool of public keys with `neighbour`.
@@ -391,7 +426,7 @@ If any of this checks fails — node **must** reject the operation [(Stage B)](h
 
 **Note:** Signed debt receipt is only valid in case if whole transaction is signed (separate message with separate signature), so node might sign and send it to the neighbour without any doubt. In case if any other node would not sign the operation — no one debt receipt would be valid and must not be demanded.
 
-∀(`node` in {`nodes. inv`+ `Coordinator`}):
+∀(`node` in {`nodes_inv`+ `Coordinator`}):
   * `node` **must** receive signed debt receipts from **all** neighbours. In case if even one signed debt receipt wasn't received — node **must** reject the operation [(Stage B)](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-b-middle-wares-node-behaviour-after-transaction-reject).
   
   (# todo: fix validation checks !!!!!)
@@ -447,36 +482,84 @@ If check passed — stage 2.3 is considered as completed.
 There is no need for additional check of them on the `Coordinator's` side.
 
 
-# Stage 3 — Signing (coordinator)
-1. **Must** generate `Signatures List`.
-1. **Must** sign the operation (add its own signature to the signatures list).
-1. **Must** send `Signatures List` to all participant involved.
+# Stage 3.1 — Signing prepearing (coordinator)
+1. **Must** generate [Participants Public Keys List _(PPKL)_](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#participants-public-keys-list) for each one participant included into the operation;
+1. **Must** send related _PPKL_ to all participant involved.
     ```mermaid
     sequenceDiagram
-        Coordinator (D)->>B: Signatures List
-        Coordinator (D)->>C: Signatures List
-        Coordinator (D)->>Receiver (A): Signatures List
+        Coordinator (D)->>B: PPKL
+        Coordinator (D)->>C: PPKL
+        Coordinator (D)->>Receiver (A): PPKL
     ```
     <img src="https://github.com/GEO-Project/specs-protocol/blob/master/transactions/resources/chart8.svg">
-1. **Must** commit operation.
-1. Should report OK to the user interface.
+
+#### [Optional] Traffic optimisation 
+[`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) might exlude addressee from the [_PPKL_](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#participants-public-keys-list).  
+  For example, in case if nodes {[`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator), [`B`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#middleware-node), [`C`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#middleware-node), [`Receiver`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#receiver)} take part into the operation, and [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) now performs [_PPKL_](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#participants-public-keys-list) for the [`A`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#middleware-node) — then [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) might exclude [`A`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#middleware-node) from the [_PPKL_](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#participants-public-keys-list) and _save network traffic for itself and for the [`A`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#middleware-node)_.
+
+# Stage 3.1 — Signing prepearing (node)
+1. **Must** receive [Participants Public Keys List _(PPKL)_](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#participants-public-keys-list) from the `Coordinator`.  
+In case if no _PPKL_ was received — **must** reject the operation [(Stage B)](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-b-middle-wares-node-behaviour-after-transaction-reject).
+1. **Must** check received _PPKL_ through the checks provided further;  
+In case if _even one_ check failed — **must** reject operation [(Stage B)](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-b-middle-wares-node-behaviour-after-transaction-reject)
+1. **Must** [sign the operation](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-32--signing-node) in case if _all checks passed_;
+
+### Checks for PPKL:
+1. ∀(`node` ∈ [`nodes_inv`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#nodes-involved)):
+    1. `node.memberID` is present in _PPKL_; 
+    1. _H_ == [HASH](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#blake2b)(`n.PubKey`), where  
+    _H_ — [HASH](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#blake2b)(`node.pubKey`, received on [Stage 2](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-2--trust-context-establishing-nodes)),  
+    _n_ — node from _PPKL_, related by "memberID".
+    
+
+# Stage 3.2 — Signing (node)
+1. **Must** create [_Transaction Signature_](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#transaction-signature);
+1. **Must** send it to the [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator);
+1. **Must** [commit](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-33--commiting) the operation.
 
 
-# Stage 3 — Signing (node)
-1. **Must** generate `Signatures List`.
-1. Sign the operation (add its own signature to the signatures list).
-1. Send `Signatures List` to all participant involved.
-  ```mermaid
-  sequenceDiagram
-      Coordinator (D)->>B: Signatures List
-      Coordinator (D)->>C: Signatures List
-      Coordinator (D)->>Receiver (A): Signatures List
-  ```
-  <img src="https://github.com/GEO-Project/specs-protocol/blob/master/transactions/resources/chart8.svg">
-1. Commit operation.
-1. _[Optional]_ Report OK to the user interface.
+# Stage 3.2 — Signs collecting (coordinator)
 
+### Transaction Signatures
+_TS_ collects transactions signatures from participants and stores received info realted to the sender. _TS_ = {
+[`B`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#middleware-node): [`TransactionSignatureB`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#transaction-signature), 
+[`C`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#middleware-node):[`TransactionSignatureC`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#transaction-signature), ... , 
+[`Receiver`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#receiver): [`TransactionSignatureReceiver`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#transaction-signature)}.
 
+### Flow
+1. **Must** collect [Transaction Signatures](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#transaction-signature) from _all_ participants into _TS_.  
+If not _all_ transaction signatures was collected during 3 [network hops](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#network-hop-timeout) _(2 hops for keys/signatures transfer and 1 for remote node proessing)_ — `Coordinator` **must** reject the operation [Stage B](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-b-middle-wares-node-behaviour-after-transaction-reject).
+
+1. **Must** check all received [Transaction Signatures](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#transaction-signature) through checks provided further.  
+If even one check fails — `Coordinator` **must** reject the operation [Stage B](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-b-middle-wares-node-behaviour-after-transaction-reject).
+
+### Checks for TS:
+* ∀(`record`, `sender` ∈ _TS_):
+    1. `record.transactionID` == current [`Transaction ID`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#transactionid);
+    1. `record.signature` == SIG(`record`, PubK), where _PubK_ — Public Key of `sender`; 
+    1. ∀(`member` ∈ `record.members`):
+        1. `member.memberID` == `participant.memberID` **AND**
+        1. `member.address` == `participant.address` **AND**  
+          where `participant` = ∀(`node` ∈ [`nodes_inv`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#nodes-involved));
+
+# Stage 3.3 — Commiting
+Both, [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) and [`Receiver`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#receiver):
+1. **Must** serialize next data to the stable storage:
+    * [Transaction ID](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#transactionid) 
+    * ∀(`node` ∈ [`neighbors_inv`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#neighbors-involved):
+        * `node.incoming_debt_receipt` (if present);
+        * `node.outgoing_debt_receipt` (if present);
+        
+    * ∀(`node` ∈ [`nodes_inv`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#nodes-involved)):
+        * `node.memberID`;
+        * `node.publicKey`;
+        * `node.signature`;
+     
+1. **Must** turn all reserves into balances on all trust lines / channels that has reservations related to the transaction.
+1. **Must** drop all reserves, related to the transaction.
+1. **Must** drop related serialized transaction from stabel storage to prevent it restoring on node restart.
+
+**WARN:** all operations provided in this section **must** be performed in atomic manner, otherwise — there is a non-zero probability that operation would be committed, but the serialized transaction would not be dropped, that would lead to errorneus transaction recover attempt and balances corruption as a result.
 
 # Votes list
 
@@ -616,69 +699,82 @@ During operation processing, there is non zero-probability, that some node invol
 * For the signed operation — node must check for the final decision about the operation from its neighbour(s) involved and the `Coordinator`. In case if no response from any one of them in time of 10 minutes — `Delegate` arbitration must be requested `[Stage 5]`.
 
 
-# "Double Spending" prevention
-Due to proposed [network topology, based on trust lines / channels]() [#todo: add link to trust lines protocol] — there is no common balance of the node, or ledger of the node. There are only relations of the node with its neighbours (other nodes), and balances of this relations. There is no single point of assets storing. There are only relative balances of the node. As a result — there is no possibility to perform so called "double spending" towards several neighbours or remote nodes at a time. There is only a possibility to try to cheat against some neighbour node and to try to force it to use some debt twice or more. But, there is no way to do it without approval of this node (cryptographic sign), and obviously remote node would not be agree to approve such kind of malicious operation. 
-
-To help nodes prevent double spending attempts — so called "distributed lock" is used. It is a separated component with a  simple map of type `node` → `total reserved amount` in its core. This map **must** be permanent and **must** be atomically updated and restored between each one node restarts, so each one operation on the node would have amount reservations related to it. 
-
-On each one transaction, node **must** check this component and enshure that current `total reserved amount` on the requested trust line / channel is **less** than `(total available amount) - (reservation request)`. In other words, this check **must** enshure node would not reserve more amount than is available by the trust line / channel.
-
-This check is **required part of each one operation.** (See [Stage 1: Amount reservation](https://github.com/GEO-Project/specs-protocol/blob/master/transactions/transactions.md#stage-1-amount-reservation) for the details).    
-While node follows this specification and it's internal behaviour was not modified (hacked) — there is no way to force remote node to accept more debts, than it was envisaged by the trust line / channel.
- 
-`Related specs:`
-* [Trust lines;]() [#todo: provide link]
-
-
 # Data types used
-This section provides developers friendly description of data structures used.
+This section provides explanation of used data structures in developers friendly format.
+
+### TransactionID
+```c++
+// It is expected that TAID
+// would be randomly generated 24 bytes long sequence.
+using TransactionID = byte[24];
+```
+<br/>
+
+
+### Particpant Private Key
+```c++
+const uint16 kPKeyLength = 1024 * 16;
+using PrivateKey = byte[kPKeyLength];
+```
+<br/>
+
+
+### Particpant Public Key
+```c++
+const uint16 kPubKeyLength = 1024 * 16;
+using PubKey = byte[kPubKeyLength];
+```
+<br/>
+
+
+### Participant Signature
+```c++
+const uint16 kSignatureLength = 1024 * 8;
+using Sign = byte[kSignatureLength];
+```
+<br/>
+
+### Transaction Signature
+_Transaction Signature_ is used by the nodes to approve the transaction.
 
 ```c++
-// It is expected that TAID would be randomly generated 24B long sequence.
-using TransactionID = byte[24];
+struct TransactionSignatureMember {
+    Address address;
+    uint16 transactionMemberID;
+}
 
-// todo: link to the crypto description.
-using PubKey = byte[8192];
-using Sign = byte[8192];
+struct TransactionSignature {
+    TransactionID transactionID;
+    uint16 membersCount;
+    TransactionSignatureMember members[membersCount];
+}
+```
+<br/>
 
-// todo: move this into the addressation doc.
+### Particpant Address
+[todo: move this into the addressation doc]
+
+```c++
 struct Address {
     byte typeID;
     byte length;
     byte[1..256] data;
 }
-
-// "Amount" specifies transaction amount or trust line amount where it is needed.
-// Length field makes it possible, to transfer only significant bytes
-// through the network, and to ignore zeroed part of the amount.
-struct Amount {
-    byte lenth;
-    byte[1..32] value;
-}
-
 ```
+<br/>
 
-## Participants Public Keys List
-_Participants Public Keys List (PPKL)_ is used by the `Coordinator` to populate each one participant of the transaction with public keys of each other participant of this transaction. 
+### Amount
+_Amount_ specifies transaction amount or trust line amount, or channel amount.
+"length" field makes it possible to transfer through the network only significant bytes, and to ignore zeroed part of the amount.
 
-* **[Optional]** `Coordinator` might exclude the addressee from the _PPKL_. For example, if there are 3 participants in the transaction {`Coordinator`, `A`, `B`, `C`}, and `Coordinator` prepeares _PPKL_ for `A` — then it could exclude `A` from the _PPKL_ and optimize network traffic usage.
 
 ```c++
-struct ParticipantRecord {
-  // Member ID within the transaction.
-  // Members IDs are assigned by the Coordinator for each one particpant, 
-  // sequentially from 0 up to (2**16)-1;
-  uint16  memberID;
-  PubKey  pubKey;  
-}
-
-struct ParticipantsPublicKeys {
-    uint16 totalMembersCount;
-    ParticipantRecord keys[<totalMembersCount>];
+struct Amount {
+    uint8 lenth;
+    byte[1..32] value;
 }
 ```
-
-
+<br/>
 
 # Messages
 
@@ -784,10 +880,15 @@ There is no enough amount can be collected on all paths discovered.
 `code: 402`
 Some node, that participated in the operation did not provided its signature for it.
 
+
 # Timeouts
 #### Amount reservation timeout 
 `30 seconds`
 
+
+# Constants
+### Keys pool size
+`1024`
 
 # License
 [<img src="https://opensource.org/files/osi_keyhole_300X300_90ppi_0.png" height=90 style="float: left; padding: 20px">]()
