@@ -29,6 +29,12 @@ This specification describes transactions processing algorithm _("Algorithm" fur
 
 * _[1]_ — Up to `(2 ** 16)-1` in theory.
 
+
+<br/>
+<br/>
+<br/>
+<br/>
+
 # Overview
 The objectives of this document are:
 1. to provide comprehensive info about proposed method of consensus;
@@ -223,7 +229,7 @@ _Middleware node_ — node that takes part into the operation as common particip
 `neighbors_inv` is a subset of [`nodes_inv`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#nodes-involved)
 
 #### Transaction Amount
-Transaction Amount — `tr. amount` — amount of accounting units that `Coordinator` tries to send to the `Receiver`;
+Transaction Amount — `tr. amount` — amount of accounting units that [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) tries to send to the `Receiver`;
 
 #### Least common amount
 Least common amount — common reservation amount, that might be reserved by _all_ nodes in the path. Least common amount == max. flow of the path. 
@@ -258,71 +264,83 @@ Routing algorithm [todo: link] migh return first portion of available paths much
 _Advantages — high reservations speed._  
 _Disadvantages — high liquidity locks._  
 
-[`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator):
+##### [Coordinator](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator)
 1. ∀{`path` ∈ `paths_discovered`}:
     1. ∀{`node` ∈ `path`} :
         1. In case if `node` != [`Receiver`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#receiver) — [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) **must** ask `node` to reserve max. available _common_ amount between 2 neighbors and return it (max. common amount) back.  
         In case if `node` == [`Receiver`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#receiver) — [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) **must** ask it to reserve max. available amount to the neighbour _before_ it (penultimate тщву), and also return reserved amount back to the [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator).
-    1. **Must** collect _all_ reponses from _all_ nodes. In case if some node has not reponded — `path` **must** be omitted. [Optionall] [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) should inform _all_ nodes in this path (except node, that has not sent it's response) about reservations that might be dropped.
+    1. **Must** collect _all_ reponses from _all_ nodes. In case if some node has not reponded during [2 network timeouts](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#network-hop-timeout) — `path` **must** be omitted. Node, that has not responded, must be considered as "unavailable". All paths with this node included **must** be dropped from the processing. [Optionall] [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) should send reservation cancel to _all_ nodes in this path (except node, that has not sent it's response).
     1. **Must** calculate [least common amount](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#least-common-amount) between all participants in the `path`.
     1. **Must** provide [least common amount](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#least-common-amount) to all nodes in `path` (except itself), and ask them to shortage their reserves in accroding to it. 
 
 <img src="https://github.com/GEO-Project/specs-protocol/blob/master/transactions/resources/20181003154119.svg">
 
-All [middleware nodes](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#middleware-node) and [`Receiver`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#receiver):
-    1. On reservation request received, node **must** calculate [least common amount](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#least-common-amount) against/between participant(s), specified in the request.
-    1. **Must** send calculated least common amount back to the [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator).
+```mermaid
+sequenceDiagram
+        Coordinator (D)->>B: Reservation Request (D, C)
+        Coordinator (D)->>C: Reservation Request (B, A)
+        Coordinator (D)->>Receiver (A): Reservation Request (C)
+```
+
+##### All [middleware nodes](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#middleware-node) and [Receiver](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#receiver)
+
+1. On reservation request received, node **must** calculate [least common amount](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#least-common-amount) against/between participant(s), specified in the request.
+
+1. **Must** send calculated least common amount back to the [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator).
+
+<img src="https://github.com/GEO-Project/specs-protocol/blob/master/transactions/resources/20181003154552.svg">
+
+```mermaid
+sequenceDiagram
+        B->>Coordinator (D): Least Common Amount
+        C->>Coordinator (D): Least Common Amount
+        Receiver (A)->>Coordinator (D): Least Common Amount
+```
+
+In the rest mechanics of this approach is similar to the "Algorithm B", provided further.
 
 ## Algorithm B: Sequential reservations collecting
 _Advantages — low liquidity locks._  
 _Disadvanteges — moderate reservations speed._  
 
+##### [Coordinator](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator)
+1. ∀{`path` ∈ `paths_discovered`}:
+    1. _FN_ — first neighbour — second node in the path.
+    **Must** calculate max. possible amount reservation on the trust line with _FN_;
+    1. **Must** send Reservation Request to the _FN_;
+    1. **Must** wait for the reponse from _FN_ for no more than [2 network timeouts](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#network-hop-timeout). In case if no response has been received during this time window — remote node **must** be considered as "unavailable". **All paths** with this node included **must** be dropped from the processing. If there are nodes, that has confirmed reservation request, then this nodes should receive reservation cancel request from the [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator).
 
+##### All [middleware nodes](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#middleware-node) and [Receiver](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#receiver)
 
-
-
-
-
-
-
-
-
-
-
-
-For each path, and for each node on this path (except itself), `Coordinator` sequentially, starting from its neighvours, must send [reservation requests messages](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#request-amount-reservation). `Coordinator (D)` knows whole path `{D, C, B, A}`, but it doesn't know and can't predict [`max. common amount`](https://en.wikipedia.org/wiki/Maximum_flow_problem) between all nodes on this path (due to the network volatility), so it must send requests in sequential manner.
-
-After each request sent, `Coordinator` **must** wait for the reponse from the node at least 1 `hop time`. In case if no response has been received during this time window — remote node **must** be considered as "unavailable". **All paths** with this node included **must** be dropped from the processing. If there are nodes, that has confirmed reservation request, then this nodes should receive reservation cancel request from the `Coordinator`.
-
-#### _Reservation requests processing_
-Each middle-ware node `{(C), (B)}` and `Receiver (A)`, on reservation request received, **must** check possibility to approve the request and **must** do one of 3 things possible:
+Each middle-ware node `{C, B}` and `Receiver (A)`, on reservation request received, **must** check possibility to approve the request and **must** do one of 3 things possible:
 
 1. If there is enough free amount on requested trust line — **must accept reservation fully**:
     1. **Atomically** create [amount reservation](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#double-spending-prevention) on the trust line with specified neighbour and for the specified amount;
-    1. Set timeout for the created reservation to [30 seconds](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#amount-reservation-timeout).  
+    1. Set timeout for the created reservation to [default reservation timeout](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#amount-reservation-timeout).  
     Created timeout avoids eternal reservation and is used for canceling the operation, in case of occurred unpredictability.
-    1. Send [reservation response](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#response-amount-reservation) with approved amound to the `Coordinator`;
+    1. Send [reservation response](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#response-amount-reservation) with approved amound to the [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator);
   
 1. If there is some free amount on requested trust line present, but it is less, than required — **must accept reservation partially**:
       1. **Atomically** create [amount reservation](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#double-spending-prevention) on the trust line with specified neighbour for the **available** amount.
       1. Similarly, to the previous case, sets timeout for the created reservation to [30 seconds](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#amount-reservation-timeout).
-      1. Sends [reservation response](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#response-amount-reservation) to the `Coordinator`, but with amount reserved (less than was requested);
+      1. Sends [reservation response](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#response-amount-reservation) to the [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator), but with amount reserved (less than was requested);
 
-1. In **all** other cases — **must reject reservation** — send [reservation response](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#response-amount-reservation) with 0 to the `Coordinator`. Several, _but not all_ cases possible, are:
+1. In **all** other cases — **must reject reservation** — send [reservation response](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#response-amount-reservation) with 0 to the [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator). Several, _but not all_ cases possible, are:
     1. no more/any reservation is possible;
     1. node received reservation request towards some other node, that is not listed as it's neighbour;
     1. node received reservation request that contains info about reservations, that was not done by this node;
 
-**Note:** it is possible, that some node would be requested by the `Coordinator` several times, to create several different reservations towards several different neighbours. This case is probable, when some middle ware node is present on several concurrent payment paths at the same time.
+#### Notes
+* It is possible, that some node would be requested by the [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) several times, to create several different reservations towards several different neighbours. This case is probable, when some middle ware node is present on several concurrent payment paths at the same time.
+    <img width=400 src="https://github.com/GEO-Project/specs-protocol/blob/master/transactions/resources/chart10.svg">
 
-<img width=400 src="https://github.com/GEO-Project/specs-protocol/blob/master/transactions/resources/chart10.svg">
+* Created reserves are only temporary locks on the trust lines, and must not be considered as committed changes (debts). This locks are important mechanism for preventing usage of greater amount of trust line / channel, that was initially granted, so it is expected that each one node would very carefully account this reservations.
 
-**Note:** Created reserves are only temporary locks on the trust lines, and must not be considered as committed changes (debts). This locks are important mechanism for preventing usage of greater amount of trust line / channel, that was initially granted, so it is expected that each one node would very carefully account this reservations.
-
-**WARN:** Trust lines reservations and related transactions must be implemented in [**ACID** manner](https://en.wikipedia.org/wiki/ACID_(computer_science)).  
+#### Warnings
+* Trust lines reservations and related transactions must be implemented in [**ACID** manner](https://en.wikipedia.org/wiki/ACID_(computer_science)).  
 Transactions and related {trust lines, channels} locks must be restored after each one unexpected node failure and/or exit.
 
-**WARN:** Each one payment transaction, that was restored after node failure, must be automatically continued from [Stage Z: Recover](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-z-recover). 
+* Each one payment transaction, that was restored after node failure, must be automatically continued from [Stage Z: Recover](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-z-recover). 
 
 ```mermaid
 sequenceDiagram
@@ -346,22 +364,22 @@ sequenceDiagram
   * In case if reservation was "approved" — `Coordinator (D)`:
       1. Updates it's internal `paths map`;
       1. (re)calculates (probably shortated) least common reservations;
-      1. In case if node, that sent `approve` to the `Coordinator` is the last node in the path — then `Coordinator` sends current reservations configuration (list of neighbours nodes and amount reservations towards them) to all nodes, in this path, including `Receiver`. This info is very important, because there is a non-zero probability of the case, when some path from a collection of discovered paths, would be dropped during amount reservation (for example, because some trust line on it has no enough amount). In this case, it is very probable, that some amount reservations towards some nodes would not be needed any more, but the others would stay necessary. It is even possible, that this configuration changes would take place on the same node. That's why `Coordinator` reports whole new amounts configuration state to all nodes.
+      1. In case if node, that sent `approve` to the [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) is the last node in the path — then [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) sends current reservations configuration (list of neighbours nodes and amount reservations towards them) to all nodes, in this path, including `Receiver`. This info is very important, because there is a non-zero probability of the case, when some path from a collection of discovered paths, would be dropped during amount reservation (for example, because some trust line on it has no enough amount). In this case, it is very probable, that some amount reservations towards some nodes would not be needed any more, but the others would stay necessary. It is even possible, that this configuration changes would take place on the same node. That's why [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) reports whole new amounts configuration state to all nodes.
     * In case of `reject` — `Coordinator (D)` drops this path at all from payment, and starts collecting amount on one of other available paths. During path dropping — it also informs all the nodes, that are involved into it, about dropped reservations, via sending  current reservations configuration to them.
     
-1. In case if all paths are processed, but no required amount was collected — `Coordinator` **must** suspend current operation and (re)try to collect more paths from the network. `[todo: describe paths complementing process]``[todo: routing]`.
+1. In case if all paths are processed, but no required amount was collected — [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) **must** suspend current operation and (re)try to collect more paths from the network. `[todo: describe paths complementing process]``[todo: routing]`.
 
 1. In case if `collected amount == needed amount` — stage 1 is considered as complete.
 
 
 ### Reservations shortening
-**Note:** All middleware nodes (`{(C), (D)}`) and `Receiver` (`(R)`) are motivated to update their reservations as quickly, as possible, because each one reservation present freezes some part of their liquidity. It is expected that some part of nodes, from to time, during operation processing, would be asked by the `Coordinator` (`(D)`) to update their reservations to achieve _least common reservation amount_. From `Coordinator` prespective this process is sequntial, so it might take some time to update all nodes and find _least common reservation amount_. From the nodes perspective — this process requires some timeout after initial reservation creation and furter updates.
+**Note:** All middleware nodes (`{(C), (D)}`) and `Receiver` (`(R)`) are motivated to update their reservations as quickly, as possible, because each one reservation present freezes some part of their liquidity. It is expected that some part of nodes, from to time, during operation processing, would be asked by the [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) (`D`) to update their reservations to achieve _least common reservation amount_. From [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) prespective this process is sequntial, so it might take some time to update all nodes and find _least common reservation amount_. From the nodes perspective — this process requires some timeout after initial reservation creation and furter updates.
 
 ### Reservations prolongation
-During processing of long paths, or significant amount of paths in total — there is a non-zero probability, that some nodes one, or several times would fall in state, when their reservation timeouts would be burned up, but the transaction itself would be still in amount collecting stage. In this case, to prevent transaction disruption —it is reccomended for the this nodes to ask `Coordinator` about current transactino state to be able to know what to do with their active reservations. 
+During processing of long paths, or significant amount of paths in total — there is a non-zero probability, that some nodes one, or several times would fall in state, when their reservation timeouts would be burned up, but the transaction itself would be still in amount collecting stage. In this case, to prevent transaction disruption —it is reccomended for the this nodes to ask [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) about current transactino state to be able to know what to do with their active reservations. 
 
 #### Case 1: Transaction is still in progress
-* `Coordinator` **must** report transaction state via [Transaction State Message](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#response-transaction-state).
+* [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) **must** report transaction state via [Transaction State Message](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#response-transaction-state).
 * `Node`, that requested the state **must** prolong **all related** reservations for up to [30 seconds](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#amount-reservation-timeout)
 
 ```mermaid
@@ -376,14 +394,14 @@ sequenceDiagram
 ```
 <img src="https://github.com/GEO-Project/specs-protocol/blob/master/transactions/resources/chart3.svg">
    
-In case if `Coordinator (D)` responds with "active" state — it is recommended for the node to keep processing of the transaction. In this case node simply reinitialize it's internal timeout and keeps waiting. This stage might be repeated several more times. It is important for middle-ware nodes to wait as long as `Coordinator (D)` asks to, otherwise - whole transaction would be dropped. [#8](https://github.com/GEO-Protocol/specs-protocol/issues/8)
+In case if [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) responds with "active" state — it is recommended for the node to keep processing of the transaction. In this case node simply reinitialize it's internal timeout and keeps waiting. This stage might be repeated several more times. It is important for middle-ware nodes to wait as long as [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) asks to, otherwise - whole transaction would be dropped. [#8](https://github.com/GEO-Protocol/specs-protocol/issues/8)
 
-**WARN:** There is an ability for the `Coordinator` to hang reservation for a long time and harm network liquidity. To avoid this — node must keep counting of prolongations done. In case if next one prolongation begins to be uncomfortable for the node — it might simply reject the transaction `[Stage B]`. Max amount of prolongations should be decided by each one node for itself, based on it's internal trust to the coordinator. Recommended amount of prolongations is `6` (3 minutes).  
+**WARN:** There is an ability for the [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) to hang reservation for a long time and harm network liquidity. To avoid this — node must keep counting of prolongations done. In case if next one prolongation begins to be uncomfortable for the node — it might simply reject the transaction `[Stage B]`. Max amount of prolongations should be decided by each one node for itself, based on it's internal trust to the coordinator. Recommended amount of prolongations is `6` (3 minutes).  
 
 #### Case 2: Transaction has not collected required amount
 
-* `Coordinator` **must** report transaction state via [Transaction State Message](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#response-transaction-state).
-* `Node`, that requested the state, **must** process the reponse and in case if `Coordinator` responds with state that differs from "active" (for example, because required amount could not be collected on discovered paths) — `node` must reject the transaction [(Stage B)](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-b-middle-wares-node-behaviour-after-transaction-reject). Amount reservations might be dropped safely at this stage.
+* [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) **must** report transaction state via [Transaction State Message](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#response-transaction-state).
+* `Node`, that requested the state, **must** process the reponse and in case if [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) responds with state that differs from "active" (for example, because required amount could not be collected on discovered paths) — `node` must reject the transaction [(Stage B)](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-b-middle-wares-node-behaviour-after-transaction-reject). Amount reservations might be dropped safely at this stage.
 
 ```mermaid
 sequenceDiagram
@@ -398,10 +416,10 @@ sequenceDiagram
 <img src="https://github.com/GEO-Project/specs-protocol/blob/master/transactions/resources/chart4.svg">
 
 #### Case 3: No coordinator response at all
-In case if no response was received from the `Coordinator` — one of 3 things might take place:
-  1. `Coordinator` goes offline unexpectedly and/or is unable to proceed.
-  1. Network segmentation takes place and no network packets are delivered/received to/from the node/`Coordinator`.
-  1. `Coordinator` behaves destructively and doesn't responds to the nodes requests.
+In case if no response was received from the [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) — one of 3 things might take place:
+  1. [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) goes offline unexpectedly and/or is unable to proceed.
+  1. Network segmentation takes place and no network packets are delivered/received to/from the node/[`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator).
+  1. [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) behaves destructively and doesn't responds to the nodes requests.
 
 ```mermaid
 sequenceDiagram
@@ -421,7 +439,9 @@ In all cases, it is safe for any node to drop the transaction and it's related a
 # Stage 1.1: Debts receipts exchange
 1. From middle-ware nodes perspective, processing of the amount reservation requests could be schematically explained in the next way:
    
-```
+<img src="https://github.com/GEO-Project/specs-protocol/blob/master/transactions/resources/chart6.svg">
+   
+```mermaid
 sequenceDiagram
       Coordinator (D)->>C: Reserve 200
       C->>B: Reserve 200
@@ -429,19 +449,17 @@ sequenceDiagram
       C->>Coordinator (D): OK, only 100 reserved
 ```   
 
-<img src="https://github.com/GEO-Project/specs-protocol/blob/master/transactions/resources/chart6.svg">
-
-1. Node `(C)` attempts to reserve required amount on its side first. 
+1. Node `C` attempts to reserve required amount on its side first. 
   1. If no required amount may be reserved — node responds with reject.
-  1. If reservation is possible and was done successfully - node suspects for successful reservation on the neighbour node as well (`(B)` in the example), and sends the appropriate request to it. In case of received confirmation response from the neighbour node — `(C)` reports success to the `Coordinator`.
+  1. If reservation is possible and was done successfully — node suspects for successful reservation on the neighbour node as well (node `B` in the example), and sends the appropriate request to it. In case of received confirmation response from the neighbour node — `C` reports "success" to the [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator).
   
   
 # Stage 2 — Trust context establishing (coordinator)
 1. **Must** finalize it's paths map.
-1. **Must** send final reservations configuration (`FRC`) to ∀{`nodes_inv`}. 
+1. **Must** send final reservations configuration (`FRC`) to ∀{[`nodes_inv`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#nodes-involved)}. 
 
 # Stage 2 — Trust context establishing (nodes)
-∀{`nodes_inv`} **must** wait for final reservations configuration (`FRC`) from the `Coordinator`.  
+∀{[`nodes_inv`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#nodes-involved)} **must** wait for final reservations configuration (`FRC`) from the [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator).  
 If no `FRC` was received during (#todo: specify timeout) — node **must** reject the operation [(Stage B)](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-b-middle-wares-node-behaviour-after-transaction-reject).
 
 * If `FRC` was received — node **must** validate it throught the checks provided further.  
@@ -456,7 +474,7 @@ If any of this checks fails — node **must** reject the operation [(Stage B)](h
 
 # Stage 2.1 — Signed debts exchange
 ### Signed debts receipts 
-∀(`node` in {`nodes_inv`+ `Coordinator`}):
+∀(`node` in {[`nodes_inv`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#nodes-involved)+ `Coordinator`}):
   * ∀(`neighbor` in {`neighbors of node`}): 
     * `node` **must** create debt receipt (#todo: link to struct) for the `neighbor` with amount according to the reserved amount on the trust line with the `neighbour`.
     * `node` **must** sign it with one of it's public keys from pool of public keys with `neighbour`.
@@ -471,7 +489,7 @@ If any of this checks fails — node **must** reject the operation [(Stage B)](h
 
 **Note:** Signed debt receipt is only valid in case if whole transaction is signed (separate message with separate signature), so node might sign and send it to the neighbour without any doubt. In case if any other node would not sign the operation — no one debt receipt would be valid and must not be demanded.
 
-∀(`node` in {`nodes_inv`+ `Coordinator`}):
+∀(`node` in {[`nodes_inv`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#nodes-involved)+ [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator)}):
   * `node` **must** receive signed debt receipts from **all** neighbours. In case if even one signed debt receipt wasn't received — node **must** reject the operation [(Stage B)](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-b-middle-wares-node-behaviour-after-transaction-reject).
   
   (# todo: fix validation checks !!!!!)
@@ -484,7 +502,7 @@ Stage 2.1 is considered as completed when all nodes would exchange signed debt r
 
 
 # Stage 2.2 — Public keys exchange (node)
-Node **must** send to the `Coordinator` its Public Key, which this particular node would use for signing whole the transaction.
+Node **must** send to the [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) its Public Key, which this particular node would use for signing whole the transaction.
      
 ```mermaid
 sequenceDiagram
@@ -496,11 +514,11 @@ sequenceDiagram
   
   
 # Stage 2.2 — Public keys exchange (coordinator)
-`Coordinator` **must** collect Public Keys [#todo: link to crypto] from all participants.
+[`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) **must** collect Public Keys [#todo: link to crypto] from all participants.
 
-In case if not all expected keys was collected — `Coordinator` rejects the operation with code "[No Consensus](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#not-enough-amount)" [(Stage: A)](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-a-coordinators-behaviour-after-transaction-reject);
+In case if not all expected keys was collected — [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) rejects the operation with code "[No Consensus](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#not-enough-amount)" [(Stage: A)](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-a-coordinators-behaviour-after-transaction-reject);
 
-In case if all expected keys was collected — `Coordinator` **must**:
+In case if all expected keys was collected — [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) **must**:
 1. Generate PubKeys list.
 2. Send generated PubKeys list to all nodes.
 
@@ -517,10 +535,10 @@ If check passed — stage 2.3 is considered as completed.
 
 
 # Stage 2.3 — Trust context checking (coordinator)
-`Coordinator` collects `PubKeys list` from the nodes.  
+[`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) collects `PubKeys list` from the nodes.  
 
-1. Received `PubKeys list` **must** contains public keys of _**all** neighbours nodes, of the `Coordinator`, that are involved into the operation; (`neig. PKl`);_
-1. `Coordinator` **must** check **each one** key from `neig. PKl` for validity through next checks:
+1. Received `PubKeys list` **must** contains public keys of _**all** neighbours nodes, of the [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator), that are involved into the operation; (`neig. PKl`);_
+1. [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) **must** check **each one** key from `neig. PKl` for validity through next checks:
   * Key length **must** be `16Kb`;
   * Key must be included
 
@@ -543,7 +561,7 @@ There is no need for additional check of them on the `Coordinator's` side.
   For example, in case if nodes {[`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator), [`B`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#middleware-node), [`C`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#middleware-node), [`Receiver`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#receiver)} take part into the operation, and [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) now performs [_PPKL_](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#participants-public-keys-list) for the [`A`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#middleware-node) — then [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) might exclude [`A`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#middleware-node) from the [_PPKL_](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#participants-public-keys-list) and _save network traffic for itself and for the [`A`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#middleware-node)_.
 
 # Stage 3.1 — Signing prepearing (node)
-1. **Must** receive [Participants Public Keys List _(PPKL)_](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#participants-public-keys-list) from the `Coordinator`.  
+1. **Must** receive [Participants Public Keys List _(PPKL)_](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#participants-public-keys-list) from the [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator).  
 In case if no _PPKL_ was received — **must** reject the operation [(Stage B)](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-b-middle-wares-node-behaviour-after-transaction-reject).
 1. **Must** check received _PPKL_ through the checks provided further;  
 In case if _even one_ check failed — **must** reject operation [(Stage B)](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-b-middle-wares-node-behaviour-after-transaction-reject)
@@ -573,10 +591,10 @@ _TS_ collects transactions signatures from participants and stores received info
 
 ### Flow
 1. **Must** collect [Transaction Signatures](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#transaction-signature) from _all_ participants into _TS_.  
-If not _all_ transaction signatures was collected during 3 [network hops](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#network-hop-timeout) _(2 hops for keys/signatures transfer and 1 for remote node proessing)_ — `Coordinator` **must** reject the operation [Stage B](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-b-middle-wares-node-behaviour-after-transaction-reject).
+If not _all_ transaction signatures was collected during 3 [network hops](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#network-hop-timeout) _(2 hops for keys/signatures transfer and 1 for remote node proessing)_ — [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) **must** reject the operation [Stage B](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-b-middle-wares-node-behaviour-after-transaction-reject).
 
 1. **Must** check all received [Transaction Signatures](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#transaction-signature) through checks provided further.  
-If even one check fails — `Coordinator` **must** reject the operation [Stage B](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-b-middle-wares-node-behaviour-after-transaction-reject).
+If even one check fails — [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) **must** reject the operation [Stage B](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-b-middle-wares-node-behaviour-after-transaction-reject).
 
 ### Checks for TS:
 * ∀(`record`, `sender` ∈ _TS_):
@@ -647,7 +665,7 @@ Both, [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master
         byte[64] digest;    // keccak512 digest.
     }
     ```
-    1. If all collected digests of pub keys are equal to the corresponding digests, generated on the node — then it is assumed, that `Coordinator` collected original public keys, no keys substitution was done, and the `votes list` has been created correct. Otherwise — node must vote for the rejecting of this operation `Stage 4.B`.
+    1. If all collected digests of pub keys are equal to the corresponding digests, generated on the node — then it is assumed, that [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) collected original public keys, no keys substitution was done, and the `votes list` has been created correct. Otherwise — node must vote for the rejecting of this operation `Stage 4.B`.
 
 # Stage 4: Voting
 1. Each middleware node `{(B), (C)}` and `Receiver` does the next checks:
@@ -661,7 +679,7 @@ Both, [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master
 
 # Stage 4.A: Signing
 * Operation is considered as performed well only if 100% of participants has voted for the operation approve.
-* Operation is considered as approved by the node, only if vote list, generated by the `Coordinator` contains valid node sign.
+* Operation is considered as approved by the node, only if vote list, generated by the [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) contains valid node sign.
 * It is assumed that votes list is sorted. See section 2 for the details.
 
 The algorithm for the sign generation is the next:
@@ -683,8 +701,8 @@ There is a special bytes sequence, that must be concatenated to the votes list:
 `todo: describe why rejecting by the node leads to TA states collision`.
 
 ## Stage 4.B: Consensus processing
-1. Node sends signed `votes list` back to the `Coordinator`.
-1. Node starts waiting for the response from the `Coordinator` with other nodes signs. See `Stage 5` for the details. Recommended timeout for this operation is `n*2` seconds, where `n=votes list participants count`.
+1. Node sends signed `votes list` back to the [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator).
+1. Node starts waiting for the response from the [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) with other nodes signs. See `Stage 5` for the details. Recommended timeout for this operation is `n*2` seconds, where `n=votes list participants count`.
 1. There are 2 further cases possible:
     1. `votes list` signs by other participants arrived to the node before timeout has been fired up, it is correct and contains all 100% participants approve-signs.
         1. In this case operations is considered done, node stores received `votes list` with all the signs into its internal storage and links it to previously collected debts receipts from it's neighbours.
@@ -693,8 +711,8 @@ There is a special bytes sequence, that must be concatenated to the votes list:
     1. `votes list` doesn't arrived during expected timeout. In this case node is going to require delegates arbitration `[Stage 5]`.
 
 # Stage 5: Consensus collecting by the Coordinator
-1. `Coordinator` waits for the signed votes lists from the nodes involved into the operation. On each one votes list arriving - `Coordinator` merges received votes list into common one, by concatenating received nodes signs into common votes list. In case if signs of all nodes was received well — the transaction is considered as approved. `Coordinator` in this case stores the final `votes list` into it's trust lines registry `todo: provide link to the trust lines logic`, and propagates it to all nodes in the transaction. After this step — algorithm is considered as done, and transaction is considered as finished.
-1. In case if votes arrived partially - `Coordinator` asks delegate node for the arbitration.
+1. [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) waits for the signed votes lists from the nodes involved into the operation. On each one votes list arriving - [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) merges received votes list into common one, by concatenating received nodes signs into common votes list. In case if signs of all nodes was received well — the transaction is considered as approved. [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) in this case stores the final `votes list` into it's trust lines registry `todo: provide link to the trust lines logic`, and propagates it to all nodes in the transaction. After this step — algorithm is considered as done, and transaction is considered as finished.
+1. In case if votes arrived partially - [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) asks delegate node for the arbitration.
 
 # Stage 6: Delegated arbitration.
 Delegate arbitration is used in case when there is an uncertainty about the operation processing, but some (or several) node(s) has been signed it already and sent their signs into the network. In this case, this node(s) has no ability to change it's vote(s), because:
@@ -730,9 +748,9 @@ Being applied to several neighbours, this mechanism has cascade influence and as
 `todo: describe it detailed`
 
 # Stage A: Coordinator's behaviour after transaction reject
-1. On TA reject `Coordinator` instantly forgets about the operation.
-1. [optional] `Coordinator` notifies operations participants about the operation canceling.
-1. For all requests about operation state `Coordinator` simply responds that it knows nothing about that operation, and it is enough for the other nodes to drop their pending reservations too.
+1. On TA reject [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) instantly forgets about the operation.
+1. [optional] [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) notifies operations participants about the operation canceling.
+1. For all requests about operation state [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) simply responds that it knows nothing about that operation, and it is enough for the other nodes to drop their pending reservations too.
 
 # Stage B: Middle wares node behaviour after transaction reject
 
@@ -741,7 +759,7 @@ Being applied to several neighbours, this mechanism has cascade influence and as
 # Stage Z: Recover:
 During operation processing, there is non zero-probability, that some node involved (or all of them) would enter inoperable state in some reason (unexpected power off, network segmentation, etc). In this case, when operability of the node would be restored, such node(s) must proceed each one transaction that was initialized, but has no final decision yet.
 * For the protocol simplicity reasons, nodes that enter "recover" state and has not signed the operation, must not vote for transaction approving any more. Only "reject" is allowed.
-* For the signed operation — node must check for the final decision about the operation from its neighbour(s) involved and the `Coordinator`. In case if no response from any one of them in time of 10 minutes — `Delegate` arbitration must be requested `[Stage 5]`.
+* For the signed operation — node must check for the final decision about the operation from its neighbour(s) involved and the [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator). In case if no response from any one of them in time of 10 minutes — `Delegate` arbitration must be requested `[Stage 5]`.
 
 
 # Data types used
@@ -915,7 +933,7 @@ Operation was committed well.
 
 #### No routes
 `code: 400`  
-There is no any route discovered between `Coordinator` and `Receiver`;
+There is no any route discovered between [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) and `Receiver`;
 
 #### Not Enough Amount
 `code: 401`
