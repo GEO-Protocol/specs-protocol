@@ -258,48 +258,60 @@ Routing algorithm [todo: link] migh return first portion of available paths much
 _Advantages — high reservations speed._  
 _Disadvantages — high liquidity locks._  
 
-[`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator):
+##### [Coordinator](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator)
 1. ∀{`path` ∈ `paths_discovered`}:
     1. ∀{`node` ∈ `path`} :
         1. In case if `node` != [`Receiver`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#receiver) — [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) **must** ask `node` to reserve max. available _common_ amount between 2 neighbors and return it (max. common amount) back.  
         In case if `node` == [`Receiver`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#receiver) — [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) **must** ask it to reserve max. available amount to the neighbour _before_ it (penultimate тщву), and also return reserved amount back to the [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator).
-    1. **Must** collect _all_ reponses from _all_ nodes. In case if some node has not reponded — `path` **must** be omitted. [Optionall] [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) should inform _all_ nodes in this path (except node, that has not sent it's response) about reservations that might be dropped.
+    1. **Must** collect _all_ reponses from _all_ nodes. In case if some node has not reponded during [2 network timeouts](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#network-hop-timeout) — `path` **must** be omitted. Node, that has not responded, must be considered as "unavailable". All paths with this node included **must** be dropped from the processing. [Optionall] [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) should send reservation cancel to _all_ nodes in this path (except node, that has not sent it's response).
     1. **Must** calculate [least common amount](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#least-common-amount) between all participants in the `path`.
     1. **Must** provide [least common amount](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#least-common-amount) to all nodes in `path` (except itself), and ask them to shortage their reserves in accroding to it. 
 
 <img src="https://github.com/GEO-Project/specs-protocol/blob/master/transactions/resources/20181003154119.svg">
 
-All [middleware nodes](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#middleware-node) and [`Receiver`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#receiver):
-    1. On reservation request received, node **must** calculate [least common amount](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#least-common-amount) against/between participant(s), specified in the request.
-    1. **Must** send calculated least common amount back to the [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator).
+```mermaid
+sequenceDiagram
+        Coordinator (D)->>B: Reservation Request (D, C)
+        Coordinator (D)->>C: Reservation Request (B, A)
+        Coordinator (D)->>Receiver (A): Reservation Request (C)
+```
+
+##### All [middleware nodes](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#middleware-node) and [Receiver](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#receiver)
+
+1. On reservation request received, node **must** calculate [least common amount](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#least-common-amount) against/between participant(s), specified in the request.
+
+1. **Must** send calculated least common amount back to the [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator).
+
+<img src="https://github.com/GEO-Project/specs-protocol/blob/master/transactions/resources/20181003154552.svg">
+
+```mermaid
+sequenceDiagram
+        B->>Coordinator (D): Least Common Amount
+        C->>Coordinator (D): Least Common Amount
+        Receiver (A)->>Coordinator (D): Least Common Amount
+```
+
+In the rest mechanics of this approach is similar to the "Algorithm B", provided further.
 
 ## Algorithm B: Sequential reservations collecting
 _Advantages — low liquidity locks._  
 _Disadvanteges — moderate reservations speed._  
 
+##### [Coordinator](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator)
+1. ∀{`path` ∈ `paths_discovered`}:
+    1. _FN_ — first neighbour — second node in the path.
+    </br>
+    **Must** calculate max. possible amount reservation on the trust line with _FN_;
+    1. **Must** send Reservation Request to the _FN_;
+    1. **Must** wait for the reponse from _FN_ for no more than [2 network timeouts](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#network-hop-timeout). In case if no response has been received during this time window — remote node **must** be considered as "unavailable". **All paths** with this node included **must** be dropped from the processing. If there are nodes, that has confirmed reservation request, then this nodes should receive reservation cancel request from the `Coordinator`.
 
+##### All [middleware nodes](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#middleware-node) and [Receiver](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#receiver)
 
-
-
-
-
-
-
-
-
-
-
-
-For each path, and for each node on this path (except itself), `Coordinator` sequentially, starting from its neighvours, must send [reservation requests messages](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#request-amount-reservation). `Coordinator (D)` knows whole path `{D, C, B, A}`, but it doesn't know and can't predict [`max. common amount`](https://en.wikipedia.org/wiki/Maximum_flow_problem) between all nodes on this path (due to the network volatility), so it must send requests in sequential manner.
-
-After each request sent, `Coordinator` **must** wait for the reponse from the node at least 1 `hop time`. In case if no response has been received during this time window — remote node **must** be considered as "unavailable". **All paths** with this node included **must** be dropped from the processing. If there are nodes, that has confirmed reservation request, then this nodes should receive reservation cancel request from the `Coordinator`.
-
-#### _Reservation requests processing_
-Each middle-ware node `{(C), (B)}` and `Receiver (A)`, on reservation request received, **must** check possibility to approve the request and **must** do one of 3 things possible:
+Each middle-ware node `{C, B}` and `Receiver (A)`, on reservation request received, **must** check possibility to approve the request and **must** do one of 3 things possible:
 
 1. If there is enough free amount on requested trust line — **must accept reservation fully**:
     1. **Atomically** create [amount reservation](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#double-spending-prevention) on the trust line with specified neighbour and for the specified amount;
-    1. Set timeout for the created reservation to [30 seconds](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#amount-reservation-timeout).  
+    1. Set timeout for the created reservation to [default reservation timeout](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#amount-reservation-timeout).  
     Created timeout avoids eternal reservation and is used for canceling the operation, in case of occurred unpredictability.
     1. Send [reservation response](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#response-amount-reservation) with approved amound to the `Coordinator`;
   
@@ -313,16 +325,17 @@ Each middle-ware node `{(C), (B)}` and `Receiver (A)`, on reservation request re
     1. node received reservation request towards some other node, that is not listed as it's neighbour;
     1. node received reservation request that contains info about reservations, that was not done by this node;
 
-**Note:** it is possible, that some node would be requested by the `Coordinator` several times, to create several different reservations towards several different neighbours. This case is probable, when some middle ware node is present on several concurrent payment paths at the same time.
+#### Notes
+* It is possible, that some node would be requested by the `Coordinator` several times, to create several different reservations towards several different neighbours. This case is probable, when some middle ware node is present on several concurrent payment paths at the same time.
+    <img width=400 src="https://github.com/GEO-Project/specs-protocol/blob/master/transactions/resources/chart10.svg">
 
-<img width=400 src="https://github.com/GEO-Project/specs-protocol/blob/master/transactions/resources/chart10.svg">
+* Created reserves are only temporary locks on the trust lines, and must not be considered as committed changes (debts). This locks are important mechanism for preventing usage of greater amount of trust line / channel, that was initially granted, so it is expected that each one node would very carefully account this reservations.
 
-**Note:** Created reserves are only temporary locks on the trust lines, and must not be considered as committed changes (debts). This locks are important mechanism for preventing usage of greater amount of trust line / channel, that was initially granted, so it is expected that each one node would very carefully account this reservations.
-
-**WARN:** Trust lines reservations and related transactions must be implemented in [**ACID** manner](https://en.wikipedia.org/wiki/ACID_(computer_science)).  
+#### Warnings
+* Trust lines reservations and related transactions must be implemented in [**ACID** manner](https://en.wikipedia.org/wiki/ACID_(computer_science)).  
 Transactions and related {trust lines, channels} locks must be restored after each one unexpected node failure and/or exit.
 
-**WARN:** Each one payment transaction, that was restored after node failure, must be automatically continued from [Stage Z: Recover](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-z-recover). 
+* Each one payment transaction, that was restored after node failure, must be automatically continued from [Stage Z: Recover](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-z-recover). 
 
 ```mermaid
 sequenceDiagram
