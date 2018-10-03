@@ -136,7 +136,7 @@ _[1]_ — For each hash function that generates an n-bit digest, the ideal resil
 
 
 
-### Limitations related to Lamport Signature
+### Limitations Related to Lamport Signature
 Lamport Signature is a one-time scheme (each one signing procedure discloses part of the private key). Because of that `n` key pairs are needed for `n` operations processing. Thus, each one pair of network members, who has common trust line(s), or channel(s), must generate a pool of keys, to be able to sign operations, before any other operations would be possible to process. By default, this pool contains [`1024`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#keys-pool-size) key pairs. Detailed descriptions of the key exchange mechanics and channels establishment can be found in the trust lines specifications `[todo #5: provide link to TL specifications]`.
 
 ### Difficulties of Applicability in Existing Solutions
@@ -159,14 +159,14 @@ Using of the Lamport signature significantly improves the cryptographic strength
 Along with other finalists of the NIST SHA-3 contest, it has proven and reliable cryptographic stability, but it is much faster than SHA-3 (keccak). Unlike keccak, blake2 is built on to of classical approaches for hash-functions, so its internal structure is more studied for various kinds of vulnerabilities.
 
 
-# Protocol decription
-## Abstract
+# Protocol Decription
+## Overview
 
 `Related specs:`
 * [Trust Lines;]() [#todo: add link]
 * [Economic model;]() [#todo: add link]
 
-Lets assume that there is a network with 4 attendees `{(A), (B), (C), (D)}` involved into the next topology:
+Lets assume that there is a network with 4 attendees `{A, B, C, D}` involved into the next topology:
 
 ```mermaid
 graph LR;
@@ -176,15 +176,15 @@ graph LR;
 ```
 <img width=400 src="https://github.com/GEO-Project/specs-protocol/blob/master/transactions/resources/chart1.svg">
 
-* _(A) trusts / opens channels with (B) 50 (accounting units of some value);_
-* _(B) trusts / opens channels with (C) 100 (accounting units of some value);_
-* _(C) trusts / opens channels with (D) 200 (accounting units of some value);_
+* _`A` trusts / opens channels with `B` for `50` (accounting units of some value);_
+* _`B` trusts / opens channels with `C` for `100` (accounting units of some value);_
+* _`C` trusts / opens channels with `D` for `200` (accounting units of some value);_
 
 The base task looks simple:
-* to provide ability for the `(D)` to send 50 accounting units to the `(A)` through nodes `{(C), (B)}`;
-* to provide strong guaranties for the `(A)` and `(D)` about transaction's state: trunsaction **must** be finally approved or rejected by all participants, and **must not** change it's state any more in future, so `(A)` would be able to react on it (for example, ship some goods to `(D)`).
+* to provide ability for the `D` to send `50` accounting units to the `A` through nodes `{C, B}`;
+* to provide strong guaranties for the `A` and `D` about transaction's state: trunsaction **must** be finally approved or rejected by all participants, and **must not** change it's state any more in future, so `A` would be able to react on it (for example, ship some goods to `D`).
 
-For nodes `{(B), (C)}` it is very important to be shure that transaction would not be partially committed (committed on some trust lines, and not committed on the whole path).
+For nodes `{B, C}` it is very important to be shure that transaction would not be partially committed (committed on some trust lines, and not committed on the whole path).
 
 The challenge itself is: 
 
@@ -212,6 +212,7 @@ _Middleware node_ — node that takes part into the operation as common particip
 </br>
 </br>
 
+
 ## Terms
 
 #### Nodes involved
@@ -221,15 +222,19 @@ _Middleware node_ — node that takes part into the operation as common particip
 `neighbors_inv` — list of neighbor nodes, that are involved into the operation.  
 `neighbors_inv` is a subset of [`nodes_inv`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#nodes-involved)
 
-
 #### Transaction Amount
-`tr. amount` — amount of accounting units that `Coordinator` tries to send to the `Receiver`;
-
-#### Network Hop Timeout
-`hop time` — time range, expected time that is needed for the network packet to be delivered to the destination node. By default should be set to `2 sec`.
+Transaction Amount — `tr. amount` — amount of accounting units that `Coordinator` tries to send to the `Receiver`;
 
 #### Least common amount
-Common reservation amount, that might be reserved by _all_ nodes in the path. Least common amount == max. flow of the path.  
+Least common amount — common reservation amount, that might be reserved by _all_ nodes in the path. Least common amount == max. flow of the path. 
+
+#### Network Path
+Network Path — vector _V_ of nodes, that are chained by the trust lines / channels into common path. Path is considered as valid only in case if there is a possibility to traverse all nodes in it from the source node up to the destination node (one by one).  
+
+</br>
+
+_V = [sourceNode, node1, node2, ..., destinationNode]_
+
 #### Paths map
 Coordinator-specific internal data structure for storing information about all reservations created on all paths used. During amount reservation, each one newly created amount reservation always would be less (or equal) to previously created reservation on the same path. This structure helps maintain path topology and help nodes to achieve _least common amount_ reserved.
 
@@ -238,14 +243,54 @@ List of all participants of the operation and their signatures.
 Presence of all signatures approves 100% consensus and must be interpret as finalised operation. 
 
 
-## Stage 1 — Amount collecting and reservation
-#### _Paths discovering._  
-`Coordinator` in cooperation with `Receiver` must discover all (or some part of) possible network paths `{Coordinator -> Receiver}`. In case if no paths are found — algorithm execution **must** stop with error code [`No routes`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#no-routes). Please, see [Routing]() `[#todo: link]` for the details on paths discovering.
+# Stage 1 — Amount Collecting and Reservation
+#### _Paths discovering_  
+[`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) in cooperation with [`Receiver`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#receiver) **must** discover all (or some part of) possible [network paths](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#network-path) `{Coordinator -> Receiver}`. In case if no paths are found — algorithm execution **must** stop with error code [`No routes`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#no-routes). Please, see [Routing]() `[#todo: link]` for the details on paths discovering.
 
-#### _Paths processing._  
-`Coordinator` **must** attempt to reserve `tr. amount` to the `Receiver` on several (or all, if needed, but at least one) discovered paths.
+#### [Optional] Paths Processing Optimisation
+Routing algorithm [todo: link] migh return first portion of available paths much faster, than it needs for discovering whole list of all possible paths. For the transaction processing, only several paths might be needed, and, depending on the transaction amount, there is a non-zero probability, that several first portion(s) of paths would be enough for the operation to finish. Transactions Algorithm should not wait for discovering all the paths, but should begin even if one (or several) paths are available. In case if discovered paths would be not enough — Algorithm should pause for some time, until next portion of paths would be available.
 
-For each path, and for each node on this path (except itself), `Coordinator` sequentially, starting from its neighvours, must send [reservation requests messages](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#request-amount-reservation). `Coordinator (D)` knows whole path `{(D), (C), (B), (A)}`, but it doesn't know and can't predict [`max. common amount`](https://en.wikipedia.org/wiki/Maximum_flow_problem) between all nodes on this path (due to the [network volatility]() [#todo: add link for describtion about network volatility]), so it must send requests in sequential manner.
+
+#### _Paths processing_  
+[`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) **must** attempt to reserve [`tr. amount`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#transaction-amount) to the [`Receiver`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#receiver) on several (or all, if needed, but at least one) discovered paths.
+
+## Algorithm A: Parrallel reservations collecting 
+_Advantages — high reservations speed._  
+_Disadvantages — high liquidity locks._  
+
+[`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator):
+1. ∀{`path` ∈ `paths_discovered`}:
+    1. ∀{`node` ∈ `path`} :
+        1. In case if `node` != [`Receiver`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#receiver) — [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) **must** ask `node` to reserve max. available _common_ amount between 2 neighbors and return it (max. common amount) back.  
+        In case if `node` == [`Receiver`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#receiver) — [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) **must** ask it to reserve max. available amount to the neighbour _before_ it (penultimate тщву), and also return reserved amount back to the [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator).
+    1. **Must** collect _all_ reponses from _all_ nodes. In case if some node has not reponded — `path` **must** be omitted. [Optionall] [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) should inform _all_ nodes in this path (except node, that has not sent it's response) about reservations that might be dropped.
+    1. **Must** calculate [least common amount](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#least-common-amount) between all participants in the `path`.
+    1. **Must** provide [least common amount](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#least-common-amount) to all nodes in `path` (except itself), and ask them to shortage their reserves in accroding to it. 
+
+<img src="https://github.com/GEO-Project/specs-protocol/blob/master/transactions/resources/20181003154119.svg">
+
+All [middleware nodes](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#middleware-node) and [`Receiver`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#receiver):
+    1. On reservation request received, node **must** calculate [least common amount](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#least-common-amount) against/between participant(s), specified in the request.
+    1. **Must** send calculated least common amount back to the [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator).
+
+## Algorithm B: Sequential reservations collecting
+_Advantages — low liquidity locks._  
+_Disadvanteges — moderate reservations speed._  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+For each path, and for each node on this path (except itself), `Coordinator` sequentially, starting from its neighvours, must send [reservation requests messages](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#request-amount-reservation). `Coordinator (D)` knows whole path `{D, C, B, A}`, but it doesn't know and can't predict [`max. common amount`](https://en.wikipedia.org/wiki/Maximum_flow_problem) between all nodes on this path (due to the network volatility), so it must send requests in sequential manner.
 
 After each request sent, `Coordinator` **must** wait for the reponse from the node at least 1 `hop time`. In case if no response has been received during this time window — remote node **must** be considered as "unavailable". **All paths** with this node included **must** be dropped from the processing. If there are nodes, that has confirmed reservation request, then this nodes should receive reservation cancel request from the `Coordinator`.
 
@@ -889,6 +934,9 @@ Some node, that participated in the operation did not provided its signature for
 # Constants
 ### Keys pool size
 `1024`
+
+### Network Hop Timeout
+`hop time` — time range, expected time that is needed for the network packet to be delivered to the destination node. By default should be set to `2 sec`.
 
 # License
 [<img src="https://opensource.org/files/osi_keyhole_300X300_90ppi_0.png" height=90 style="float: left; padding: 20px">]()
