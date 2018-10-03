@@ -124,20 +124,20 @@ While node follows this specification and it's internal behaviour was not modifi
 
 
 
-# Cryptographic primitives
+# Cryptographic Primitives
 This section describes the used cryptographic primitives and the motivation for their inclusion in the protocol.
 
 ## Lamport Signature
 [_Lamport signature_](https://en.wikipedia.org/wiki/Lamport_signature) or _Lamport one-time signature scheme_ is a method for constructing a digital signature. Lamport signatures can be built from any cryptographically secure one-way function; usually a cryptographic hash function is used [※ 1]. In Twin Spark, Lamport's signature is based on [_BLAKE2b_](https://blake2.net/).
 
 ### Limitations related to Lamport Signature
-Lamport Signature is a one-time scheme (each one signing procedure discloses part of the private key). Because of that `n` key pairs are needed for `n` operations processing. Thus, each one pair of network members, who has common trust line(s), or channel(s), must generate a pool of keys, to be able to sign operations, before any other operations would be possible to process. By default, this pool contains `1024` key pairs. Detailed descriptions of the key exchange mechanics and channels establishment can be found in the trust lines specifications `[todo #5: provide link to TL specifications]`.
+Lamport Signature is a one-time scheme (each one signing procedure discloses part of the private key). Because of that `n` key pairs are needed for `n` operations processing. Thus, each one pair of network members, who has common trust line(s), or channel(s), must generate a pool of keys, to be able to sign operations, before any other operations would be possible to process. By default, this pool contains [`1024`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#keys-pool-size) key pairs. Detailed descriptions of the key exchange mechanics and channels establishment can be found in the trust lines specifications `[todo #5: provide link to TL specifications]`.
 
-### Difficulties of applicability in existing solutions
+### Difficulties of Applicability in Existing Solutions
 A pair of Lamport keys (Private key and Public key) takes `32 kB`:
-* `16 kB` — public key.
-* `16 kB` — private key.
-* `8 kB` — signature.
+* `16 kB` — Private key(https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#particpant-private-key).
+* `16 kB` — [Public key](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#particpant-public-key).
+* `8 kB` — [Signature](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#participant-signature).
 
 The size of signatures and related keys genarated via the Lamport Signature scheme, are a way more expensive than corresponding sizes of signatures and keys, which are based on classic async. cryptograpty solutions (RSA/ECDSA/etc). The relatively large size of signatures makes the Lamport crypto system a very unlikely candidate for the inclusion in existing blockchain solutions in the foreseeable future due to a significant increase in the ledgers growth rate. Also, Lamport's signature, has no practical sense in systems whose cryptographic strength directly depends on components built on classical approaches and are known to be vulnerable against quantum-based attacks. For example, the inclusion of the Lamport cryptosystem in solutions built on top of ethereum / bitcoin, or other popular blockchain solution, has no practical meaning due to the underlying potential vulnerability of the central ledgers of these systems.
 
@@ -706,14 +706,22 @@ using TransactionID = byte[24];
 ```
 <br/>
 
-### Particpant Public Key
-[todo: link to the crypto description]
 
+### Particpant Private Key
+```c++
+const uint16 kPKeyLength = 1024 * 16;
+using PrivateKey = byte[kPKeyLength];
+```
+<br/>
+
+
+### Particpant Public Key
 ```c++
 const uint16 kPubKeyLength = 1024 * 16;
 using PubKey = byte[kPubKeyLength];
 ```
 <br/>
+
 
 ### Participant Signature
 ```c++
