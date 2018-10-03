@@ -484,15 +484,16 @@ If any of this checks fails — node **must** reject the operation [(Stage B)](h
 
 ∀(`node` in {[`nodes_inv`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#nodes-involved)+ [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator)}):
   * `node` **must** receive signed debt receipts from **all** neighbours. In case if even one signed debt receipt wasn't received — node **must** reject the operation [(Stage B)](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-b-middle-wares-node-behaviour-after-transaction-reject).
-  
-  (# todo: fix validation checks !!!!!)
   * `node` **must** check **all** received signed debt receipts for the next reuirements:
-* Amount of the receipt **must** be equal to the reserved amount.
-* Signature of the receipt **must** be used from common pull of PubKeys, that was established between the nodes prveiosly (see [Trust Lines]() [#todo: provide link] specification for the details).
-* There are no signed debt receipts for this operation already present on the node.
-
+    
 Stage 2.1 is considered as completed when all nodes would exchange signed debt receipts with each of it's neighbours involved into the operation.
 
+#### Checks for the signed debts receipt
+1. `receipt.amount`**must** be equal to reservations, created on the related trust line.
+1. `receipt.transactionID` **must** be equal to current Transaction ID.
+1. `receipt.equivalentID` **must** be eqaul to the equivalent ID of the reservations, on the related trust line.
+1. Signature of the receipt **must** be used from common pull of PubKeys, that was established between the nodes prveiosly (see [Trust Lines]() [#todo: provide link] specification for the details).
+1. There are no signed debt receipts for this operation already present on the node.
 
 # Stage 2.2 — Public keys exchange (node)
 Node **must** send to the [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) its Public Key, which this particular node would use for signing whole the transaction.
