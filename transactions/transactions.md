@@ -353,11 +353,24 @@ sequenceDiagram
     B->> Receiver (A): Reserve 100
     Receiver (A)->>B: OK, only 50 reserved
     B->>Coordinator (D): OK, only 50 reserved
-
-    Coordinator (D)->>Receiver (A): Reserve 50
-    Receiver (A)->>Coordinator (D): OK, only 50 reserved
 ```
 <img src="https://github.com/GEO-Project/specs-protocol/blob/master/transactions/resources/chart2.svg">
+
+From [middle-ware nodes](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#middleware-node) perspective, processing of the amount reservation requests could be schematically explained in the next way:
+   
+<img src="https://github.com/GEO-Project/specs-protocol/blob/master/transactions/resources/chart6.svg">
+   
+```mermaid
+sequenceDiagram
+      Coordinator (D)->>C: Reserve 200
+      C->>B: Reserve 200
+      B->>C: OK, reserved 100 (without sign yet)
+      C->>Coordinator (D): OK, only 100 reserved
+```   
+
+1. Node `C` attempts to reserve required amount on its side first. 
+  1. If no required amount may be reserved — node responds with reject.
+  1. If reservation is possible and was done successfully — node suspects for successful reservation on the neighbour node as well (node `B` in the example), and sends the appropriate request to it. In case of received confirmation response from the neighbour node — `C` reports "success" to the [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator).
 
 ### Amount reservations processing
 1. On response from node, `Coordinator (D)` **must** check the response:
@@ -433,25 +446,7 @@ sequenceDiagram
 ```
 <img src="https://github.com/GEO-Project/specs-protocol/blob/master/transactions/resources/chart5.svg">
 
-In all cases, it is safe for any node to drop the transaction and it's related amounts reserves [(Stage B)](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-b-middle-wares-node-behaviour-after-transaction-reject).
-
-
-# Stage 1.1: Debts receipts exchange
-1. From middle-ware nodes perspective, processing of the amount reservation requests could be schematically explained in the next way:
-   
-<img src="https://github.com/GEO-Project/specs-protocol/blob/master/transactions/resources/chart6.svg">
-   
-```mermaid
-sequenceDiagram
-      Coordinator (D)->>C: Reserve 200
-      C->>B: Reserve 200
-      B->>C: OK, reserved 100 (without sign yet)
-      C->>Coordinator (D): OK, only 100 reserved
-```   
-
-1. Node `C` attempts to reserve required amount on its side first. 
-  1. If no required amount may be reserved — node responds with reject.
-  1. If reservation is possible and was done successfully — node suspects for successful reservation on the neighbour node as well (node `B` in the example), and sends the appropriate request to it. In case of received confirmation response from the neighbour node — `C` reports "success" to the [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator).
+In all cases, it is safe for any node to drop the transaction and it's related amounts reserves [(Stage B)](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-b-middle-wares-node-behaviour-after-transaction-reject).  
   
   
 # Stage 2 — Trust context establishing (coordinator)
@@ -471,11 +466,9 @@ If any of this checks fails — node **must** reject the operation [(Stage B)](h
   * If `TLIi` is not present in `FRC` — reservations on `TLIi` **must** be dropped.  
   After this correction `TLI` **must** be equal to `FRC`.
 
-
-# Stage 2.1 — Signed debts exchange
-### Signed debts receipts 
-∀(`node` in {[`nodes_inv`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#nodes-involved)+ `Coordinator`}):
-  * ∀(`neighbor` in {`neighbors of node`}): 
+# Stage 2.1 — Signed debts receipts exchange
+1. On each final configuration received, `node` must:
+  * ∀(`neighbor` in {[`neighbors_inv`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#neighbors-involved)}): 
     * `node` **must** create debt receipt (#todo: link to struct) for the `neighbor` with amount according to the reserved amount on the trust line with the `neighbour`.
     * `node` **must** sign it with one of it's public keys from pool of public keys with `neighbour`.
     * `node` **must** send signed debt receipt to the `neighbor`. 
@@ -524,7 +517,7 @@ In case if all expected keys was collected — [`Coordinator`](https://github.co
 
 
 # Stage 2.3 — Trust context checking (node)
-If `PubKeys list` was not received during `3 net. hops` — node **must** reject the operation ([Stage B](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-b-middle-wares-node-behaviour-after-transaction-reject)). 
+If `PubKeys list` was not received during [`3 net. hops`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#network-hop-timeout) — node **must** reject the operation ([Stage B](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-b-middle-wares-node-behaviour-after-transaction-reject)). 
 
 If `PubKeys list` was received:
 1. `Node` **must** check `PubKeys list` (steps of check are provided further). 
