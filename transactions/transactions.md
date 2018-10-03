@@ -27,7 +27,7 @@ This specification describes transactions processing algorithm (Algorithm furthe
 
 ---
 
-* [※ 1] `2 ** 16` in theory.
+* [※ 1] — Up to `(2 ** 16)-1` in theory.
 
 # Overview
 The objectives of this document are:
