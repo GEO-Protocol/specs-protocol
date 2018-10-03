@@ -570,8 +570,12 @@ In case if _even one_ check failed — **must** reject operation [(Stage B)](htt
     
 
 # Stage 3.2 — Signing (node)
+1. **Must** serialize the operation to stable storage. It is neccesary in case if node would crash unexpectedly.
 1. **Must** create [_Transaction Signature_](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#transaction-signature);
 1. **Must** send it to the [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator);
+1. **Must** move to 
+
+
 1. **Must** [commit](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-33--commiting) the operation.
 
 
@@ -590,6 +594,10 @@ If not _all_ transaction signatures was collected during 3 [network hops](https:
 1. **Must** check all received [Transaction Signatures](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#transaction-signature) through checks provided further.  
 If even one check fails — [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) **must** reject the operation [Stage B](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-b-middle-wares-node-behaviour-after-transaction-reject).
 
+!!!! todo: send consensus to other nodes
+!!!! Todo: commit
+
+
 ### Checks for TS:
 * ∀(`record`, `sender` ∈ _TS_):
     1. `record.transactionID` == current [`Transaction ID`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#transactionid);
@@ -599,7 +607,25 @@ If even one check fails — [`Coordinator`](https://github.com/GEO-Protocol/spec
         1. `member.address` == `participant.address` **AND**  
           where `participant` = ∀(`node` ∈ [`nodes_inv`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#nodes-involved));
 
-# Stage 3.3 — Commiting
+
+# Stage 3.3 — Сonsensus expectation (node)
+Only [middleware nodes](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#middleware-node) and [`Receiver`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#receiver) might fall into this stage.  
+[`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) is responsible for collecting transactions signatures and is able to check consensus achievent directly on its side.
+
+##### Definitions
+* Consensus Timeout — _CT_ — max. time window, node should wait for the TransactionConsensusMessage.  
+By default, should be at least 2 [network timeouts](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#network-hop-timeout) long.
+
+##### Flow
+1. **Must** wait _CT_;
+1. **Must** receive TransactionConsensusMessage from the Coordinator. In case if no TransactionConsensusMessage was received 
+— node moves into recover stage.
+1. **Must** check received TransactionConsensusMessage through the checks provided further. 
+    * In case if even one check fails — node moves into recover stage.
+    * In case of all checks passed — **must** commit.
+
+
+# Stage 3.4 — Commiting
 Both, [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) and [`Receiver`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#receiver):
 1. **Must** serialize next data to the stable storage:
     * [Transaction ID](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#transactionid) 
@@ -612,9 +638,9 @@ Both, [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master
         * `node.publicKey`;
         * `node.signature`;
      
-1. **Must** turn all reserves into balances on all trust lines / channels that has reservations related to the transaction.
+1. **Must** turn all reserves into balances on all trust lines / channels, that has reservations related to the transaction.
 1. **Must** drop all reserves, related to the transaction.
-1. **Must** drop related serialized transaction from stabel storage to prevent it restoring on node restart.
+1. **Must** drop related serialized transaction from stable storage to prevent it restoring on node restart.
 
 **WARN:** all operations provided in this section **must** be performed in atomic manner, otherwise — there is a non-zero probability that operation would be committed, but the serialized transaction would not be dropped, that would lead to errorneus transaction recover attempt and balances corruption as a result.
 
@@ -893,28 +919,22 @@ struct SignedDebtReceipt {
 }
 ```
 
-#### Signatures list
+#### Transaction Consensus Message
 ```c++
-struct SignaturesList {
+struct TransactionConsensusRecord {
+    MemberID memberID;
+    Signature signature;
+}
+```
+
+```c++
+struct TransactionConsensusMessage {
     TransactionID transactionID;
 
     // Total participants count, including the Coordinator.
-    byte[2] participantsCount; // 65534 at max
+    uint16 participantsCount;
 
-    Address coordinatorAddress;
-    PubKey coordinatorPubKey;
-
-    Address participant1Address;
-    PubKey participant1Signature;
-
-    // ...
-    // Other participants data goes here
-    // ...
-
-    Address participantNAddress;
-    PubKey participantNSignature;
-
-    Sign coordinatorSign;
+    TransactionConsensusRecord members[participantsCount];
 }
 ```
 
