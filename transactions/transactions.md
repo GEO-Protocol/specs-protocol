@@ -306,7 +306,6 @@ _Disadvanteges — moderate reservations speed._
 ##### [Coordinator](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator)
 1. ∀{`path` ∈ `paths_discovered`}:
     1. _FN_ — first neighbour — second node in the path.
-    </br>
     **Must** calculate max. possible amount reservation on the trust line with _FN_;
     1. **Must** send Reservation Request to the _FN_;
     1. **Must** wait for the reponse from _FN_ for no more than [2 network timeouts](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#network-hop-timeout). In case if no response has been received during this time window — remote node **must** be considered as "unavailable". **All paths** with this node included **must** be dropped from the processing. If there are nodes, that has confirmed reservation request, then this nodes should receive reservation cancel request from the [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator).
