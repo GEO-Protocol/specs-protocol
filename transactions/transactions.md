@@ -491,17 +491,20 @@ There is no need for additional check of them on the `Coordinator's` side.
 1. **Must** [commit](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-33--commiting) the operation.
 
 
-# Stage 3.2 — Signing prepearing (coordinator)
+# Stage 3.2 — Signs collecting (coordinator)
 
+### Transaction Signatures
 _TS_ collects transactions signatures from participants and stores received info realted to the sender. _TS_ = {
-[`A`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#middleware-node): [`TransactionSignatureA`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#transaction-signature), 
-[`B`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#middleware-node):[`TransactionSignatureB`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#transaction-signature), ... , 
+[`B`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#middleware-node): [`TransactionSignatureB`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#transaction-signature), 
+[`C`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#middleware-node):[`TransactionSignatureC`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#transaction-signature), ... , 
 [`Receiver`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#receiver): [`TransactionSignatureReceiver`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#transaction-signature)}.
 
+### Flow
+1. **Must** collect [Transaction Signatures](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#transaction-signature) from _all_ participants into _TS_.  
+If not _all_ transaction signatures was collected during 3 [network hops](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#network-hop-timeout) _(2 hops for keys/signatures transfer and 1 for remote node proessing)_ — `Coordinator` **must** reject the operation [Stage B](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-b-middle-wares-node-behaviour-after-transaction-reject).
 
-
-1. **Must** collect [Transaction Signatures](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#transaction-signature) from **all** participants into _TS_.
-1. **Must** check all received [Transaction Signatures](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#transaction-signature) through checks provided further.
+1. **Must** check all received [Transaction Signatures](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#transaction-signature) through checks provided further.  
+If even one check fails — `Coordinator` **must** reject the operation [Stage B](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-b-middle-wares-node-behaviour-after-transaction-reject).
 
 ### Checks for TS:
 * ∀(`record`, `sender` ∈ _TS_):
@@ -513,23 +516,15 @@ _TS_ collects transactions signatures from participants and stores received info
           where `participant` = ∀(`node` ∈ [`nodes_inv`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#nodes-involved));
 
 # Stage 3.3 — Commiting
-1.
+Both, [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) and [`Receiver`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#receiver):
+1. **Must** serialize next data to the stable storage:
+   * [Transaction ID](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#transactionid) 
+   * ∀(`node` ∈ [`nodes_inv`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#nodes-involved)):
+      * `node.memberID`;
+      * `node.publicKey`;
+      * `node.signature`;
 
 
-
-
-
-
-
-1. **Must** generate [Participants Public Keys List _PPKL_](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#participants-public-keys-list) for each one participant included into the operation;
-1. **Must** send related _PPKL_ to all participant involved.
-    ```mermaid
-    sequenceDiagram
-        Coordinator (D)->>B: PPKL
-        Coordinator (D)->>C: PPKL
-        Coordinator (D)->>Receiver (A): PPKL
-    ```
-    <img src="https://github.com/GEO-Project/specs-protocol/blob/master/transactions/resources/chart8.svg">
 
 
 
