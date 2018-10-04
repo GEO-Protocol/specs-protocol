@@ -457,17 +457,20 @@ In all cases, it is safe for any node to drop the transaction and it's related a
 <br/>
 <br/>
   
-# Stage 2 — Trust context establishing (coordinator)
-1. **Must** finalize it's paths map and generate [Final Reservations Configuration]() (_FCR_) [#todo: add structure] for ∀{[`nodes_inv`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#nodes-involved)}.
-1. **Must** send _FRC_ to ∀{[`nodes_inv`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#nodes-involved)}. 
+# Stage 2 — Final Res. Conf. (coordinator)
+##### Definitions
+[Final Reservations Configuration]() [#todo: add structure] — _FCR_ — structure that represents relations and their states (reservations). Separated _FCR_ must be generated for each one node involved for the syncronisation purposes. 
+
+##### Flow
+1. **Must** finalize it's paths map and generate _FCR_  for ∀`node` ∈ [`nodes_inv`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#nodes-involved)}.
+1. **Must** send _FRC_ to ∀`node` ∈ [`nodes_inv`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#nodes-involved)}. 
 
 <img src="https://github.com/GEO-Project/specs-protocol/blob/master/transactions/resources/20181004130140.svg">
 
 <br/>
 <br/>
 
-# Stage 2 — Trust context establishing (nodes)
-
+# Stage 2 — Final Res. Conf. (nodes)
 ##### Definitions
 * Internal Trust Lines — _ITL_ — list of trust lines (or channels), involved into the transaction. 
 
