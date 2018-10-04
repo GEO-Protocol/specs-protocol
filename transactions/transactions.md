@@ -284,14 +284,14 @@ Presence of all signatures approves 100% consensus and must be interpret as fina
 <br/>
 
 # Stage 1 — Amount Collecting and Reservation
-#### _Paths discovering_  
-[`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) in cooperation with [`Receiver`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#receiver) **must** discover all (or some part of) possible [network paths](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#network-path) `{Coordinator -> Receiver}`. In case if no paths are found — algorithm execution **must** stop with error code [`No routes`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#no-routes). Please, see [Routing]() `[#todo: link]` for the details on paths discovering.
+#### Paths discovering
+[`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) in cooperation with [`Receiver`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#receiver) **must** discover all (or some part of) possible [network paths](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#network-path) `{Coordinator -> Receiver}`. In case if no paths are found — _Algorithm_ execution **must** stop with the error code [`No routes`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#no-routes). Please, see [Routing]() `[#todo: link]` for the details on paths discovering.
 
-#### [Optional] Paths Processing Optimisation
-Routing algorithm [todo: link] migh return first portion of available paths much faster, than it needs for discovering whole list of all possible paths. For the transaction processing, only several paths might be needed, and, depending on the transaction amount, there is a non-zero probability, that several first portion(s) of paths would be enough for the operation to finish. Transactions Algorithm should not wait for discovering all the paths, but should begin even if one (or several) paths are available. In case if discovered paths would be not enough — Algorithm should pause for some time, until next portion of paths would be available.
+#### Optimisations
+* [Paths Processing] Routing algorithm [todo: link] migh return first portion of available paths much faster, than it needs for discovering whole list of all possible paths. For the transaction processing, only several paths might be needed, and, depending on the transaction amount, there is a non-zero probability, that several first portion(s) of paths would be enough for the operation to finish. Transactions Algorithm should not wait for discovering all the paths, but should begin even if one (or several) paths are available. In case if discovered paths would be not enough — Algorithm should pause for some time, until next portion of paths would be available.
 
 
-#### _Paths processing_  
+#### Paths processing
 [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) **must** attempt to reserve [`tr. amount`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#transaction-amount) to the [`Receiver`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#receiver) on several (or all, if needed, but at least one) discovered paths.
 
 ## Algorithm A: Parrallel reservations collecting 
