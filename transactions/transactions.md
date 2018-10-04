@@ -1,4 +1,4 @@
-`GEO Protocol / 2018` &nbsp;&nbsp;&nbsp;  **`Release Candidate`** **`Audit Pending`**
+`GEO Protocol / 2018` &nbsp;&nbsp;&nbsp;  `Release Candidate` **`Audit Pending`**
 
 ![Twin Spark Logo](https://github.com/GEO-Project/specs-protocol/blob/master/transactions/resources/twin_spark.png)
 
