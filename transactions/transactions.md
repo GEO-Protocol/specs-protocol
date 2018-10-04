@@ -12,7 +12,7 @@ crypto-protocol for atomic and consistent assets transfers via p2p networks.
 [`Mykola Ilashchuk`](https://github.com/MukolaIlashchuk) 
 <br/>
 <br/>
-**Contributors:**
+_Contributors:_
 [`Denis Vasilov`](https://github.com/Vasilov345)
 <br/>
 <br/>
@@ -21,7 +21,7 @@ crypto-protocol for atomic and consistent assets transfers via p2p networks.
 <br/>
 <br/>
 # Abstract
-This specification describes transactions processing algorithm _("Algorithm" further in the doc)_ for the [GEO Network](https://github.com/GEO-Project). Proposed solution provides ability for up to several hundreds of participants _[※ 1]_ to achieve **100% consensus** via communications through potentially unstable network, in untrusted environment and under active fraud attempts of malicious participants.
+This specification describes transactions processing algorithm _("Algorithm"_ further in the doc.) for the [GEO Network](https://github.com/GEO-Project). Proposed solution provides ability for up to several hundreds participants _[※ 1]_ to achieve **100% consensus** via communications through potentially unstable and untrusted environment, under active fraud attempts of malicious participants.
 
 <br/>
 
