@@ -859,6 +859,8 @@ During operation processing, there is non zero-probability, that some node(s) in
 
 [#todo node must permanently check observers for the requests]
 
+<br/>
+<br/>
 
 # Data types used
 This section provides explanation of used data structures in developers friendly format.
@@ -935,6 +937,8 @@ struct Amount {
     byte[1..32] value;
 }
 ```
+<br/>
+
 <br/>
 
 # Messages
@@ -1035,11 +1039,15 @@ There is no enough amount can be collected on all paths discovered.
 `code: 402`
 Some node, that participated in the operation did not provided its signature for it.
 
+<br/>
+<br/>
 
 # Timeouts
 #### Amount reservation timeout 
 `30 seconds`
 
+<br/>
+<br/>
 
 # Constants
 ### Keys pool size
@@ -1057,6 +1065,8 @@ _Observers request checking interval_ — time interval that specifies how often
 ### Observers verdict timeout
 _Observers verdict timeout_ — max. time that observers might wait for the TransactionConsensusMessage arriving from the network. By default is set to `2 hours`.
 
+<br/>
+<br/>
 
 # License
 [<img src="https://opensource.org/files/osi_keyhole_300X300_90ppi_0.png" height=90 style="float: left; padding: 20px">]()
