@@ -526,16 +526,46 @@ Stage 2.1 is considered as completed when all nodes would exchange signed debt r
 <br/>
 
 # Stage 2.2 — Public keys exchange (node)
-Node **must** send to the [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) its Public Key, which this particular node would use for signing whole the transaction.
-     
+
+##### Definitions
+* [PublicKeyMessage]() [#todo: add structure] — _PKM_ — message, that contains Public Key of the node, which would be used by the node for the transaction signing.
+
+* [PublicKeyHashMessage]() [#todo: add structure] — _PKHM_ — message, that contains **hash** of Public Key of the node, which would be used by the node for the transaction signing. This message is used for network traffic optimisations purposes.
+
+##### Flow
+1. **Must** send _PKM_ to the [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator).
+1. **Must** send _PKHM_ to ∀`node` ∈ [`nodes_inv`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#nodes-involved).
+
+<img src="https://github.com/GEO-Project/specs-protocol/blob/master/transactions/resources/20181004134734.svg">
+
 ```mermaid
 sequenceDiagram
-    B->>Coordinator (D): [PubK]
-    C->>Coordinator (D): [PubK]
-    Receiver (A)->>Coordinator (D): [PubK]
+    B->>Coordinator (D): PubKey
+    B->>Receiver (A): PubKey Hash
+    B->>C: PubKey Hash
 ```
-<img src="https://github.com/GEO-Project/specs-protocol/blob/master/transactions/resources/chart7.svg">
-  
+
+</br>
+
+<img src="https://github.com/GEO-Project/specs-protocol/blob/master/transactions/resources/20181004135048.svg">
+
+```mermaid
+sequenceDiagram
+    C->>Coordinator (D): PubKey
+    C->>B: PubKey Hash
+    C->>Receiver (A): PubKey Hash
+```
+</br>
+
+<img src="https://github.com/GEO-Project/specs-protocol/blob/master/transactions/resources/20181004134923.svg">
+
+```mermaid
+sequenceDiagram
+    Receiver (A)->>Coordinator (D): PubKey
+    Receiver (A)->>B: PubKey Hash
+    Receiver (A)->>C: PubKey Hash
+```
+
 <br/>
 <br/>
 
