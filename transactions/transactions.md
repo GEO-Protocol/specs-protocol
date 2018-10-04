@@ -191,13 +191,14 @@ Along with other finalists of the NIST SHA-3 contest, it has proven and reliable
 ## Overview
 Lets assume that there is a network with 4 attendees `{A, B, C, D}` involved into the next topology:
 
+<img width=400 src="https://github.com/GEO-Project/specs-protocol/blob/master/transactions/resources/chart1.svg">
+
 ```mermaid
 graph LR;
     A-- 50 -->B;
     B-- 100 -->C;
     C-- 200 -->D;
 ```
-<img width=400 src="https://github.com/GEO-Project/specs-protocol/blob/master/transactions/resources/chart1.svg">
 
 * _`A` trusts / opens channels with `B` for `50` (accounting units of some value);_
 * _`B` trusts / opens channels with `C` for `100` (accounting units of some value);_
@@ -241,24 +242,29 @@ _Observers_ or _Observers chain_ — is special institute for disputes resolving
 ## Terms
 
 #### Nodes involved
-`nodes_inv` — list of nodes, that are involved into the operation.
+_Nodes involved_ — `nodes_inv` — list of nodes, that are involved into the transaction. 
+Depending from the context, might represent (1) _all nodes of the transaction_, or (2) _all other nodes of the transaction_.
 
 #### Neighbors involved
-`neighbors_inv` — list of neighbor nodes, that are involved into the operation.  
-`neighbors_inv` is a subset of [`nodes_inv`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#nodes-involved)
+_Neighbors involved_ — `neighbors_inv` — list of neighbor nodes, that are involved into the operation, is a subset of [`nodes_inv`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#nodes-involved)
 
-#### Transaction Amount
-Transaction Amount — `tr. amount` — amount of accounting units that [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) tries to send to the `Receiver`;
+#### Transaction amount
+_Transaction Amount_ — `tr. amount` — amount of accounting units that [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) tries to send to the [`Receiver`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#receiver);
 
 #### Least common amount
-Least common amount — common reservation amount, that might be reserved by _all_ nodes in the path. Least common amount == max. flow of the path. 
+_Least common amount_ — common reservation amount, that might be reserved by _all_ nodes in the path.  
+Least common amount == max. payment flow of the path. Please, see [Maximum flow problem](https://en.wikipedia.org/wiki/Maximum_flow_problem) for the details.
 
 #### Network Path
-Network Path — vector _V_ of nodes, that are chained by the trust lines / channels into common path. Path is considered as valid only in case if there is a possibility to traverse all nodes in it from the source node up to the destination node (one by one).  
+_Network Path_ — vector _V_ of nodes, that are chained by the trust lines / channels into one path.  
+Path is considered as valid only in case if there is a possibility to traverse all nodes from the source node to the destination node (one by one).  
 
 </br>
 
 _V = [sourceNode, node1, node2, ..., destinationNode]_
+
+<img width=400 src="https://github.com/GEO-Project/specs-protocol/blob/master/transactions/resources/20181004170830.svg">
+_Example of network path: {A, B, C, D} and its subsets {A, B, C}, {A, B}, ..._
 
 #### Paths map
 Coordinator-specific internal data structure for storing information about all reservations created on all paths used. During amount reservation, each one newly created amount reservation always would be less (or equal) to previously created reservation on the same path. This structure helps maintain path topology and help nodes to achieve _least common amount_ reserved.
