@@ -651,18 +651,22 @@ Only [middleware nodes](https://github.com/GEO-Protocol/specs-protocol/blob/mast
 * Consensus Timeout — _CT_ — max. time window, node should wait for the [TransactionConsensusMessage](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#transaction-consensus-message).  
 By default, should be at least 2 [network timeouts](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#network-hop-timeout) long.
 
+* [TransactionConsensusMessage](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#transaction-consensus-message) — _TCM_ — message with signatures (approves) of all [`nodes_inv`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#nodes-involved).
+
 ##### Flow
-1. **Must** wait _CT_;
-1. **Must** receive [TransactionConsensusMessage](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#transaction-consensus-message) from the Coordinator. In case if no [TransactionConsensusMessage](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#transaction-consensus-message) was received 
-— node moves into recover stage. [todo!!!]
-1. **Must** check received [TransactionConsensusMessage](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#transaction-consensus-message) through the checks provided further. 
-    * In case if even one check fails — node moves into recover stage. [todo!!!]
-    * In case of all checks passed — **must** commit.
+1. **Must** wait for the _CT_;
 
-##### Checks for the [TransactionConsensusMessage](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#transaction-consensus-message)
+1. **Must** receive _TCM_ from the [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator).  
+In case if no _TCM_ was received — **must** move to [Recover stage](). [#todo!!!]
 
-1. `message.transactionID` **must** be equal to current [Transaction ID](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#transactionid);
-1 ∀{`member` ∈ `message.members`}:
+1. **Must** check received _TCM_ through the checks provided further. 
+    * In case if _even one_ check fails — **must** move to [Recover stage](). [#todo!!!]
+    * In case of _all_ checks has been passed — **must** [Commit](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-34--commiting).
+
+##### Checks for the _TCM_
+1. `TCM.transactionID` **must** be equal to current [Transaction ID](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#transactionid);
+
+1. ∀{`member` ∈ `TCM.members`}:
     1. `member` has corresponding by `memberID` node in [`nodes_inv`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#nodes-involved) (_Corresponding Node, CN_);
     1. LamportSignatureCheck(`member.signature`, `CN.pubKey`) -> `True`;
 
