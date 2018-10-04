@@ -1,9 +1,9 @@
-`GEO Protocol / 2018`  `DRAFT [todo: remove it]`
+`GEO Protocol / 2018` &nbsp;&nbsp;&nbsp;  `Release Candidate` **`Audit Pending`**
 
 ![Twin Spark Logo](https://github.com/GEO-Project/specs-protocol/blob/master/transactions/resources/twin_spark.png)
 
-Fast, safe, double-spending resistant, multi-attendee crypto-protocol  
-for atomic and consistent assets transfers.
+Fast, safe, double-spending resistant, quantum-resistant, multi-attendee  
+crypto-protocol for atomic and consistent assets transfers via p2p networks.
 <br/>
 <br/>
 <br/>
@@ -12,7 +12,8 @@ for atomic and consistent assets transfers.
 [`Mykola Ilashchuk`](https://github.com/MukolaIlashchuk) 
 <br/>
 <br/>
-**Contributors:**
+_Contributors:_
+<br/>
 [`Denis Vasilov`](https://github.com/Vasilov345)
 <br/>
 <br/>
@@ -21,7 +22,7 @@ for atomic and consistent assets transfers.
 <br/>
 <br/>
 # Abstract
-This specification describes transactions processing algorithm _("Algorithm" further in the doc)_ for the [GEO Network](https://github.com/GEO-Project). Proposed solution provides ability for up to several hundreds of participants _[※ 1]_ to achieve **100% consensus** via communications through potentially unstable network, in untrusted environment and under active fraud attempts of malicious participants.
+This specification describes transactions processing algorithm _("Algorithm"_ further in the doc.) for the [GEO Network](https://github.com/GEO-Project). Proposed solution provides ability for up to several hundreds participants _[※ 1]_ to achieve **100% consensus** via communications through potentially unstable and untrusted environment, under active fraud attempts of malicious participants.
 
 <br/>
 
@@ -43,6 +44,9 @@ The objectives of this document are:
 1. to describe the method of mathematical and cryptographic confirmation of operations (consensus checking);
 1. to prodive mathematical confirmation of the impossibility (or extreme complexity) of the operations compromising [todo];
 1. to provide a list of possible edge cases and to describe the ways to avoid/resovle them, as well as possible outcomes of operations.
+
+<br/>
+<br/>
 
 # Source Conditions and Requirements
 This section lists the functional and design requirements for the proposed algorithm — the metrics, that were used to analyze all found and potentially applicable solutions for their applicability in to the final protocol.
@@ -114,6 +118,8 @@ This section lists the functional and design requirements for the proposed algor
   
 ※ To increase the probabilty of achieving consensus, and / or shorten the time of the algorithm execution, various traffic optimisation and correction techniques can be used as well. This protocol does not assumes any of them to be present, but obviously works better in the environments with stable network connections.
 
+<br/>
+<br/>
 
 # Double Spending Prevention
 Due to proposed [network topology, based on trust lines / channels]() [#todo: add link to trust lines protocol] — there is no common balance (or ledger) of the node. There are only relations of the node with its neighbours (other nodes in the network), and balances of this relations. There is no single point of assets storing. There are only relative balances of the node. As a result — there is no possibility to perform so called "double spending" towards several neighbours or remote nodes at a time. There is only a possibility to try to cheat against some neighbour and to try to force it to use some debt twice or more. But, there is no way to do it without approval (cryptographic sign) of that node, and obviously remote node would not be agree to approve such kind of malicious operation. 
@@ -122,11 +128,10 @@ To help nodes prevent double spending attempts — so called "distributed lock" 
 
 On each one transaction, node **must** check this component and enshure that current `total reserved amount` on the requested trust line / channel is **less** than `(total available amount) - (reservation request)`. In other words, this check **must** enshure node would not reserve more amount than is available by the trust line / channel.
 
-This check is **required part of each one operation.** (See [Stage 1 — Amount collecting and reservation](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-1--amount-collecting-and-reservation) for the details).  
+This check is **required part of each one operation.**  
+(See [Stage 1 — Amount collecting and reservation](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-1--amount-collecting-and-reservation) for the details). 
+
 While node follows this specification and it's internal behaviour was not modified (hacked) — there is no way to force remote node to accept more debts, than it was envisaged by the trust line / channel.
- 
-`Related specs:`
-* [Trust lines;]() [#todo: provide link]
 
 <br/>
 <br/>
@@ -137,6 +142,8 @@ This section describes the used cryptographic primitives and the motivation for 
 
 ## Lamport Signature
 [_Lamport signature_](https://en.wikipedia.org/wiki/Lamport_signature) or _Lamport one-time signature scheme_ is a method for constructing a digital signature. Lamport signatures can be built from any cryptographically secure one-way function; usually a cryptographic hash function is used _[※ 1]_. In Twin Spark, Lamport's signature is based on [_BLAKE2b_](https://blake2.net/).
+
+<br/>
 
 ---
 
@@ -169,13 +176,19 @@ Along with other finalists of the NIST SHA-3 contest, it has proven and reliable
 <br/>
 <br/>
 
-# Protocol Decription
-## Overview
+# Assumptions
+1. Algorithm expects that neighbor nodes (nodes that are connected via trust line / channel) have secure communication channel between each other (common shared secret). Please, see [Trust Lines;]() [#todo: add link] specifications for the details about achieving this.
 
-`Related specs:`
+##### Related specs
 * [Trust Lines;]() [#todo: add link]
 * [Economic model;]() [#todo: add link]
 
+<br/>
+<br/>
+
+
+# Protocol Decription
+## Overview
 Lets assume that there is a network with 4 attendees `{A, B, C, D}` involved into the next topology:
 
 ```mermaid
@@ -222,6 +235,8 @@ _Middleware node_ — node that takes part into the operation as common particip
 </br>
 </br>
 
+#### Observers
+_Observers_ or _Observers chain_ — is special institute for disputes resolving. Please, see the [Observers]() [#todo: add specification] specification for the details.
 
 ## Terms
 
@@ -526,51 +541,64 @@ Stage 2.1 is considered as completed when all nodes would exchange signed debt r
 <br/>
 
 # Stage 2.2 — Public keys exchange (node)
-Node **must** send to the [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) its Public Key, which this particular node would use for signing whole the transaction.
-     
+
+##### Definitions
+* [PublicKeyMessage]() [#todo: add structure] — _PKM_ — message, that contains Public Key of the node, which would be used by the node for the transaction signing.
+
+* [PublicKeyHashMessage]() [#todo: add structure] — _PKHM_ — message, that contains **hash** of Public Key of the node, which would be used by the node for the transaction signing. This message is used for network traffic optimisations purposes. Content for the message **must** be generated by [HASH](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#blake2b)(`node.PubKey`).
+
+##### Flow
+1. **Must** send _PKM_ to the [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator).
+1. **Must** send _PKHM_ to ∀`node` ∈ [`nodes_inv`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#nodes-involved).
+
+<img src="https://github.com/GEO-Project/specs-protocol/blob/master/transactions/resources/20181004134734.svg">
+
 ```mermaid
 sequenceDiagram
-    B->>Coordinator (D): [PubK]
-    C->>Coordinator (D): [PubK]
-    Receiver (A)->>Coordinator (D): [PubK]
+    B->>Coordinator (D): PubKey
+    B->>Receiver (A): PubKey Hash
+    B->>C: PubKey Hash
 ```
-<img src="https://github.com/GEO-Project/specs-protocol/blob/master/transactions/resources/chart7.svg">
-  
+
+---
+
+</br>
+
+<img src="https://github.com/GEO-Project/specs-protocol/blob/master/transactions/resources/20181004135048.svg">
+
+```mermaid
+sequenceDiagram
+    C->>Coordinator (D): PubKey
+    C->>B: PubKey Hash
+    C->>Receiver (A): PubKey Hash
+```
+
+---
+
+</br>
+
+<img src="https://github.com/GEO-Project/specs-protocol/blob/master/transactions/resources/20181004134923.svg">
+
+```mermaid
+sequenceDiagram
+    Receiver (A)->>Coordinator (D): PubKey
+    Receiver (A)->>B: PubKey Hash
+    Receiver (A)->>C: PubKey Hash
+```
+
+##### Optimisations
+* ∀`node` ∈ [`nodes_inv`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#nodes-involved) might ommit sending of "PubKey Hash" to the neighbors nodes in this stage, but include the hash into the [SignedDebtReceiptMessage]() [#todo: add structure] on [Stage 2.1](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-21--signed-debts-receipts-exchange). This makes it possible to save one message round trip for each neighbor involved and several bytes of messages headers for each message.
+
 <br/>
 <br/>
 
 # Stage 2.2 — Public keys exchange (coordinator)
-[`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) **must** collect Public Keys [#todo: link to crypto] from all participants.
-
-In case if not all expected keys was collected — [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) rejects the operation with code "[No Consensus](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#not-enough-amount)" [(Stage: A)](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-a-coordinators-behaviour-after-transaction-reject);
-
-In case if all expected keys was collected — [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) **must**:
-1. Generate PubKeys list.
-2. Send generated PubKeys list to all nodes.
-
-<br/>
-<br/>
-
-# Stage 2.3 — Trust context checking (node)
-If `PubKeys list` was not received during [`3 net. hops`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#network-hop-timeout) — node **must** reject the operation ([Stage B](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-b-middle-wares-node-behaviour-after-transaction-reject)). 
-
-If `PubKeys list` was received:
-1. `Node` **must** check `PubKeys list` (steps of check are provided further). 
-
-If check doesn't pass — `node` **must** reject the operation ([Stage B](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-b-middle-wares-node-behaviour-after-transaction-reject)).
-
-If check passed — stage 2.3 is considered as completed.
-
-<br/>
-<br/>
-
-# Stage 2.3 — Trust context checking (coordinator)
 ##### Flow
 1. **Must** wait at least 2 [network hops](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#network-hop-timeout).
-1. **Must** receive [PubKeyMessage]() (_PKM_) [#todo: describe the structure] from all [`nodes_inv`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#nodes-involved). If not _PKM_ was received _even from one_ node — **must** reject the transaction [(Stage B)](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-b-middle-wares-node-behaviour-after-transaction-reject).
+1. **Must** receive [PublicKeyMessage]() (_PKM_) [#todo: describe the structure] from all [`nodes_inv`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#nodes-involved). If not _PKM_ was received _even from one_ node — **must** reject the transaction [(Stage B)](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-b-middle-wares-node-behaviour-after-transaction-reject).
 1. **Must** check _PKM_ through the checks, provided further. 
   If _even one_ check doesn't pass — **must** reject the transaction [(Stage B)](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-b-middle-wares-node-behaviour-after-transaction-reject).
-  If _all_ checks has passed — **must** [prepeare signing](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-31--signing-prepearing-coordinator).
+1. **Must** generate [PublicKeysListMessage]() [#todo: add structure] (_PKLM_) and send it to ∀`node` ∈ [`nodes_inv`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#nodes-involved).
 
 ##### Checks for PKM
 1. _PKM_ contains public keys of _**all** neighbours nodes, of the [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator), that are involved into the operation; (`neig. PKl`);_
@@ -578,9 +606,27 @@ If check passed — stage 2.3 is considered as completed.
   * Key length **must** be `16Kb`;
   * Key must be included
 
+##### Optimisations
+* [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) should not inlude into _PKLM_ the pub. key of the _PKLM_ addressee (remote node knows its pub. key). 
 
 <br/>
 <br/>
+
+# Stage 2.3 — Trust context checking (node)
+##### Flow
+1. **Must** receive [PublicKeysListMessage]() (_PKLM_) [#todo: describe the structure] during 2 [network hops](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#network-hop-timeout). If _PKLM_ was not received — node **must** reject the operation ([Stage B](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-b-middle-wares-node-behaviour-after-transaction-reject)). 
+1. **Must** check _PKLM_ through checks provided further.  
+  If even one check fails — **must** reject the operation ([Stage B](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-b-middle-wares-node-behaviour-after-transaction-reject))
+
+##### Checks for PKLM
+1. _PKLM_ contains all nodes from [`nodes_inv`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#nodes-involved) (except pub. key of current node). 
+1. ∀ `record` ∈ _PKLM_:
+    1. [_HASH_](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#blake2b)(`record.pubKey`) == _H_,  
+    where _H_ — corresponding pub. key hash, received on Stages [[2.1](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-21--signed-debts-receipts-exchange) / [2.2](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-22--public-keys-exchange-node)]
+
+<br/>
+<br/>
+
 
 # Stage 3.1 — Signing prepearing (coordinator)
 1. **Must** generate [Participants Public Keys List _(PPKL)_](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#participants-public-keys-list) for each one participant included into the operation;
@@ -593,8 +639,8 @@ If check passed — stage 2.3 is considered as completed.
     ```
     <img src="https://github.com/GEO-Project/specs-protocol/blob/master/transactions/resources/chart8.svg">
 
-#### [Optional] Traffic optimisation 
-[`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) might exlude addressee from the [_PPKL_](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#participants-public-keys-list).  
+##### Optimisations
+* [Traffic optimisation] [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) might exlude addressee from the [_PPKL_](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#participants-public-keys-list).  
   For example, in case if nodes {[`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator), [`B`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#middleware-node), [`C`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#middleware-node), [`Receiver`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#receiver)} take part into the operation, and [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) now performs [_PPKL_](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#participants-public-keys-list) for the [`A`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#middleware-node) — then [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) might exclude [`A`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#middleware-node) from the [_PPKL_](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#participants-public-keys-list) and _save network traffic for itself and for the [`A`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#middleware-node)_.
 
 <br/>
@@ -608,7 +654,7 @@ In case if _even one_ check failed — **must** reject operation [(Stage B)](htt
 1. **Must** [sign the operation](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-32--signing-node) in case if _all checks passed_;
 
 ### Checks for PPKL:
-1. ∀(`node` ∈ [`nodes_inv`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#nodes-involved)):
+1. ∀`node` ∈ [`nodes_inv`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#nodes-involved):
     1. `node.memberID` is present in _PPKL_; 
     1. _H_ == [HASH](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#blake2b)(`n.PubKey`), where  
     _H_ — [HASH](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#blake2b)(`node.pubKey`, received on [Stage 2](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-2--trust-context-establishing-nodes)),  
@@ -686,7 +732,7 @@ In case if no _TCM_ was received — **must** move to [Recover stage](). [#todo!
 
 1. ∀{`member` ∈ `TCM.members`}:
     1. `member` has corresponding by `memberID` node in [`nodes_inv`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#nodes-involved) (_Corresponding Node, CN_);
-    1. LamportSignatureCheck(`member.signature`, `CN.pubKey`) -> `True`;
+    1. _LamportSignatureCheck_(`member.signature`, `CN.pubKey`) -> `True`;
 
 <br/>
 <br/>
@@ -713,115 +759,10 @@ Both, [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master
 <br/>
 <br/>
 
-# Votes list
 
-1. On `votes list` received, each one middle ware node `{(B), (C)}` and `Receiver`:
-    1. Checks that received message contains declared count of participants records (PubKeys and addresses). In case if this check fails — node must reject transaction, `[Stage B]`.
-    1. Calculates `keccak512(PubKey)` for each `PubKey` from the received `votes list`.
-    Node also includes its own public key into the calculation process.
-    As a result, node creates the map `Node(PubKey) -> Keccak512Digest`.
-    For example, for node `(B)` this map might be as follows:
-    ```
-        Node A { <Address> }    ->  f7d6...9ecb;
-        Node B                  ->  64f4...3737;
-        Node C { <Address> }    ->  e697...90da;
-        Node D { <Address> }    ->  eff1...06ac;
-    ```
 
-    1. For each generated digest, additional approve from the remote node is required. Each one node must ask each one another node about validity of it's public key, by sending it's digest for the verification. This step is necessary to prevent signs spoofing.
-
-    ```mermaid
-    sequenceDiagram
-        B->>Coordinator (D): Request PubKey Digest
-        B->>Receiver (A): Request PubKey Digest
-        B->>C: Request PubKey Digest
-
-        Coordinator (D)->>B: PubKey Digest
-        Receiver (A)->>B: PubKey Digest
-        C->>B: PubKey Digest
-    ```
-    <img src="https://github.com/GEO-Project/specs-protocol/blob/master/transactions/resources/chart9.svg">
-
-    ```c++
-    struct RequestPubKeyDigest {
-        TransactionID transactionID;
-    }
-    ```
-
-    ```c++
-    struct ResponsePubKeyDigest {
-        TransactionID transactionID;
-        byte[64] digest;    // keccak512 digest.
-    }
-    ```
-    1. If all collected digests of pub keys are equal to the corresponding digests, generated on the node — then it is assumed, that [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) collected original public keys, no keys substitution was done, and the `votes list` has been created correct. Otherwise — node must vote for the rejecting of this operation `Stage 4.B`.
-
-# Stage 4: Voting
-1. Each middleware node `{(B), (C)}` and `Receiver` does the next checks:
-    1. All trust lines, included into the final configuration, are approved by corresponding neighbor nodes. Corresponding receipts are also present/sent, are signed correctly, and are permanently stored.
-    1. All particpants from the final configuration are present in votes list.
-    1. There are no duplicated node addresses or Pub Key are present in `votes list`.
-    1. Digest of **all** nodes from the votes list are checked and all of them are correct.
-    1. All internal timeouts has been not fired up. `todo: is it really needed here?`
-    1. Participants of the votes list are sorted in ascending order. It is necessary for signing stage.
-1. If one of this conditions is not met — node must not sign the operation, and forget it. Otherwise, **if all conditions are met —** node should **sign the operation**.
-
-# Stage 4.A: Signing
-* Operation is considered as performed well only if 100% of participants has voted for the operation approve.
-* Operation is considered as approved by the node, only if vote list, generated by the [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) contains valid node sign.
-* It is assumed that votes list is sorted. See section 2 for the details.
-
-The algorithm for the sign generation is the next:
-
-1. Concatenate all participants Pub Keys from votes list into one bytes sequence.
-1. Concatenate transaction ID to the result bytes sequence.
-1. Concatenate `Approve Sequence` to the result bytes sequence.
-1. Sign generated sequence by the nodes Sign. `todo: link for signing using Lamport One Time Sign`.
-
-### Approve sequence
-There is a special bytes sequence, that must be concatenated to the votes list:
-* it is generated with sustainability for fingerprinting and differential analise in mind, so it is relatively long to stay sustainable even in case if there are only 2 Public Keys present in `votes list` (direct payment performed).
-* in case if all Public Keys would be weak for the differential analise — it is expected, that this sequence in cooperation with keccak512 will play sufficient role for the good output data randomness.
-
-`todo: link to approve sequence (refined S Blocks, 16kb of data)`
-
-`todo: think about injecting vs concatenating`
-
-`todo: describe why rejecting by the node leads to TA states collision`.
-
-## Stage 4.B: Consensus processing
-1. Node sends signed `votes list` back to the [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator).
-1. Node starts waiting for the response from the [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) with other nodes signs. See `Stage 5` for the details. Recommended timeout for this operation is `n*2` seconds, where `n=votes list participants count`.
-1. There are 2 further cases possible:
-    1. `votes list` signs by other participants arrived to the node before timeout has been fired up, it is correct and contains all 100% participants approve-signs.
-        1. In this case operations is considered done, node stores received `votes list` with all the signs into its internal storage and links it to previously collected debts receipts from it's neighbours.
-        1. [optional] Node might preemptively send its collected 100% `votes list` to the delegate, and wait for approve from it, to be sure, that no operation canceling is possible now. Otherwise, if this is impossible (for example, during of network segmentation on the nodes side) — it is strongly recommended for the node to wait up to 15 minutes before final commit. This timeout must be enough for the `Delegate` to form final decision on the transaction, in case is some other node requested arbitration.
-        1. The last step — committing the operation. Now node has all needed proof, to require debt refunding from it's neighbours (if any). Debts revise might be initialized towards each one neighbours, whose balance was changed. `todo: describe neighbour revise procedure`. At this point algorithm is considered as finished.
-    1. `votes list` doesn't arrived during expected timeout. In this case node is going to require delegates arbitration `[Stage 5]`.
-
-# Stage 5: Consensus collecting by the Coordinator
-1. [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) waits for the signed votes lists from the nodes involved into the operation. On each one votes list arriving - [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) merges received votes list into common one, by concatenating received nodes signs into common votes list. In case if signs of all nodes was received well — the transaction is considered as approved. [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) in this case stores the final `votes list` into it's trust lines registry `todo: provide link to the trust lines logic`, and propagates it to all nodes in the transaction. After this step — algorithm is considered as done, and transaction is considered as finished.
-1. In case if votes arrived partially - [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) asks delegate node for the arbitration.
-
-# Stage 6: Delegated arbitration.
-Delegate arbitration is used in case when there is an uncertainty about the operation processing, but some (or several) node(s) has been signed it already and sent their signs into the network. In this case, this node(s) has no ability to change it's vote(s), because:
-    * nodes can't perform any reject, otherwise - it would be amboguous. In case if operation was positively signed, there is no way to revert it.
-    * propagating of negative sign would lead into the further consensus complexity, but in long term perspective is ineffective because of `Forced Consensus Propagation`.
-
-For the timely limited consensus generation, `delegates` are used — special class of trusted nodes, that are selected by common decision of all nodes, involved into the operation (`Stage 2`), and are responsible for decision generation in case of occurred uncertainty.
-
-The role of a delegate node is simple: it doesn't takes part into the operation until some node asks the delegate to join. It is expected, that in most cases, operations would perform well even without any delegates involved, but, for cases when some node, that takes part into the operation, experiencing lack of consensus — special decision generating flow is envisaged.
-
-1. After the initial request received — delegate starts polling of the participants of the operation for their `votes lists`. If some node has `votes list` already signed by all other participants — it should be reported to the `Delegate`. Otherwise - node simply reports its decision on the operation, by sending its own `votes list` with its sign only to the `Delegate`.  
-    * **Note:** Delegate continues to poll participants in case if some of them are not responding. It is recommended to use 10 seconds timeout between polling rounds.
-    * **WARN:** In case if node was queried by delegate for the `votes-list`, and after that has been received complete `votes-list` from the other participant - than this node must pontificate the `Delegate` about received votes list, and not proceed until there would be final decision from the `Delegate`.
-1. From received `votes list` `Delegate` tries to collect one with signs of all participants of the operation. It is the same logic, as coordinator does on receiving `votes lists` from the participants.
-    * In case if delegate collects 100% consensus during processing of `votes lists` of participants — then it immediately shares this `votes list` to all participants by the `[Votes list pushing]` mechanics. At this point of time — it is expected, that all participants are able to rich final state of the operation — **committing**.
-    * In case if delegate has been unable to reach appropriate decision based on received `votes lists` during ~10 minutes (`todo: describe delegates decisions flow`) from the initial request — then it is able to reject the operation and share it as a final decision to the nodes.
-    * **Warn:** please, note, that delegate might only force operation reject, and can't force its commit. This is important security restriction. `todo: describe why`
-
-# Votes list pushing (delegated logic)
-There is a very small, but still non-zero probability of a case, when 100% positive consensus `votes list` would appear somewhere in the network, and would not be available to the `Delegate`. As a result, `Delegate` would force operation reject and because of highest priority possible, this decision would be accepted by the nodes, even if operation is already committed on them. That leads to the operation cancellation, and to avoid some fraud attempts — this decision should be delivered to the nodes as fast as possible.
+# Consensus pushing
+There is a very small, but still non-zero probability of a case, when 100% positive consensus would appear somewhere in the network, and would not be available to the `Delegate`. As a result, `Delegate` would force operation reject and because of highest priority possible, this decision would be accepted by the nodes, even if operation is already committed on them. That leads to the operation cancellation, and to avoid some fraud attempts — this decision should be delivered to the nodes as fast as possible.
 
 To do so, delegate will notify each of them once in a 3-5 seconds, during first 20 minutes. After that, if no notification acquiring received from the node - during next week, final decision should be propagated with exponential timeout, starting from 10 seconds up to 10 minutes between sending attempts. After that period of time delegate stops notifications attempts for participants, that are unreachable.
 
@@ -836,6 +777,11 @@ Being applied to several neighbours, this mechanism has cascade influence and as
 
 `todo: describe it detailed`
 
+
+
+[#todo: describe secure channel between neighbors]
+
+
 # Stage A — Reject (Coordinator)
 1. **Must** rollback all changes, drop all reservations and instantly forget about the operation.
 1. **Must** respond "know nothing about the operation" for all requests about the operation state (it is enough for the other nodes to drop their pending reservations too after reservation timeouts).
@@ -846,6 +792,30 @@ Being applied to several neighbours, this mechanism has cascade influence and as
 
 # Stage B — Reject (Nodes)
 1. **Must** rollback all changes, drop all reservations and instantly forget about the operation.
+
+</br>
+</br>
+
+# Stage X — Observers Arbitration Requesting (nodes)
+##### Definitions
+
+[* [ObserversRequestMessage]() [#todo: add structure] — _ORM_ — request for the arbitration, that is generated by the node in case if it has signed the transaction and has sent this signature into the network, but hasn't received TranactionConsensusMessage](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#transaction-consensus-message) and no one node responds to the request for the TranactionConsensusMessage](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#transaction-consensus-message).
+
+##### Flow
+1. **Must** generate _ORM_ and include the next info into it:
+    * [Transaction ID](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#transactionid);
+    * All [members IDs](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#transaction-signature);
+    * All members [Public Keys]()https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#particpant-public-key.
+    * All members Public Keys Hashes.
+    * **must NOT** include transaction amount.
+1. **Must** send _ORM_ to the [Observers]() [#todo: link];
+1. **Must** check that _ORM_ is present in Observers chain. In case if _ORM_ is absent — **must** send _ORM_ once more (maybe via other observer node), until it'll appear in [Observers Chain]() [#todo: lnk].
+1. **Must** check [Observers]() [#todo: link] for the TransactionConsensusMessage once in [todo: timeout]. If TransactionConsensusMessage appears in [Observers]() chain — **must** fetch it, and repeat [Stage 3.3](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-33--%D0%A1onsensus-expectation-node). If not TransactionConsensusMessage appeared during [#todo: timeout] — **must** reject the transaction [(Stage B)](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-b-middle-wares-node-behaviour-after-transaction-reject).
+
+
+Delegate arbitration is used in case when there is an uncertainty about the operation processing, but some (or several) node(s) has been signed it already and sent their signs into the network. In this case, this node(s) has no ability to change it's vote(s), because:
+    * nodes can't perform any reject, otherwise - it would be ambiguous. In case if operation was approved, there is no way to revert it.
+    * propagating of negative sign would lead into the further consensus complexity, but in long term perspective is ineffective because of [Forced Consensus Propagation]() [#todo: link] (please, see [Trust Lines]() [#todo: link to specification] for the details ).
 
 </br>
 </br>
@@ -1065,6 +1035,16 @@ Some node, that participated in the operation did not provided its signature for
 
 ### Network Hop Timeout
 `hop time` — time range, expected time that is needed for the network packet to be delivered to the destination node. By default should be set to `2 sec`.
+
+### Observers verdict checking interval
+_Observers verdict checking interval_ — time interval that specifies how often node should check the observers for TransactionConsensusMessage appearing. By default is set to `30 seconds`.
+
+### Observers request checking interval
+_Observers request checking interval_ — time interval that specifies how often nodes should check observers for new arbitration requests from other nodes. By default is set to `30 minutes`.
+
+### Observers verdict timeout
+_Observers verdict timeout_ — max. time that observers might wait for the TransactionConsensusMessage arriving from the network. By default is set to `2 hours`.
+
 
 # License
 [<img src="https://opensource.org/files/osi_keyhole_300X300_90ppi_0.png" height=90 style="float: left; padding: 20px">]()
