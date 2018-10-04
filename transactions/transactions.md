@@ -13,6 +13,7 @@ crypto-protocol for atomic and consistent assets transfers via p2p networks.
 <br/>
 <br/>
 _Contributors:_
+<br/>
 [`Denis Vasilov`](https://github.com/Vasilov345)
 <br/>
 <br/>
