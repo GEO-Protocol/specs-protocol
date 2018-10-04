@@ -818,19 +818,46 @@ Being applied to several neighbours, this mechanism has cascade influence and as
 
 `todo: describe it detailed`
 
-# Stage A: Coordinator's behaviour after transaction reject
-1. On TA reject [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) instantly forgets about the operation.
-1. [optional] [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) notifies operations participants about the operation canceling.
-1. For all requests about operation state [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) simply responds that it knows nothing about that operation, and it is enough for the other nodes to drop their pending reservations too.
+# Stage A — Reject (Coordinator)
+1. **Must** rollback all changes, drop all reservations and instantly forget about the operation.
+1. **Must** respond "know nothing about the operation" for all requests about the operation state (it is enough for the other nodes to drop their pending reservations too after reservation timeouts).
+1. Should notify othe participants about the operation canceling. [#todo: provide message structure].
 
-# Stage B: Middle wares node behaviour after transaction reject
+</br>
+</br>
 
-1. On TA reject node instantly forgets about the operation and drops all related reservations.
+# Stage B — Reject (Nodes)
+1. **Must** rollback all changes, drop all reservations and instantly forget about the operation.
 
-# Stage Z: Recover:
-During operation processing, there is non zero-probability, that some node involved (or all of them) would enter inoperable state in some reason (unexpected power off, network segmentation, etc). In this case, when operability of the node would be restored, such node(s) must proceed each one transaction that was initialized, but has no final decision yet.
-* For the protocol simplicity reasons, nodes that enter "recover" state and has not signed the operation, must not vote for transaction approving any more. Only "reject" is allowed.
-* For the signed operation — node must check for the final decision about the operation from its neighbour(s) involved and the [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator). In case if no response from any one of them in time of 10 minutes — `Delegate` arbitration must be requested `[Stage 5]`.
+</br>
+</br>
+
+# Stage Z — Recover (Nodes)
+During operation processing, there is non zero-probability, that some node(s) involved (or even all of them) would enter inoperable state for some reason (unexpected power off, network segmentation, etc). In this case, when operability of the node would be restored, such node(s) must proceed each one transaction that was initialized, but has no final decision yet.
+
+##### Assertations
+* [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) **must never enter** into recover state. It is responsible for collecting transactions signatures and is able to check consensus achievent directly on its side.
+* Node **must** enter "Recover" state only if it has been signed the operation in the past. 
+* Node **must not** enter "Recover" state if it restores it's state after crash, but the transaction itself was not signed and sent to the other participants.
+
+##### Flow
+1. **Must** restore transaction internal state (all reservations, stage identificator, members structures, etc).
+1. Sequentially ∀`node` ∈ [`neighbors_inv`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#nodes-involved):
+    1. **Must** ask `node` for the [`TransactionConsensusMessage`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#transaction-consensus-message) (_TCM_).
+    1. **Must** wait for at least 2 [network hops](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#network-hop-timeout).
+    1. **Must** receive _TCM_ from `node`.  
+        In case if not _TCM_ was received — **must**:
+            1. Wait 1 [network hop](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#network-hop-timeout).
+            1. Skip to the next `node`.  
+        In case if last `node` was processed and no _TCM_ was received — **must** generate [Observers Arbitration Request]([#todo: comment]).  
+        In case if _TCM_ was received well — **must** [Commit](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-34--commiting).
+
+##### Optimisations
+* Recommended order of nodes in Flow/2 should be the next:  
+  [[`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator), [`Receiver`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#receiver), [`neighborNode1`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#middleware-node), ..., [`neighborNodeN`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#middleware-node), ..., [`remoteNode1`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#middleware-node), ... [`lastRemoteNode`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#middleware-node)]
+
+
+[#todo node must permanently check observers for the requests]
 
 
 # Data types used
