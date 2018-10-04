@@ -490,8 +490,8 @@ In all cases, it is safe for any node to drop the transaction and it's related a
 [Final Reservations Configuration]() [#todo: add structure] — _FCR_ — structure that represents relations and their states (reservations). Separated _FCR_ must be generated for each one node involved for the syncronisation purposes. 
 
 ##### Flow
-1. **Must** finalize it's paths map and generate _FCR_  for ∀`node` ∈ [`nodes_inv`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#nodes-involved)}.
-1. **Must** send _FRC_ to ∀`node` ∈ [`nodes_inv`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#nodes-involved)}. 
+1. **Must** finalize it's paths map and generate _FCR_  for ∀`node` ∈ [`nodes_inv`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#nodes-involved).
+1. **Must** send _FRC_ to ∀`node` ∈ [`nodes_inv`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#nodes-involved). 
 
 <img src="https://github.com/GEO-Project/specs-protocol/blob/master/transactions/resources/20181004130140.svg">
 
@@ -523,7 +523,7 @@ In all cases, it is safe for any node to drop the transaction and it's related a
 
 # Stage 2.1 — Signed debts receipts exchange
 1. On each final configuration received, `node` must:
-  * ∀(`neighbor` in {[`neighbors_inv`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#neighbors-involved)}): 
+  * ∀`neighbor` ∈ [`neighbors_inv`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#neighbors-involved)): 
     * `node` **must** create debt receipt (#todo: link to struct) for the `neighbor` with amount according to the reserved amount on the trust line with the `neighbour`.
     * `node` **must** sign it with one of it's public keys from pool of public keys with `neighbour`.
     * `node` **must** send signed debt receipt to the `neighbor`. 
@@ -537,7 +537,7 @@ In all cases, it is safe for any node to drop the transaction and it's related a
 
 **Note:** Signed debt receipt is only valid in case if whole transaction is signed (separate message with separate signature), so node might sign and send it to the neighbour without any doubt. In case if any other node would not sign the operation — no one debt receipt would be valid and must not be demanded.
 
-∀(`node` in {[`nodes_inv`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#nodes-involved)+ [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator)}):
+∀`node` ∈ [`nodes_inv`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#nodes-involved)+ [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator)):
   * `node` **must** receive signed debt receipts from **all** neighbours. In case if even one signed debt receipt wasn't received — node **must** reject the operation [(Stage B)](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-b-middle-wares-node-behaviour-after-transaction-reject).
   * `node` **must** check **all** received signed debt receipts for the next reuirements:
     
@@ -703,9 +703,8 @@ If not _all_ transaction signatures was collected during 3 [network hops](https:
 
 1. **Must** check all received [Transaction Signatures](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#transaction-signature) through checks provided further.  
 If even one check fails — [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) **must** reject the operation [Stage B](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-b-middle-wares-node-behaviour-after-transaction-reject).
-
-!!!! todo: send consensus to other nodes
-!!!! Todo: commit
+1. **Must** generate TransactionConsensusMessage and send it to each one participant involved.
+1. **Must** [Commit](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-34--commiting).
 
 
 ### Checks for TS:
@@ -734,10 +733,10 @@ By default, should be at least 2 [network timeouts](https://github.com/GEO-Proto
 1. **Must** wait for the _CT_;
 
 1. **Must** receive _TCM_ from the [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator).  
-In case if no _TCM_ was received — **must** move to [Recover stage](). [#todo!!!]
+In case if no _TCM_ was received — **must** move to [Recover stage](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-z--recover-nodes).
 
 1. **Must** check received _TCM_ through the checks provided further. 
-    * In case if _even one_ check fails — **must** move to [Recover stage](). [#todo!!!]
+    * In case if _even one_ check fails — **must** move to [Recover stage](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-z--recover-nodes).
     * In case of _all_ checks has been passed — **must** [Commit](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-34--commiting).
 
 ##### Checks for the _TCM_
