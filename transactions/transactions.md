@@ -457,25 +457,38 @@ In all cases, it is safe for any node to drop the transaction and it's related a
 <br/>
 <br/>
   
-# Stage 2 — Trust context establishing (coordinator)
-1. **Must** finalize it's paths map.
-1. **Must** send final reservations configuration (`FRC`) to ∀{[`nodes_inv`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#nodes-involved)}. 
+# Stage 2 — Final Res. Conf. (coordinator)
+##### Definitions
+[Final Reservations Configuration]() [#todo: add structure] — _FCR_ — structure that represents relations and their states (reservations). Separated _FCR_ must be generated for each one node involved for the syncronisation purposes. 
+
+##### Flow
+1. **Must** finalize it's paths map and generate _FCR_  for ∀`node` ∈ [`nodes_inv`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#nodes-involved)}.
+1. **Must** send _FRC_ to ∀`node` ∈ [`nodes_inv`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#nodes-involved)}. 
+
+<img src="https://github.com/GEO-Project/specs-protocol/blob/master/transactions/resources/20181004130140.svg">
 
 <br/>
 <br/>
 
-# Stage 2 — Trust context establishing (nodes)
-∀{[`nodes_inv`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#nodes-involved)} **must** wait for final reservations configuration (`FRC`) from the [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator).  
-If no `FRC` was received during (#todo: specify timeout) — node **must** reject the operation [(Stage B)](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-b-middle-wares-node-behaviour-after-transaction-reject).
+# Stage 2 — Final Res. Conf. (nodes)
+##### Definitions
+* Internal Trust Lines — _ITL_ — list of trust lines (or channels), involved into the transaction. 
 
-* If `FRC` was received — node **must** validate it throught the checks provided further.  
-If any of this checks fails — node **must** reject the operation [(Stage B)](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-b-middle-wares-node-behaviour-after-transaction-reject).
-  * ∀{trust line in `FRC`, `{TLRS1, .. TLRSn} ∈ TLRS`}:
-    * amount of `TLRSi` **must** be ≤ reserved amount on this trust line on the node.
-  
-* ∀{trust line in `TLI`, `{TLI1, .. TLIn} ∈ TLI`}:
-  * If `TLIi` is not present in `FRC` — reservations on `TLIi` **must** be dropped.  
-  After this correction `TLI` **must** be equal to `FRC`.
+##### Flow
+1. **Must** wait at leat 2 [network hops](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#network-hop-timeout).
+1. **Must** receive Final Reservations Configuration Message (_FRC_) [#todo: add description] from the [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator).    
+  * If no _FRC_ was received — node **must** reject the operation [(Stage B)](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-b-middle-wares-node-behaviour-after-transaction-reject).
+  * If _FRC_ was received — node **must** validate it throught the checks provided further. 
+      * If any of this checks fails — **must** reject the operation [(Stage B)](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-b-middle-wares-node-behaviour-after-transaction-reject).
+      * IF all checks pass — **must** forward to Stage 2.1.
+
+##### Checks for _FRC_
+1. ∀`trust_line` ∈ `FRC.trustLines`:
+  * `trust_line.amount` = _RA_,  
+    where _RA_ — reserved amount on related trust line _on the node_.  
+    If `trust_line.amount` < _RA_ — node **must** shortage reservation on related trust line (decrease _RA_).
+1. ∀`trust_line` ∈ `ITL`:
+  * If `trust_line` is not present in `FRC` — reservations on `trust_line` **must** be dropped ([`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) decided to not to use this channel).  
 
 <br/>
 <br/>
@@ -552,14 +565,19 @@ If check passed — stage 2.3 is considered as completed.
 <br/>
 
 # Stage 2.3 — Trust context checking (coordinator)
-[`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) collects `PubKeys list` from the nodes.  
+##### Flow
+1. **Must** wait at least 2 [network hops](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#network-hop-timeout).
+1. **Must** receive [PubKeyMessage]() (_PKM_) [#todo: describe the structure] from all [`nodes_inv`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#nodes-involved). If not _PKM_ was received _even from one_ node — **must** reject the transaction [(Stage B)](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-b-middle-wares-node-behaviour-after-transaction-reject).
+1. **Must** check _PKM_ through the checks, provided further. 
+  If _even one_ check doesn't pass — **must** reject the transaction [(Stage B)](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-b-middle-wares-node-behaviour-after-transaction-reject).
+  If _all_ checks has passed — **must** [prepeare signing](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-31--signing-prepearing-coordinator).
 
-1. Received `PubKeys list` **must** contains public keys of _**all** neighbours nodes, of the [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator), that are involved into the operation; (`neig. PKl`);_
+##### Checks for PKM
+1. _PKM_ contains public keys of _**all** neighbours nodes, of the [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator), that are involved into the operation; (`neig. PKl`);_
 1. [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) **must** check **each one** key from `neig. PKl` for validity through next checks:
   * Key length **must** be `16Kb`;
   * Key must be included
 
-There is no need for additional check of them on the `Coordinator's` side.
 
 <br/>
 <br/>
