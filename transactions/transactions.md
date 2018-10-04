@@ -118,6 +118,8 @@ This section lists the functional and design requirements for the proposed algor
   
 ※ To increase the probabilty of achieving consensus, and / or shorten the time of the algorithm execution, various traffic optimisation and correction techniques can be used as well. This protocol does not assumes any of them to be present, but obviously works better in the environments with stable network connections.
 
+<br/>
+<br/>
 
 # Double Spending Prevention
 Due to proposed [network topology, based on trust lines / channels]() [#todo: add link to trust lines protocol] — there is no common balance (or ledger) of the node. There are only relations of the node with its neighbours (other nodes in the network), and balances of this relations. There is no single point of assets storing. There are only relative balances of the node. As a result — there is no possibility to perform so called "double spending" towards several neighbours or remote nodes at a time. There is only a possibility to try to cheat against some neighbour and to try to force it to use some debt twice or more. But, there is no way to do it without approval (cryptographic sign) of that node, and obviously remote node would not be agree to approve such kind of malicious operation. 
@@ -126,11 +128,10 @@ To help nodes prevent double spending attempts — so called "distributed lock" 
 
 On each one transaction, node **must** check this component and enshure that current `total reserved amount` on the requested trust line / channel is **less** than `(total available amount) - (reservation request)`. In other words, this check **must** enshure node would not reserve more amount than is available by the trust line / channel.
 
-This check is **required part of each one operation.** (See [Stage 1 — Amount collecting and reservation](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-1--amount-collecting-and-reservation) for the details).  
+This check is **required part of each one operation.**  
+(See [Stage 1 — Amount collecting and reservation](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-1--amount-collecting-and-reservation) for the details). 
+
 While node follows this specification and it's internal behaviour was not modified (hacked) — there is no way to force remote node to accept more debts, than it was envisaged by the trust line / channel.
- 
-`Related specs:`
-* [Trust lines;]() [#todo: provide link]
 
 <br/>
 <br/>
@@ -141,6 +142,8 @@ This section describes the used cryptographic primitives and the motivation for 
 
 ## Lamport Signature
 [_Lamport signature_](https://en.wikipedia.org/wiki/Lamport_signature) or _Lamport one-time signature scheme_ is a method for constructing a digital signature. Lamport signatures can be built from any cryptographically secure one-way function; usually a cryptographic hash function is used _[※ 1]_. In Twin Spark, Lamport's signature is based on [_BLAKE2b_](https://blake2.net/).
+
+<br/>
 
 ---
 
