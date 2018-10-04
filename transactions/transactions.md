@@ -545,6 +545,8 @@ sequenceDiagram
     B->>C: PubKey Hash
 ```
 
+---
+
 </br>
 
 <img src="https://github.com/GEO-Project/specs-protocol/blob/master/transactions/resources/20181004135048.svg">
@@ -555,6 +557,9 @@ sequenceDiagram
     C->>B: PubKey Hash
     C->>Receiver (A): PubKey Hash
 ```
+
+---
+
 </br>
 
 <img src="https://github.com/GEO-Project/specs-protocol/blob/master/transactions/resources/20181004134923.svg">
