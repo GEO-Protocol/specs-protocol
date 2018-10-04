@@ -264,7 +264,14 @@ Path is considered as valid only in case if there is a possibility to traverse a
 _V = [sourceNode, node1, node2, ..., destinationNode]_
 
 <img width=400 src="https://github.com/GEO-Project/specs-protocol/blob/master/transactions/resources/20181004170830.svg">
+
 _Example of network path: {A, B, C, D} and its subsets {A, B, C}, {A, B}, ..._
+
+<img width=400 src="https://github.com/GEO-Project/specs-protocol/blob/master/transactions/resources/20181004171342.svg">
+
+_Example of payment network path_
+
+</br>
 
 #### Paths map
 Coordinator-specific internal data structure for storing information about all reservations created on all paths used. During amount reservation, each one newly created amount reservation always would be less (or equal) to previously created reservation on the same path. This structure helps maintain path topology and help nodes to achieve _least common amount_ reserved.
