@@ -571,41 +571,19 @@ sequenceDiagram
     Receiver (A)->>C: PubKey Hash
 ```
 
+##### Optimisations
+* ∀`node` ∈ [`nodes_inv`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#nodes-involved) might ommit sending of "PubKey Hash" to the neighbors nodes in this stage, but include the hash into the [SignedDebtReceiptMessage]() [#todo: add structure] on [Stage 2.1](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-21--signed-debts-receipts-exchange). This makes it possible to save one message round trip for each neighbor involved and several bytes of messages headers for each message.
+
 <br/>
 <br/>
 
 # Stage 2.2 — Public keys exchange (coordinator)
-[`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) **must** collect Public Keys [#todo: link to crypto] from all participants.
-
-In case if not all expected keys was collected — [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) rejects the operation with code "[No Consensus](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#not-enough-amount)" [(Stage: A)](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-a-coordinators-behaviour-after-transaction-reject);
-
-In case if all expected keys was collected — [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) **must**:
-1. Generate PubKeys list.
-2. Send generated PubKeys list to all nodes.
-
-<br/>
-<br/>
-
-# Stage 2.3 — Trust context checking (node)
-If `PubKeys list` was not received during [`3 net. hops`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#network-hop-timeout) — node **must** reject the operation ([Stage B](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-b-middle-wares-node-behaviour-after-transaction-reject)). 
-
-If `PubKeys list` was received:
-1. `Node` **must** check `PubKeys list` (steps of check are provided further). 
-
-If check doesn't pass — `node` **must** reject the operation ([Stage B](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-b-middle-wares-node-behaviour-after-transaction-reject)).
-
-If check passed — stage 2.3 is considered as completed.
-
-<br/>
-<br/>
-
-# Stage 2.3 — Trust context checking (coordinator)
 ##### Flow
 1. **Must** wait at least 2 [network hops](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#network-hop-timeout).
-1. **Must** receive [PubKeyMessage]() (_PKM_) [#todo: describe the structure] from all [`nodes_inv`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#nodes-involved). If not _PKM_ was received _even from one_ node — **must** reject the transaction [(Stage B)](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-b-middle-wares-node-behaviour-after-transaction-reject).
+1. **Must** receive [PublicKeyMessage]() (_PKM_) [#todo: describe the structure] from all [`nodes_inv`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#nodes-involved). If not _PKM_ was received _even from one_ node — **must** reject the transaction [(Stage B)](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-b-middle-wares-node-behaviour-after-transaction-reject).
 1. **Must** check _PKM_ through the checks, provided further. 
   If _even one_ check doesn't pass — **must** reject the transaction [(Stage B)](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-b-middle-wares-node-behaviour-after-transaction-reject).
-  If _all_ checks has passed — **must** [prepeare signing](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-31--signing-prepearing-coordinator).
+1. **Must** generate [PublicKeysListMessage]() [#todo: add structure] (_PKLM_) and send it to ∀`node` ∈ [`nodes_inv`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#nodes-involved).
 
 ##### Checks for PKM
 1. _PKM_ contains public keys of _**all** neighbours nodes, of the [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator), that are involved into the operation; (`neig. PKl`);_
@@ -613,9 +591,27 @@ If check passed — stage 2.3 is considered as completed.
   * Key length **must** be `16Kb`;
   * Key must be included
 
+##### Optimisations
+* [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) should not inlude into _PKLM_ the pub. key of the _PKLM_ addressee (remote node knows its pub. key). 
 
 <br/>
 <br/>
+
+# Stage 2.3 — Trust context checking (node)
+##### Flow
+1. **Must** receive [PublicKeysListMessage]() (_PKLM_) [#todo: describe the structure] during 2 [network hops](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#network-hop-timeout). If _PKLM_ was not received — node **must** reject the operation ([Stage B](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-b-middle-wares-node-behaviour-after-transaction-reject)). 
+1. **Must** check _PKLM_ through checks provided further.  
+  If even one check fails — **must** reject the operation ([Stage B](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-b-middle-wares-node-behaviour-after-transaction-reject))
+
+##### Checks for PKLM
+1. _PKLM_ contains all nodes from [`nodes_inv`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#nodes-involved) (except pub. key of current node). 
+1. ∀ `record` ∈ _PKLM_:
+    1. [_HASH_](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#blake2b)(`record.pubKey`) == _H_,  
+    where _H_ — corresponding pub. key hash, received on Stages [[2.1](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-21--signed-debts-receipts-exchange) / [2.2](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-22--public-keys-exchange-node)]
+
+<br/>
+<br/>
+
 
 # Stage 3.1 — Signing prepearing (coordinator)
 1. **Must** generate [Participants Public Keys List _(PPKL)_](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#participants-public-keys-list) for each one participant included into the operation;
@@ -628,8 +624,8 @@ If check passed — stage 2.3 is considered as completed.
     ```
     <img src="https://github.com/GEO-Project/specs-protocol/blob/master/transactions/resources/chart8.svg">
 
-#### [Optional] Traffic optimisation 
-[`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) might exlude addressee from the [_PPKL_](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#participants-public-keys-list).  
+##### Optimisations
+* [Traffic optimisation] [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) might exlude addressee from the [_PPKL_](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#participants-public-keys-list).  
   For example, in case if nodes {[`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator), [`B`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#middleware-node), [`C`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#middleware-node), [`Receiver`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#receiver)} take part into the operation, and [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) now performs [_PPKL_](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#participants-public-keys-list) for the [`A`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#middleware-node) — then [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) might exclude [`A`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#middleware-node) from the [_PPKL_](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#participants-public-keys-list) and _save network traffic for itself and for the [`A`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#middleware-node)_.
 
 <br/>
@@ -643,7 +639,7 @@ In case if _even one_ check failed — **must** reject operation [(Stage B)](htt
 1. **Must** [sign the operation](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-32--signing-node) in case if _all checks passed_;
 
 ### Checks for PPKL:
-1. ∀(`node` ∈ [`nodes_inv`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#nodes-involved)):
+1. ∀`node` ∈ [`nodes_inv`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#nodes-involved):
     1. `node.memberID` is present in _PPKL_; 
     1. _H_ == [HASH](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#blake2b)(`n.PubKey`), where  
     _H_ — [HASH](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#blake2b)(`node.pubKey`, received on [Stage 2](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-2--trust-context-establishing-nodes)),  
@@ -870,6 +866,11 @@ In cases, when some pair of nodes, that are using common trust line, has differe
 Being applied to several neighbours, this mechanism has cascade influence and as a result — forces fair balances propagation through the network even in case of fraud manipulation with trust lines data on nodes sides.
 
 `todo: describe it detailed`
+
+
+
+[#todo: describe secure channel between neighbors]
+
 
 # Stage A — Reject (Coordinator)
 1. **Must** rollback all changes, drop all reservations and instantly forget about the operation.
