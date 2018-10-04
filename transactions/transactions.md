@@ -128,6 +128,8 @@ While node follows this specification and it's internal behaviour was not modifi
 `Related specs:`
 * [Trust lines;]() [#todo: provide link]
 
+<br/>
+<br/>
 
 
 # Cryptographic Primitives
@@ -164,6 +166,8 @@ Using of the Lamport signature significantly improves the cryptographic strength
 ### Motivation for inclusion in the protocol
 Along with other finalists of the NIST SHA-3 contest, it has proven and reliable cryptographic stability, but it is much faster than SHA-3 (keccak). Unlike keccak, blake2 is built on to of classical approaches for hash-functions, so its internal structure is more studied for various kinds of vulnerabilities.
 
+<br/>
+<br/>
 
 # Protocol Decription
 ## Overview
@@ -248,6 +252,8 @@ Coordinator-specific internal data structure for storing information about all r
 List of all participants of the operation and their signatures.  
 Presence of all signatures approves 100% consensus and must be interpret as finalised operation. 
 
+<br/>
+<br/>
 
 # Stage 1 — Amount Collecting and Reservation
 #### _Paths discovering_  
@@ -448,10 +454,15 @@ sequenceDiagram
 
 In all cases, it is safe for any node to drop the transaction and it's related amounts reserves [(Stage B)](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-b-middle-wares-node-behaviour-after-transaction-reject).  
   
+<br/>
+<br/>
   
 # Stage 2 — Trust context establishing (coordinator)
 1. **Must** finalize it's paths map.
 1. **Must** send final reservations configuration (`FRC`) to ∀{[`nodes_inv`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#nodes-involved)}. 
+
+<br/>
+<br/>
 
 # Stage 2 — Trust context establishing (nodes)
 ∀{[`nodes_inv`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#nodes-involved)} **must** wait for final reservations configuration (`FRC`) from the [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator).  
@@ -465,6 +476,9 @@ If any of this checks fails — node **must** reject the operation [(Stage B)](h
 * ∀{trust line in `TLI`, `{TLI1, .. TLIn} ∈ TLI`}:
   * If `TLIi` is not present in `FRC` — reservations on `TLIi` **must** be dropped.  
   After this correction `TLI` **must** be equal to `FRC`.
+
+<br/>
+<br/>
 
 # Stage 2.1 — Signed debts receipts exchange
 1. On each final configuration received, `node` must:
@@ -495,6 +509,9 @@ Stage 2.1 is considered as completed when all nodes would exchange signed debt r
 1. Signature of the receipt **must** be used from common pull of PubKeys, that was established between the nodes prveiosly (see [Trust Lines]() [#todo: provide link] specification for the details).
 1. There are no signed debt receipts for this operation already present on the node.
 
+<br/>
+<br/>
+
 # Stage 2.2 — Public keys exchange (node)
 Node **must** send to the [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) its Public Key, which this particular node would use for signing whole the transaction.
      
@@ -506,7 +523,9 @@ sequenceDiagram
 ```
 <img src="https://github.com/GEO-Project/specs-protocol/blob/master/transactions/resources/chart7.svg">
   
-  
+<br/>
+<br/>
+
 # Stage 2.2 — Public keys exchange (coordinator)
 [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) **must** collect Public Keys [#todo: link to crypto] from all participants.
 
@@ -516,6 +535,8 @@ In case if all expected keys was collected — [`Coordinator`](https://github.co
 1. Generate PubKeys list.
 2. Send generated PubKeys list to all nodes.
 
+<br/>
+<br/>
 
 # Stage 2.3 — Trust context checking (node)
 If `PubKeys list` was not received during [`3 net. hops`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#network-hop-timeout) — node **must** reject the operation ([Stage B](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-b-middle-wares-node-behaviour-after-transaction-reject)). 
@@ -527,6 +548,8 @@ If check doesn't pass — `node` **must** reject the operation ([Stage B](https:
 
 If check passed — stage 2.3 is considered as completed.
 
+<br/>
+<br/>
 
 # Stage 2.3 — Trust context checking (coordinator)
 [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) collects `PubKeys list` from the nodes.  
@@ -538,6 +561,8 @@ If check passed — stage 2.3 is considered as completed.
 
 There is no need for additional check of them on the `Coordinator's` side.
 
+<br/>
+<br/>
 
 # Stage 3.1 — Signing prepearing (coordinator)
 1. **Must** generate [Participants Public Keys List _(PPKL)_](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#participants-public-keys-list) for each one participant included into the operation;
@@ -554,6 +579,9 @@ There is no need for additional check of them on the `Coordinator's` side.
 [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) might exlude addressee from the [_PPKL_](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#participants-public-keys-list).  
   For example, in case if nodes {[`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator), [`B`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#middleware-node), [`C`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#middleware-node), [`Receiver`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#receiver)} take part into the operation, and [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) now performs [_PPKL_](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#participants-public-keys-list) for the [`A`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#middleware-node) — then [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) might exclude [`A`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#middleware-node) from the [_PPKL_](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#participants-public-keys-list) and _save network traffic for itself and for the [`A`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#middleware-node)_.
 
+<br/>
+<br/>
+
 # Stage 3.1 — Signing prepearing (node)
 1. **Must** receive [Participants Public Keys List _(PPKL)_](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#participants-public-keys-list) from the [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator).  
 In case if no _PPKL_ was received — **must** reject the operation [(Stage B)](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-b-middle-wares-node-behaviour-after-transaction-reject).
@@ -568,6 +596,9 @@ In case if _even one_ check failed — **must** reject operation [(Stage B)](htt
     _H_ — [HASH](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#blake2b)(`node.pubKey`, received on [Stage 2](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-2--trust-context-establishing-nodes)),  
     _n_ — node from _PPKL_, related by "memberID".
     
+    
+<br/>
+<br/>
 
 # Stage 3.2 — Signing (node)
 1. **Must** serialize the operation to stable storage. It is neccesary in case if node would crash unexpectedly.
@@ -578,6 +609,8 @@ In case if _even one_ check failed — **must** reject operation [(Stage B)](htt
 
 1. **Must** [commit](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-33--commiting) the operation.
 
+<br/>
+<br/>
 
 # Stage 3.2 — Signs collecting (coordinator)
 
@@ -607,6 +640,8 @@ If even one check fails — [`Coordinator`](https://github.com/GEO-Protocol/spec
         1. `member.address` == `participant.address` **AND**  
           where `participant` = ∀(`node` ∈ [`nodes_inv`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#nodes-involved));
 
+<br/>
+<br/>
 
 # Stage 3.3 — Сonsensus expectation (node)
 Only [middleware nodes](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#middleware-node) and [`Receiver`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#receiver) might fall into this stage.  
@@ -631,6 +666,8 @@ By default, should be at least 2 [network timeouts](https://github.com/GEO-Proto
     1. `member` has corresponding by `memberID` node in [`nodes_inv`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#nodes-involved) (_Corresponding Node, CN_);
     1. LamportSignatureCheck(`member.signature`, `CN.pubKey`) -> `True`;
 
+<br/>
+<br/>
 
 # Stage 3.4 — Commiting
 Both, [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) and [`Receiver`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#receiver):
@@ -650,6 +687,9 @@ Both, [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master
 1. **Must** drop related serialized transaction from stable storage to prevent it restoring on node restart.
 
 **WARN:** all operations provided in this section **must** be performed in atomic manner, otherwise — there is a non-zero probability that operation would be committed, but the serialized transaction would not be dropped, that would lead to errorneus transaction recover attempt and balances corruption as a result.
+
+<br/>
+<br/>
 
 # Votes list
 
