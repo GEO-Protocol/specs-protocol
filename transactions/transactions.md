@@ -274,10 +274,10 @@ _Example of payment network path_
 </br>
 
 #### Paths map
-Coordinator-specific internal data structure for storing information about all reservations created on all paths used. During amount reservation, each one newly created amount reservation always would be less (or equal) to previously created reservation on the same path. This structure helps maintain path topology and help nodes to achieve _least common amount_ reserved.
+_Paths map_ — coordinator-specific internal data structure for storing information about all reservations created on all paths used. During amount reservation, each one newly created amount reservation always would be less (or equal) to previously created reservation on the same path. This structure helps maintain path topology and help nodes to achieve _least common amount_ reserved.
 
 #### Signatures list
-List of all participants of the operation and their signatures.  
+_Signatures list_ — list of all participants of the operation and their signatures.  
 Presence of all signatures approves 100% consensus and must be interpret as finalised operation. 
 
 <br/>
