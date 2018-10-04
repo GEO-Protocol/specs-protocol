@@ -45,6 +45,9 @@ The objectives of this document are:
 1. to prodive mathematical confirmation of the impossibility (or extreme complexity) of the operations compromising [todo];
 1. to provide a list of possible edge cases and to describe the ways to avoid/resovle them, as well as possible outcomes of operations.
 
+<br/>
+<br/>
+
 # Source Conditions and Requirements
 This section lists the functional and design requirements for the proposed algorithm — the metrics, that were used to analyze all found and potentially applicable solutions for their applicability in to the final protocol.
 
