@@ -1,8 +1,7 @@
-`GEO Protocol / 2018` &nbsp;&nbsp;&nbsp;  `Draft`
-
 ![Twin State Logo](https://github.com/GEO-Project/specs-protocol/blob/master/trust_lines/resources/twin_state.png)
 
-Quantum-resistant crypto-protocol for consistent state sharing.
+Quantum-resistant crypto-protocol for consistent state sharing.  
+`GEO Protocol / 2018` `Draft`
 <br/>
 <br/>
 <br/>
