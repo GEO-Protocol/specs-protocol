@@ -25,11 +25,9 @@ This specification describes algorithm _("Algorithm"_ further in the doc.) for t
 # Overview
 The objectives of this document are:
 1. to provide comprehensive info about proposed method of consensus;
-1. to describe the [cryptographic primitives used](https://github.com/GEO-Project/specs-protocol/blob/master/transactions/transactions.md#cryptographic-primitives) and the provide motivation for including each of them into the protocol;
-1. to describe the method of mathematical and cryptographic confirmation of operations;
-1. to prodive mathematical confirmation of the impossibility (or extreme complexity) of the operations compromising [todo];
+1. to describe the method of mathematical and cryptographic confirmation of operations [#todo: add math proof];
+1. to prodive mathematical confirmation of the impossibility (or extreme complexity) of the operations compromising [#todo: add math proof];
 1. to provide a list of possible edge cases and to describe the ways to avoid/resovle them, as well as possible outcomes of operations.
-
 
 <br/>
 <br/>
@@ -73,3 +71,22 @@ This section lists the functional and design requirements for the Algorithm.
 **6. Requirements for portability:**
 1. _Algorithm_ **must not** contain platform-dependent components.
 1. _Algorithm_ **must not** be hardware-dependent.
+
+</br>
+</br>
+
+# Cryptographic Primitives
+This _Algorithm_ is based on Lamport One Time Signature Scheme [#todo: link], BLAKE2b [#todo: link] hash function and AES256-GCM. [#todo: link]. Please, read about proposed implementation of Lamport Scheme on top BLAKE2b, AES256-GCM usage and motivation for inclidung of this cryptoprimitives into the protocol here. [#todo: link]
+
+</br>
+</br>
+
+# Assumptions
+1. _Algorithm_ expects 2 participants to be involved. 
+1. _Algorithm_ expects that both participants have secret key, retrieved before secret channel establishing.  
+
+**Related specs**
+Crypto primitives; [#todo: add link]
+Economic model; [#todo: add link]  
+
+
