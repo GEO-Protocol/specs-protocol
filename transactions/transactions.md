@@ -53,17 +53,17 @@ This section lists the functional and design requirements for the proposed algor
 
 **1. Requirements for cryptographic primitives:**
   1. _Quantum-resistant cryptography._  
-  Algorithm must be avare of usage of cryptographic solutions, which are potentially [easily compromised in quantum-based environment](https://csrc.nist.gov/Projects/Post-Quantum-Cryptography) (RSA / ECDSA, and other solutions that are based on similar mathematical problems).  
+  _Algorithm_ **must** be avare of usage of cryptographic solutions, which are potentially [easily compromised in quantum-based environment](https://csrc.nist.gov/Projects/Post-Quantum-Cryptography) (RSA / ECDSA, and other solutions that are based on similar mathematical problems).  
   
   1. _Strict minimum of crypto-primitives._  
-  Algorithm must use strict minimum of the crypto systems. The role of each of them must be strictly defined and clearly motivated. 
+  _Algorithm_ **must** use strict minimum of the crypto systems. The role of each of them must be strictly defined and clearly motivated. 
   
 **2. Requirements for operations:**
    1. _Strict 100% consensus._  
-   Algorithm must enforce achievement of 100% consensus (with possibility of subsequent verification of it) between all  participants involved: the operation itself must be considered as conducted only if all participants (nodes) has approved it. Otherwise - operation must be cancelled also on all participants devices. Achieved consensus must be mathematically approvable and verifieble by any participant of the operation.
+   _Algorithm_ **must** enforce achievement of 100% consensus (with possibility of subsequent verification of it) between all  participants involved: the operation itself must be considered as conducted only if all participants (nodes) has approved it. Otherwise - operation must be cancelled also on all participants devices. Achieved consensus must be mathematically approvable and verifieble by any participant of the operation.
    
   1. _Deferred atomicity._  
-  For each one operations launched in the network, all nodes involved in it, must achieve final state, or discard the operation at all. Intermediate states are acceptable only in short period of time, but are unacceptable to be permanent. Achieving atomicity should be:
+  For each one operations launched in the network, all nodes involved in it, **must** achieve final state, or discard the operation at all. Intermediate states are acceptable only in short period of time, but are unacceptable to be permanent. Achieving atomicity should be:
     1. time-predictable (ideally about a few seconds).
     1. safe towards other operations (launched in parallel).
     1. agnostic towards nodes internal code modifications (hacking) and destructive motivation of the involved participants (fraud attempts).
@@ -72,48 +72,47 @@ This section lists the functional and design requirements for the proposed algor
   Transaction time window — `1-15` seconds for non-fraud operations, and up to `~20 minutes` [#6] for processing problematic operations. It is expected, that more than 90% of all operations in the network would be non-fraud. This assumption is only related to the estimated network throughput.
 
   1. _Routes agnostic._
-  Transactions must be able to use up to several hundreds of different payment paths. [# todo: provide link to the Routing specification].
+  Transactions **must** be able to use up to several hundreds of different payment paths. [# todo: provide link to the Routing specification].
 
   1. _Token / Commisions independence._  
-  Transactions must be able to proceed without any internal token. Participants must not be enforced to charge any commissions for the middle ware operations processing.
+  Transactions **must** be able to proceed without any internal token. Participants must not be enforced to charge any commissions for the middle ware operations processing.
 
 
 **3. Requirements for end-point devices (nodes):**
   1. _Applicability for modern smartphones._  
-  Algorithm should be usable in environments with limited computing resources and memory. Operations that consume a large amount of resources (for example, operations with significant number of participants), should be easy to process partially (pipelining).
+  _Algorithm_ **must** be usable in environments with limited computing resources and memory. Operations that consume a large amount of resources (for example, operations with significant number of participants), should be easy to process partially (pipelining).
   
   1. _Computational efficiency._  
-  Algorithm should have low computational complexity. The mechanism for achieving consensus must avoid frequent calling of complex cryptographic operations (as, for example, Proof Of Work mechanics assumes in some blockchain-based solutions).
+  _Algorithm_ **must** have low computational complexity. The mechanism for achieving consensus must avoid frequent calling of complex cryptographic operations (as, for example, Proof Of Work mechanics assumes in some blockchain-based solutions).
   
 **4. Requirements for anonymity of operations:**
   1. _Network addressation agnostic._  
-  Algorithm must be agnostic on addressation mechanics, so the participants might be present by any kind of addresses (IP / any kind of name resolutions services / prosy services, etc). As a consequence - algorithm should support anonimization via tor and other similar networks.
+  _Algorithm_ **must** be agnostic on addressation mechanics, so the participants might be present by any kind of addresses (IP / any kind of name resolutions services / prosy services, etc). As a consequence — _Algorithm_ should support anonimization via tor and other similar networks.
   
   1. _Lack of a common ledger and common operations history._
-  The outcome of the operation must be determined and distributed only within the participants of this operation. The remaining nodes of the network, who do not participate in the operation, must not be able to retrieve the data about operation, and/or its content.
+  The outcome of the operation **must** be determined and distributed only within the participants of this operation. The remaining nodes of the network, who do not participate in the operation, must not be able to retrieve the data about operation, and/or its content.
   
 **5. Requirements for network resources:**
   1. _Resistance to unstable networks._  
-  Algorithm is resistant to network interference, packet loss and/or even whole messages loss. In the worst case, if consensus can't be reached, the operation must be canceled on all devices participating in it.
+  _Algorithm_ **must** be resistant to network interference, packets loss and/or even whole messages loss. In the worst case, if consensus can't be reached, the operation **must** be canceled on all devices participating in it.
   
   1. _Transport protocol agnostic._  
-  Algorithm must not require a permanent connection and must not base its own mechanics on the guarantees provided by different protocols, starting with the transport layer of the OSI model (for example, TCP). The reference implementation of the algorithm is based on UDP (see network protocol specifications for the details) [※ 1].
+  _Algorithm_ **must** not require a permanent connection and must not base its own mechanics on the guarantees provided by different protocols, starting with the transport layer of the OSI model (for example, TCP).
   
 **6. Requirements for fault tolerance:**
   1. _Strict operation completion guarantee_  
-  Algorithm in conjunction with the rest of the GEO protocol ecosystem solutions, must be ablr to ensure the finality of any running operation on the network. Scenarios under which the operation was started, but can not be completed (dead locks) must be striclty documnted and excluded.
+  _Algorithm_ in conjunction with the rest of the GEO protocol ecosystem solutions, **must** be able to ensure the finality of any running operation on the network. Scenarios under which the operation was started, but can not be completed (dead locks) **must** be striclty documnted and coverd by the protocol solution [# todo].
   
   1. _Automatic synchronization._  
-  Algorithm must be able to automatically resolve possible conflicts between participants of the network, leading them back to the synchronization state, via strit logic of cryptographically-based solutions.
-  
-  
+  _Algorithm_ **must** be able to automatically resolve possible conflicts between participants of the network, leading them back to the synchronized state, via strit logic of cryptographically-based solutions.
+ 
 **7. Requirements for the speed of operations:**
   1. _Sub-second processing time for one participant._  
   This point depends very much on the configuration of the separately taken node, but in general, the GEO Protocol team aims to create an algorithm that is as effective in time as possible. This approach is reflected in a number of optimizations adopted in the algorithm, and continues to find a place in the new solutions.
   
 **8. Requirements for portability:**
-  1. The algorithm must not contain platform-dependent components.
-  1. The algorithm must not be hardware specific or dependent.
+  1. _Algorithm_ **must not** contain platform-dependent components.
+  1. _Algorithm_ **must not** be hardware-dependent.
   
   
 ※ To increase the probabilty of achieving consensus, and / or shorten the time of the algorithm execution, various traffic optimisation and correction techniques can be used as well. This protocol does not assumes any of them to be present, but obviously works better in the environments with stable network connections.
