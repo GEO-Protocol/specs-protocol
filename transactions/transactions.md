@@ -1,9 +1,8 @@
-`GEO Protocol / 2018` &nbsp;&nbsp;&nbsp;  `Draft` **`Audit Pending`**
-
 ![Twin Spark Logo](https://github.com/GEO-Project/specs-protocol/blob/master/transactions/resources/twin_spark2.png)
 
 Fast, safe, double-spending resistant, quantum-resistant, multi-attendee  
-crypto-protocol for atomic and consistent assets transfers via p2p networks.
+crypto-protocol for atomic and consistent assets transfers via p2p networks.  
+`GEO Protocol / 2018` `Draft` **`Audit Pending`**
 <br/>
 <br/>
 <br/>
