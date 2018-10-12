@@ -1,4 +1,4 @@
-`GEO Protocol / 2018` &nbsp;&nbsp;&nbsp;  `Release Candidate` **`Audit Pending`**
+`GEO Protocol / 2018` &nbsp;&nbsp;&nbsp;  `Draft` **`Audit Pending`**
 
 ![Twin Spark Logo](https://github.com/GEO-Project/specs-protocol/blob/master/transactions/resources/twin_spark.png)
 
@@ -53,17 +53,17 @@ This section lists the functional and design requirements for the proposed algor
 
 **1. Requirements for cryptographic primitives:**
   1. _Quantum-resistant cryptography._  
-  Algorithm must be avare of usage of cryptographic solutions, which are potentially [easily compromised in quantum-based environment](https://csrc.nist.gov/Projects/Post-Quantum-Cryptography) (RSA / ECDSA, and other solutions that are based on similar mathematical problems).  
+  _Algorithm_ **must** be avare of usage of cryptographic solutions, which are potentially [easily compromised in quantum-based environment](https://csrc.nist.gov/Projects/Post-Quantum-Cryptography) (RSA / ECDSA, and other solutions that are based on similar mathematical problems).  
   
   1. _Strict minimum of crypto-primitives._  
-  Algorithm must use strict minimum of the crypto systems. The role of each of them must be strictly defined and clearly motivated. 
+  _Algorithm_ **must** use strict minimum of the crypto systems. The role of each of them must be strictly defined and clearly motivated. 
   
 **2. Requirements for operations:**
    1. _Strict 100% consensus._  
-   Algorithm must enforce achievement of 100% consensus (with possibility of subsequent verification of it) between all  participants involved: the operation itself must be considered as conducted only if all participants (nodes) has approved it. Otherwise - operation must be cancelled also on all participants devices. Achieved consensus must be mathematically approvable and verifieble by any participant of the operation.
+   _Algorithm_ **must** enforce achievement of 100% consensus (with possibility of subsequent verification of it) between all  participants involved: the operation itself must be considered as conducted only if all participants (nodes) has approved it. Otherwise - operation must be cancelled also on all participants devices. Achieved consensus must be mathematically approvable and verifieble by any participant of the operation.
    
   1. _Deferred atomicity._  
-  For each one operations launched in the network, all nodes involved in it, must achieve final state, or discard the operation at all. Intermediate states are acceptable only in short period of time, but are unacceptable to be permanent. Achieving atomicity should be:
+  For each one operations launched in the network, all nodes involved in it, **must** achieve final state, or discard the operation at all. Intermediate states are acceptable only in short period of time, but are unacceptable to be permanent. Achieving atomicity should be:
     1. time-predictable (ideally about a few seconds).
     1. safe towards other operations (launched in parallel).
     1. agnostic towards nodes internal code modifications (hacking) and destructive motivation of the involved participants (fraud attempts).
@@ -72,48 +72,47 @@ This section lists the functional and design requirements for the proposed algor
   Transaction time window — `1-15` seconds for non-fraud operations, and up to `~20 minutes` [#6] for processing problematic operations. It is expected, that more than 90% of all operations in the network would be non-fraud. This assumption is only related to the estimated network throughput.
 
   1. _Routes agnostic._
-  Transactions must be able to use up to several hundreds of different payment paths. [# todo: provide link to the Routing specification].
+  Transactions **must** be able to use up to several hundreds of different payment paths. [# todo: provide link to the Routing specification].
 
   1. _Token / Commisions independence._  
-  Transactions must be able to proceed without any internal token. Participants must not be enforced to charge any commissions for the middle ware operations processing.
+  Transactions **must** be able to proceed without any internal token. Participants must not be enforced to charge any commissions for the middle ware operations processing.
 
 
 **3. Requirements for end-point devices (nodes):**
   1. _Applicability for modern smartphones._  
-  Algorithm should be usable in environments with limited computing resources and memory. Operations that consume a large amount of resources (for example, operations with significant number of participants), should be easy to process partially (pipelining).
+  _Algorithm_ **must** be usable in environments with limited computing resources and memory. Operations that consume a large amount of resources (for example, operations with significant number of participants), should be easy to process partially (pipelining).
   
   1. _Computational efficiency._  
-  Algorithm should have low computational complexity. The mechanism for achieving consensus must avoid frequent calling of complex cryptographic operations (as, for example, Proof Of Work mechanics assumes in some blockchain-based solutions).
+  _Algorithm_ **must** have low computational complexity. The mechanism for achieving consensus must avoid frequent calling of complex cryptographic operations (as, for example, Proof Of Work mechanics assumes in some blockchain-based solutions).
   
 **4. Requirements for anonymity of operations:**
   1. _Network addressation agnostic._  
-  Algorithm must be agnostic on addressation mechanics, so the participants might be present by any kind of addresses (IP / any kind of name resolutions services / prosy services, etc). As a consequence - algorithm should support anonimization via tor and other similar networks.
+  _Algorithm_ **must** be agnostic on addressation mechanics, so the participants might be present by any kind of addresses (IP / any kind of name resolutions services / prosy services, etc). As a consequence — _Algorithm_ should support anonimization via tor and other similar networks.
   
   1. _Lack of a common ledger and common operations history._
-  The outcome of the operation must be determined and distributed only within the participants of this operation. The remaining nodes of the network, who do not participate in the operation, must not be able to retrieve the data about operation, and/or its content.
+  The outcome of the operation **must** be determined and distributed only within the participants of this operation. The remaining nodes of the network, who do not participate in the operation, must not be able to retrieve the data about operation, and/or its content.
   
 **5. Requirements for network resources:**
   1. _Resistance to unstable networks._  
-  Algorithm is resistant to network interference, packet loss and/or even whole messages loss. In the worst case, if consensus can't be reached, the operation must be canceled on all devices participating in it.
+  _Algorithm_ **must** be resistant to network interference, packets loss and/or even whole messages loss. In the worst case, if consensus can't be reached, the operation **must** be canceled on all devices participating in it.
   
   1. _Transport protocol agnostic._  
-  Algorithm must not require a permanent connection and must not base its own mechanics on the guarantees provided by different protocols, starting with the transport layer of the OSI model (for example, TCP). The reference implementation of the algorithm is based on UDP (see network protocol specifications for the details) [※ 1].
+  _Algorithm_ **must** not require a permanent connection and must not base its own mechanics on the guarantees provided by different protocols, starting with the transport layer of the OSI model (for example, TCP).
   
 **6. Requirements for fault tolerance:**
   1. _Strict operation completion guarantee_  
-  Algorithm in conjunction with the rest of the GEO protocol ecosystem solutions, must be ablr to ensure the finality of any running operation on the network. Scenarios under which the operation was started, but can not be completed (dead locks) must be striclty documnted and excluded.
+  _Algorithm_ in conjunction with the rest of the GEO protocol ecosystem solutions, **must** be able to ensure the finality of any running operation on the network. Scenarios under which the operation was started, but can not be completed (dead locks) **must** be striclty documnted and coverd by the protocol solution [# todo].
   
   1. _Automatic synchronization._  
-  Algorithm must be able to automatically resolve possible conflicts between participants of the network, leading them back to the synchronization state, via strit logic of cryptographically-based solutions.
-  
-  
+  _Algorithm_ **must** be able to automatically resolve possible conflicts between participants of the network, leading them back to the synchronized state, via strit logic of cryptographically-based solutions.
+ 
 **7. Requirements for the speed of operations:**
   1. _Sub-second processing time for one participant._  
   This point depends very much on the configuration of the separately taken node, but in general, the GEO Protocol team aims to create an algorithm that is as effective in time as possible. This approach is reflected in a number of optimizations adopted in the algorithm, and continues to find a place in the new solutions.
   
 **8. Requirements for portability:**
-  1. The algorithm must not contain platform-dependent components.
-  1. The algorithm must not be hardware specific or dependent.
+  1. _Algorithm_ **must not** contain platform-dependent components.
+  1. _Algorithm_ **must not** be hardware-dependent.
   
   
 ※ To increase the probabilty of achieving consensus, and / or shorten the time of the algorithm execution, various traffic optimisation and correction techniques can be used as well. This protocol does not assumes any of them to be present, but obviously works better in the environments with stable network connections.
@@ -264,27 +263,34 @@ Path is considered as valid only in case if there is a possibility to traverse a
 _V = [sourceNode, node1, node2, ..., destinationNode]_
 
 <img width=400 src="https://github.com/GEO-Project/specs-protocol/blob/master/transactions/resources/20181004170830.svg">
+
 _Example of network path: {A, B, C, D} and its subsets {A, B, C}, {A, B}, ..._
 
+<img width=400 src="https://github.com/GEO-Project/specs-protocol/blob/master/transactions/resources/20181004171342.svg">
+
+_Example of payment network path_
+
+</br>
+
 #### Paths map
-Coordinator-specific internal data structure for storing information about all reservations created on all paths used. During amount reservation, each one newly created amount reservation always would be less (or equal) to previously created reservation on the same path. This structure helps maintain path topology and help nodes to achieve _least common amount_ reserved.
+_Paths map_ — coordinator-specific internal data structure for storing information about all reservations created on all paths used. During amount reservation, each one newly created amount reservation always would be less (or equal) to previously created reservation on the same path. This structure helps maintain path topology and help nodes to achieve _least common amount_ reserved.
 
 #### Signatures list
-List of all participants of the operation and their signatures.  
+_Signatures list_ — list of all participants of the operation and their signatures.  
 Presence of all signatures approves 100% consensus and must be interpret as finalised operation. 
 
 <br/>
 <br/>
 
 # Stage 1 — Amount Collecting and Reservation
-#### _Paths discovering_  
-[`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) in cooperation with [`Receiver`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#receiver) **must** discover all (or some part of) possible [network paths](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#network-path) `{Coordinator -> Receiver}`. In case if no paths are found — algorithm execution **must** stop with error code [`No routes`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#no-routes). Please, see [Routing]() `[#todo: link]` for the details on paths discovering.
+#### Paths discovering
+[`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) in cooperation with [`Receiver`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#receiver) **must** discover all (or some part of) possible [network paths](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#network-path) `{Coordinator -> Receiver}`. In case if no paths are found — _Algorithm_ execution **must** stop with the error code [`No routes`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#no-routes). Please, see [Routing]() `[#todo: link]` for the details on paths discovering.
 
-#### [Optional] Paths Processing Optimisation
-Routing algorithm [todo: link] migh return first portion of available paths much faster, than it needs for discovering whole list of all possible paths. For the transaction processing, only several paths might be needed, and, depending on the transaction amount, there is a non-zero probability, that several first portion(s) of paths would be enough for the operation to finish. Transactions Algorithm should not wait for discovering all the paths, but should begin even if one (or several) paths are available. In case if discovered paths would be not enough — Algorithm should pause for some time, until next portion of paths would be available.
+#### Optimisations
+* [Paths Processing] Routing algorithm [todo: link] migh return first portion of available paths much faster, than it needs for discovering whole list of all possible paths. For the transaction processing, only several paths might be needed, and, depending on the transaction amount, there is a non-zero probability, that several first portion(s) of paths would be enough for the operation to finish. Transactions Algorithm should not wait for discovering all the paths, but should begin even if one (or several) paths are available. In case if discovered paths would be not enough — Algorithm should pause for some time, until next portion of paths would be available.
 
 
-#### _Paths processing_  
+#### Paths processing
 [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) **must** attempt to reserve [`tr. amount`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#transaction-amount) to the [`Receiver`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#receiver) on several (or all, if needed, but at least one) discovered paths.
 
 ## Algorithm A: Parrallel reservations collecting 
@@ -483,8 +489,8 @@ In all cases, it is safe for any node to drop the transaction and it's related a
 [Final Reservations Configuration]() [#todo: add structure] — _FCR_ — structure that represents relations and their states (reservations). Separated _FCR_ must be generated for each one node involved for the syncronisation purposes. 
 
 ##### Flow
-1. **Must** finalize it's paths map and generate _FCR_  for ∀`node` ∈ [`nodes_inv`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#nodes-involved)}.
-1. **Must** send _FRC_ to ∀`node` ∈ [`nodes_inv`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#nodes-involved)}. 
+1. **Must** finalize it's paths map and generate _FCR_  for ∀`node` ∈ [`nodes_inv`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#nodes-involved).
+1. **Must** send _FRC_ to ∀`node` ∈ [`nodes_inv`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#nodes-involved). 
 
 <img src="https://github.com/GEO-Project/specs-protocol/blob/master/transactions/resources/20181004130140.svg">
 
@@ -516,7 +522,7 @@ In all cases, it is safe for any node to drop the transaction and it's related a
 
 # Stage 2.1 — Signed debts receipts exchange
 1. On each final configuration received, `node` must:
-  * ∀(`neighbor` in {[`neighbors_inv`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#neighbors-involved)}): 
+  * ∀`neighbor` ∈ [`neighbors_inv`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#neighbors-involved)): 
     * `node` **must** create debt receipt (#todo: link to struct) for the `neighbor` with amount according to the reserved amount on the trust line with the `neighbour`.
     * `node` **must** sign it with one of it's public keys from pool of public keys with `neighbour`.
     * `node` **must** send signed debt receipt to the `neighbor`. 
@@ -530,7 +536,7 @@ In all cases, it is safe for any node to drop the transaction and it's related a
 
 **Note:** Signed debt receipt is only valid in case if whole transaction is signed (separate message with separate signature), so node might sign and send it to the neighbour without any doubt. In case if any other node would not sign the operation — no one debt receipt would be valid and must not be demanded.
 
-∀(`node` in {[`nodes_inv`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#nodes-involved)+ [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator)}):
+∀`node` ∈ [`nodes_inv`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#nodes-involved)+ [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator)):
   * `node` **must** receive signed debt receipts from **all** neighbours. In case if even one signed debt receipt wasn't received — node **must** reject the operation [(Stage B)](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-b-middle-wares-node-behaviour-after-transaction-reject).
   * `node` **must** check **all** received signed debt receipts for the next reuirements:
     
@@ -696,9 +702,8 @@ If not _all_ transaction signatures was collected during 3 [network hops](https:
 
 1. **Must** check all received [Transaction Signatures](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#transaction-signature) through checks provided further.  
 If even one check fails — [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator) **must** reject the operation [Stage B](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-b-middle-wares-node-behaviour-after-transaction-reject).
-
-!!!! todo: send consensus to other nodes
-!!!! Todo: commit
+1. **Must** generate TransactionConsensusMessage and send it to each one participant involved.
+1. **Must** [Commit](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-34--commiting).
 
 
 ### Checks for TS:
@@ -727,10 +732,10 @@ By default, should be at least 2 [network timeouts](https://github.com/GEO-Proto
 1. **Must** wait for the _CT_;
 
 1. **Must** receive _TCM_ from the [`Coordinator`](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#coordinator).  
-In case if no _TCM_ was received — **must** move to [Recover stage](). [#todo!!!]
+In case if no _TCM_ was received — **must** move to [Recover stage](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-z--recover-nodes).
 
 1. **Must** check received _TCM_ through the checks provided further. 
-    * In case if _even one_ check fails — **must** move to [Recover stage](). [#todo!!!]
+    * In case if _even one_ check fails — **must** move to [Recover stage](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-z--recover-nodes).
     * In case of _all_ checks has been passed — **must** [Commit](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#stage-34--commiting).
 
 ##### Checks for the _TCM_
@@ -805,7 +810,7 @@ Being applied to several neighbours, this mechanism has cascade influence and as
 # Stage X — Observers Arbitration Requesting (nodes)
 ##### Definitions
 
-[* [ObserversRequestMessage]() [#todo: add structure] — _ORM_ — request for the arbitration, that is generated by the node in case if it has signed the transaction and has sent this signature into the network, but hasn't received TranactionConsensusMessage](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#transaction-consensus-message) and no one node responds to the request for the TranactionConsensusMessage](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#transaction-consensus-message).
+* [ObserversRequestMessage]() [#todo: add structure] — _ORM_ — request for the arbitration, that is generated by the node in case if it has signed the transaction and has sent this signature into the network, but hasn't received [TranactionConsensusMessage](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#transaction-consensus-message) and no one node responds to the request for the [TranactionConsensusMessage](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md#transaction-consensus-message).
 
 ##### Flow
 1. **Must** generate _ORM_ and include the next info into it:
@@ -853,6 +858,8 @@ During operation processing, there is non zero-probability, that some node(s) in
 
 [#todo node must permanently check observers for the requests]
 
+<br/>
+<br/>
 
 # Data types used
 This section provides explanation of used data structures in developers friendly format.
@@ -929,6 +936,8 @@ struct Amount {
     byte[1..32] value;
 }
 ```
+<br/>
+
 <br/>
 
 # Messages
@@ -1029,11 +1038,15 @@ There is no enough amount can be collected on all paths discovered.
 `code: 402`
 Some node, that participated in the operation did not provided its signature for it.
 
+<br/>
+<br/>
 
 # Timeouts
 #### Amount reservation timeout 
 `30 seconds`
 
+<br/>
+<br/>
 
 # Constants
 ### Keys pool size
@@ -1051,6 +1064,8 @@ _Observers request checking interval_ — time interval that specifies how often
 ### Observers verdict timeout
 _Observers verdict timeout_ — max. time that observers might wait for the TransactionConsensusMessage arriving from the network. By default is set to `2 hours`.
 
+<br/>
+<br/>
 
 # License
 [<img src="https://opensource.org/files/osi_keyhole_300X300_90ppi_0.png" height=90 style="float: left; padding: 20px">]()
