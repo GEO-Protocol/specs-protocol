@@ -107,9 +107,9 @@ graph LR
 _Algorithm_ must provide us with the possibility to perform the next operations:
 
 ##### Create secured communication channel
-_Secured communication channel_ is used for p2p data transfers in end2end manner. 
+_Secured communication channel_ is used for p2p data transfers in end2end manner. Messages are encrupted by shard secret key. [#todo: add link to the key].
 
-<img width=200 src="https://github.com/GEO-Project/specs-protocol/blob/master/trust_lines/resources/20181012161010.svg">
+<img width=200 src="https://github.com/GEO-Project/specs-protocol/blob/master/trust_lines/resources/20181012155411.svg">
 
 ```mermaid
 graph LR
@@ -118,6 +118,31 @@ graph LR
 ```
 
 ##### Create outgoin Trust Line
+
+From `node A` perspective: **outgoing** trust line to the `node B`:
+
+<img width=400 src="https://github.com/GEO-Project/specs-protocol/blob/master/trust_lines/resources/20181012161010.svg">
+
+```mermaid
+graph LR
+    A(node A)-- A's Trust Line Amount -->B 
+    B(node B)
+```
+
+</br>
+</br>
+
+From `node B` perspective: **outgoing** trust line to `node A`:
+
+<img width=400 src="https://github.com/GEO-Project/specs-protocol/blob/master/trust_lines/resources/20181012161833.svg">
+
+```mermaid
+graph LR
+    B(node B)-- B's Trust Line Amount -->A 
+    A(node A)
+```
+
+
 
 ##### Accept incoming Trust Line
 
