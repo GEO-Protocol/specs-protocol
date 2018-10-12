@@ -2,9 +2,7 @@
 
 Fast, safe, double-spending resistant, quantum-resistant, multi-attendee  
 crypto-protocol for atomic and consistent assets transfers via p2p networks.  
-
 `GEO Protocol / 2018` &nbsp;&nbsp;&nbsp;  `Draft` **`Audit Pending`**
-
 <br/>
 <br/>
 <br/>
