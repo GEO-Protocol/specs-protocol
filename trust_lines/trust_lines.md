@@ -96,7 +96,7 @@ Economic model; [#todo: add link]
 ## Overview
 Lets assume there are 2 netwotk participants: `node A` and `node B`:
 
-<img width=50 src="https://github.com/GEO-Project/specs-protocol/blob/master/trust_lines/resources/20181012155411.svg">
+<img width=100 src="https://github.com/GEO-Project/specs-protocol/blob/master/trust_lines/resources/20181012155411.svg">
 
 ```mermaid
 graph LR
@@ -107,7 +107,7 @@ graph LR
 _Algorithm_ must provide us with the possibility to perform the next operations:
 
 ##### Create secured communication channel
-Secured communication channel is used for data 
+_Secured communication channel_ is used for p2p data transfers in end2end manner. 
 
 <img width=200 src="https://github.com/GEO-Project/specs-protocol/blob/master/trust_lines/resources/20181012161010.svg">
 
