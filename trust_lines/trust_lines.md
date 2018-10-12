@@ -89,4 +89,44 @@ This _Algorithm_ is based on Lamport One Time Signature Scheme [#todo: link], BL
 Crypto primitives; [#todo: add link]
 Economic model; [#todo: add link]  
 
+</br>
+</br>
 
+# Protocol Decription
+## Overview
+Lets assume there are 2 netwotk participants: `node A` and `node B`:
+
+<img width=50 src="https://github.com/GEO-Project/specs-protocol/blob/master/trust_lines/resources/20181012155411.svg">
+
+```mermaid
+graph LR
+    A(node A) 
+    B(node B)
+```
+
+_Algorithm_ must provide us with the possibility to perform the next operations:
+
+##### Create secured communication channel
+Secured communication channel is used for data 
+
+<img width=200 src="https://github.com/GEO-Project/specs-protocol/blob/master/trust_lines/resources/20181012161010.svg">
+
+```mermaid
+graph LR
+    A(node A)---B 
+    B(node B)
+```
+
+##### Create outgoin Trust Line
+
+##### Accept incoming Trust Line
+
+##### Verify the state of Trust Line
+
+# Terms
+##### Trust Line [# todo]
+
+
+
+# Todo (describe):
+1. Secret Key refresh
