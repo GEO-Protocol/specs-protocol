@@ -341,6 +341,8 @@ O   — Outgoing Trust Amount
 I   — Incoming Trust Amount
 B   — Balance
 H2  — Node B keys pool hash
+N   — Node B number of key, 
+      used for the op.
 ---------------------------
 
 Node A Signature    (based on record from keys pool)
@@ -354,16 +356,14 @@ Node B
 O   — Outgoing Trust Amount
 I   — Incoming Trust Amount
 B   — Balance
-H1  — Node B keys pool hash
+H1  — Node A keys pool hash
+N   — Node A number of key, 
+      used for the op.
 ---------------------------
 
 Node B Signature    (based on record from keys pool)
 Node A Signature    (based on record from keys pool)
 ```
-
-### Preconditions
-1. All operations with a _Trust Line_ **must** be finished. If there is any other _"Trust Line Set / Audit"__ operation — it might be replaced by new one. 
-1. All new operations with the _Trust Line_ **must** be prevented, until the oepration would be done.
 
 ### Roles
 ##### Initiator
@@ -372,7 +372,14 @@ _Initiator_ — node, that initializes the operation.
 ##### Receiver
 _Receiver_ — node, that accepts the operation.
 
+</br>
+</br>
+
 ### Flow
+### Preconditions
+1. All operations with a _Trust Line_ **must** be finished. If there is any other _"Trust Line Set / Audit"__ operation — it might be replaced by new one. 
+1. All new operations with the _Trust Line_ **must** be prevented, until the oepration would be done.
+
 #### Stage 1 — Initial Audit (initiator)
 1. **Must** create _Trust Line Audit_ record [#todo: link].
 1. **Must** sign created _Trust Line Audit_ record with a next unused pair of private and public keys. If not unused keys pair is available — **must** stop the operation with the code `No Key Pair Available`. In this case — user intervention is necessary.
@@ -381,21 +388,43 @@ _Receiver_ — node, that accepts the operation.
 1. [Atomic operations flow #1] **Must**serialize current operation to the stable storage for the cases, when node would stop execution unexpectedly.
 1. **Must** go to the Stage 2.
 
+</br>
+</br>
+
 #### Stage 2 — Audit receiveing (initiator)
 1. **Must** subscribe for the `receiver` online probbing [#todo: link].
 1. **Must** send signed _Trust Line Audit_ to the `receiver` on succesfull on-line probbing.
 1. **Must** receive signed _Trust Line Audit_ message from the `receiver`. If not signed _Trust Line Audit_ message was received — repeat step 2.1.
-1. **Must** check received _Trust Line Audit_
+1. **Must** check received _Trust Line Audit_ through the checks provided further. If even one check fails — Trust Line must go into "Conflict" state [# todo: link] [#todo: provide description what to do with a TL in conflict state].
+1. [Atomic operations flow #2] **Must** update Trust Line info on the stable storage.
+1. [Atomic operations flow #2] **Must** append _Trust Line Audit_ to the Trust Line audits history.
+1. [Atomic operations flow #2] **Must** update _Trust Line_ operations history.
+1. Should infor user iwth code `OK` [#todo: link].
 
-1. **Must** subscribe for the "pong" message from the `receiver`.
-1. **Must** send signed _Trust Line Audit_ to the `receiver` on "pong" response. If no "pong" response is available — must repeat ping sending with some exponential timeout.
-
+##### Trust Line Audit checks
+1. Received signature **must** correspond to the PubKey with number N in the `receiver's` keys pool. 
+1. PubKey with number N in `receiver's` keys pool **must** be unused.
 
 1. **Must** wait for the signed _Trust Line Audit_ message from the `receiver`. Optionally, if not signed _Trust Line Audit_ was received during the timeout — user should be notified, that remoute node is unreacheble and the operation would be finished when it would bring on-line back.
 
+</br>
+</br>
+
 #### Stage Z — recover (initiator)
 1. **Must** ensure any operations with trust line are forbidden (precondition one).
-1. **Must**  
+1. **Must** continue execution from the Stage 2 [#todo: link].
+
+</br>
+</br>
+
+#### Stage 1 — Audit checking (receiver)
+1. **Must** receive signed _Trust Line Audit_ message from `initiator`.
+1. **Must** check received _Trust Line Audit_ through the checks provided further. If even one check fails — Trust Line must go into "Conflict" state [# todo: link] [#todo: provide description what to do with a TL in conflict state]
+
+[#todo: continue description]
+
+</br>
+</br>
 
 ## 2. Debt Usage
 
@@ -403,9 +432,12 @@ _Receiver_ — node, that accepts the operation.
 
 # Operations Codes
 ##### Ok
+Code — `200`.  
+Operation was done successfully.
 
 ##### No Key Pair Available
-Code — `401`. 
+Code — `401`.  
+There is no even one unused keys pair in the keys pool of the `receiver`.
 
 
 
@@ -421,6 +453,7 @@ Code — `401`.
 4. Pools reinitialisation / additional keys generration
 4. Proofs of operations can't be cheated.
 5. Accept incoming Trust Line;
+6. Automatic conflicts resolving
 
 * Reject incoming Trust Line;
 * (Re)Set the Trust Line amount(s).
