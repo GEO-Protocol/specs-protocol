@@ -24,8 +24,7 @@ This specification describes algorithm _("Algorithm"_ further in the doc.) for t
 
 # Overview
 The objectives of this document are:
-1. to provide comprehensive info about proposed method of consensus;
-1. to describe the method of mathematical and cryptographic confirmation of operations [#todo: add math proof];
+1. to provide comprehensive info about proposed method of consensus between 2 participants about balance on the trust line between them;
 1. to prodive mathematical confirmation of the impossibility (or extreme complexity) of the operations compromising [#todo: add math proof];
 1. to provide a list of possible edge cases and to describe the ways to avoid/resovle them, as well as possible outcomes of operations.
 
@@ -33,27 +32,28 @@ The objectives of this document are:
 <br/>
 
 # Source Conditions and Requirements
-This section lists the functional and design requirements for the Algorithm.
+This section lists the functional and design requirements for the _Algorithm_.
 
 **1. Requirements for cryptographic primitives:**
 1. _Quantum-resistant cryptography._  
-  _Algorithm_ **must** be avare of usage of cryptographic solutions, which are potentially [easily compromised in quantum-based environment](https://csrc.nist.gov/Projects/Post-Quantum-Cryptography) (RSA / ECDSA, and other solutions that are based on similar mathematical problems).  
-  
-1. _Strict minimum of crypto-primitives._  
-  _Algorithm_ **must** use strict minimum of the crypto systems. The role of each of them must be strictly defined and clearly motivated. 
+  _Algorithm_ **must** be avare of usage of cryptographic solutions, which are potentially [easily compromised in quantum-based environment](https://csrc.nist.gov/Projects/Post-Quantum-Cryptography) (RSA / ECDSA, and other solutions that are based on similar mathematical problems);  
 
+1. _Strict minimum of crypto-primitives._  
+  _Algorithm_ **must** use strict minimum of the crypto systems. The role of each of them must be strictly defined and clearly motivated;  
+
+1. _Compatibility with [transactions processing algorithm](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md)._ 
 
 **2. Requirements for end-point devices (nodes):**
 1. _Applicability for modern smartphones._  
-  _Algorithm_ **must** be usable in environments with limited computing resources and memory. Operations data on a stable storage **must** fit into less than `200 Mb` per trust line.
+  _Algorithm_ **must** be usable in environments with limited computing resources and memory. Operations data on a stable storage **must** fit into less than `200 Mb` per trust line;  
   
 1. _Computational efficiency._  
-  _Algorithm_ **must** have low computational complexity. The mechanism for achieving consensus on a trust line's state **must** avoid frequent calling of complex cryptographic operations (as, for example, Proof Of Work mechanics assumes in some blockchain-based solutions).
+  _Algorithm_ **must** have low computational complexity. The mechanism for achieving consensus on a trust line's state **must** avoid frequent calling of complex cryptographic operations (as, for example, Proof Of Work mechanics assumes in some blockchain-based solutions).  
 
 
 **3. Requirements for network resources:**
 1. _Resistance to unstable networks._  
-  _Algorithm_ **must** be resistant to network interference, packets loss and/or even whole messages loss.
+  _Algorithm_ **must** be resistant to network interference, packets loss and/or even whole messages loss;  
   
 1. _Transport protocol agnostic._  
   _Algorithm_ **must not** require a permanent connection and must not be base its own mechanics on the guarantees provided by different protocols, starting with the transport layer of the OSI model (for example, TCP).
@@ -76,14 +76,22 @@ This section lists the functional and design requirements for the Algorithm.
 </br>
 
 # Cryptographic Primitives
-This _Algorithm_ is based on Lamport One Time Signature Scheme [#todo: link], BLAKE2b [#todo: link] hash function and AES256-GCM. [#todo: link]. Please, read about proposed implementation of Lamport Scheme on top BLAKE2b, AES256-GCM usage and motivation for inclidung of this cryptoprimitives into the protocol here. [#todo: link]
+This _Algorithm_ is based on [Lamport One Time Signature Scheme](https://en.wikipedia.org/wiki/Lamport_signature), [BLAKE2b hash function](https://blake2.net) and [AES256](https://en.wikipedia.org/wiki/Advanced_Encryption_Standard)-[GCM](https://en.wikipedia.org/wiki/Galois/Counter_Mode).  [※ 1]
+
+</br>
+</br>
+
+------
+
+* Details about motivation of using listed crypto-primitives are avalable here [#todo: link]. 
 
 </br>
 </br>
 
 # Assumptions
 1. _Algorithm_ expects only 2 participants to be involved. 
-1. _Algorithm_ expects that both participants have _secret key_, retrieved before secret channel establishing. _Secret key_ might be different on each patricipant's side.    
+1. _Algorithm_ expects that both participants have _secret key_, retrieved before the secret channel establishing.  
+_Secret key_ might be different on each patricipant's side.    
 
 **Related specs**
 Crypto primitives; [#todo: add link]
@@ -184,6 +192,9 @@ struct TrustLine {
 
 _Trust Lines_ plays the fundamental role in [GEO Network]() processing and participants intercomunnications. The purpose of the network itself is to atomically process the changes on several trust lines, involved into the common operation. Please, see the [Transactions Algorithm](https://github.com/GEO-Protocol/specs-protocol/blob/master/transactions/transactions.md) for the details.
 
+## Nodes Involved
+_Nodes involved_ — `nodes_inv` — list of nodes, that are involved into the transaction (nodes `A` and `B` in the example). 
+
 </br>
 
 ### Trust Lines Equivalents
@@ -249,14 +260,18 @@ Bi-diretctional _Trust Lines_ are way more efficient in case of bi-directed trus
 </br>
 </br>
 
-## Keys Pool
-Each one operation on the [_Trust Line_]() [#todo: link] **must** be signed by both parties, to prevent any possibility for the cheating. Operation **must** be considered as _incomplete_, until signatures of both sides would not present under the operation record, and **must** be considered as complete in case if both signatures are present **AND** both are valid. To provide possiblity to sign the operations by the nodes — _Keys Pools_ are used by the nodes. 
+## Keys Pools
+Each one operation on the _Trust Line_ **must** be signed by both parties.  
+* Operation **must** be considered as _incomplete_, until signatures of both nodes would not be present on the record.  
+* Operation **must** be considered as _complete_ in case if both signatures are present **AND** both nodes are agree on their valididty.
 
-_Keys Pool_ — chain of the **public** keys of the counterpart node, related to the trust line with this node, and **public AND private** keys of it's own. For each one _Trust Line_ open, nodes **must** ensure it's _Keys Pool_. For example, in case if `node A` and `node B` has common trust line, `node A` would store public keys of the `node B`, related to the trust line between them, and `node B` would store public keys of the `node A` on it's side in the same way. Also, both sides would store it's private keys for each one public key that was not used yet.
+Due to the used crypto system, each one operation **must** use it's own keys pair, so, to be able to process several operations, — nodes **must** establish _keys pools_. 
 
-Due to the used [crypto system]() [#todo: add link to the Lamport Crypto], each one operation **must** use it's own key, so, to be able to process several operations, — nodes **must** establish keys pools of appropriate size. Depending to the node [configuration]() [#todo: add link] keys pools might be from several keys long up to several thouthands keys long.
+There are 2 different types of keys pools used in the _Algorithm_:
+* _External keys pool_ — vector of the **public** keys of the counterpart node, related to the _Trust Line_.;
+* _Internal keys pool_ — vector of the **public AND private** keys of the node.
 
-The pool format is the next:
+The _Internal Keys Pool_ format:
 
 ```
 Num.  | PKey (16Kb)     | PubKey (16Kb)                             
@@ -269,21 +284,138 @@ Num.  | PKey (16Kb)     | PubKey (16Kb)
   N   | e2 8c ... ea 63 | 54 72 ... f9 3b
 ```
 
-∀ `pool` ∈ `KeyPools`:
-* **must** be [hashed]() [todo: link to the hash algorithm] to prevent manipuldations with keys numbers.
+The _External Keys Pool_ format:
+
+```
+Num.  | PubKey (16Kb)   |
+      |                 |
+00001 | 6b 62 ... ce 81 |
+00002 | 74 2d ... ae 7c |
+      |                 |
+ ...  |       ...       |
+      |                 |
+  N   | e2 8c ... ea 63 |
+```
+
+For each one _Trust Line_ open, nodes **must** ensure it's presence of realted _Keys Pools_.
+
+Depending to the node configuration, keys pools might contains from several keys up to several thouthands keys. It is reccomended for the nodes to establish keys pools of the same size on both parties to prevent reduntant pools syncronization operations.
 
 </br>
 
 ### Keys Pools Size Prediction
-Due to the key pool record format, one record is `16k + 16k + 2 = 32kB + 2` bytes long. The size of the signature, that **must** be stored to the related record in the pool is `8kB`. So, in total, one record might be `40kB + 2B` long. Optionally, the `PKay` of the operation should be removed from the `pool` to prevent its double usage in the future, so the record size might be reduced to `40k - 16k + 2 = 24k + 2` bytes.
+##### Internal Keys Pool
+* 1 record is `[Num] 2 + [PKey] 16k + [PubKey] 16k = + 2 + 32k` bytes long.
 
-So, for the Trust Lines with the 100 keys in pool,  be ~`24kB * 100 = 2400Kb == 24Mb`.
+##### External Keys Pool
+* 1 record is `[Num] 2 + [PubKey] 16k = + 2 + 16k` bytes long.
 
 </br>
 </br>
+
+# Operations Flow
+## 1. Trust Line Set / Audit
+_Set_ operation makes it possible for the `nodes_inv` [#todo: link] to reach an agreement about amount of trust from both nodes and current balance of the trust line.
+
+The main idea behind this opeartion is to reach agreement on the next record:
+
+```
+Node A Outgoing Trust Amount — N
+Node A Incoming Trust Amount — K
+Node B Outgoing Trust Amount — K
+Node B Incoming Trust Amount — N
+
+Trust Line Balance — K <= B <= N, For node A  
+Trust Line Balance — N <= B <= K, For node B  
+
+Node A keys pool hash — H1.
+Node B keys pool hash — H2.
+```
+
+From the nodes perspective this info might be transformed into the next format (Trust Line Audint record):
+```
+Node A
+
+---------------------------
+O   — Outgoing Trust Amount
+I   — Incoming Trust Amount
+B   — Balance
+H2  — Node B keys pool hash
+---------------------------
+
+Node A Signature    (based on record from keys pool)
+Node B Signature    (based on record from keys pool)
+```
+
+```
+Node B
+
+---------------------------
+O   — Outgoing Trust Amount
+I   — Incoming Trust Amount
+B   — Balance
+H1  — Node B keys pool hash
+---------------------------
+
+Node B Signature    (based on record from keys pool)
+Node A Signature    (based on record from keys pool)
+```
+
+### Preconditions
+1. All operations with a _Trust Line_ **must** be finished. If there is any other _"Trust Line Set / Audit"__ operation — it might be replaced by new one. 
+1. All new operations with the _Trust Line_ **must** be prevented, until the oepration would be done.
+
+### Roles
+##### Initiator
+_Initiator_ — node, that initializes the operation.
+
+##### Receiver
+_Receiver_ — node, that accepts the operation.
+
+### Flow
+#### Stage 1 — Initial Audit (initiator)
+1. **Must** create _Trust Line Audit_ record [#todo: link].
+1. **Must** sign created _Trust Line Audit_ record with a next unused pair of private and public keys. If not unused keys pair is available — **must** stop the operation with the code `No Key Pair Available`. In this case — user intervention is necessary.
+
+1. [Atomic operations flow #1] **Must** remove previosly serialised operation from the stable storage (if present).
+1. [Atomic operations flow #1] **Must**serialize current operation to the stable storage for the cases, when node would stop execution unexpectedly.
+1. **Must** go to the Stage 2.
+
+#### Stage 2 — Audit receiveing (initiator)
+1. **Must** subscribe for the `receiver` online probbing [#todo: link].
+1. **Must** send signed _Trust Line Audit_ to the `receiver` on succesfull on-line probbing.
+1. **Must** receive signed _Trust Line Audit_ message from the `receiver`. If not signed _Trust Line Audit_ message was received — repeat step 2.1.
+1. **Must** check received _Trust Line Audit_
+
+1. **Must** subscribe for the "pong" message from the `receiver`.
+1. **Must** send signed _Trust Line Audit_ to the `receiver` on "pong" response. If no "pong" response is available — must repeat ping sending with some exponential timeout.
+
+
+1. **Must** wait for the signed _Trust Line Audit_ message from the `receiver`. Optionally, if not signed _Trust Line Audit_ was received during the timeout — user should be notified, that remoute node is unreacheble and the operation would be finished when it would bring on-line back.
+
+#### Stage Z — recover (initiator)
+1. **Must** ensure any operations with trust line are forbidden (precondition one).
+1. **Must**  
+
+## 2. Debt Usage
+
+
+
+# Operations Codes
+##### Ok
+
+##### No Key Pair Available
+Code — `401`. 
+
+
+
+----
+[# Draft, please ignore]
+
+## Pools hashing and set
+
 
 # Todo (describe):
-1. Secret Key refresh
 2. Operations flow
 3. Set and pool hashing
 4. Pools reinitialisation / additional keys generration
@@ -293,3 +425,22 @@ So, for the Trust Lines with the 100 keys in pool,  be ~`24kB * 100 = 2400Kb == 
 * Reject incoming Trust Line;
 * (Re)Set the Trust Line amount(s).
 * Change the balance of the Trust Line.
+
+
+
+
+##### Trust Lines
+Each one operation performed **must** be chained with records from 
+
+* 1 record that _was_ used for the TL sign is:
+`[Num] 2 + [PKey] 16k + [PubKey] 16k + [Signature] 8k  = + 2 + 40k` bytes long. 
+
+
+Optionally, the `PKey` of the operation should be removed from the `pool` to prevent its double usage in the future, so the record size might be reduced to `40k - 16k + 2 = 24k + 2` bytes.
+
+So, for the Trust Lines with the 100 keys in pool,  be ~`24kB * 100 = 2400Kb == 24Mb`.
+
+
+
+# Todo (describe):
+1. Secret Key refresh [describe in crypto]
