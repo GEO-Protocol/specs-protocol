@@ -476,4 +476,8 @@ So, for the Trust Lines with the 100 keys in pool,  be ~`24kB * 100 = 2400Kb == 
 
 
 # Todo (describe):
+<<<<<<< Updated upstream
 1. Secret Key refresh [describe in crypto]
+=======
+1. Secret Key refresh [describe in crypto]
+>>>>>>> Stashed changes

@@ -1,6 +1,20 @@
 # Addressation 
 
-#### Protocol veriosn
+#### Protocol version
+New communication protocol **must** contain protocol version included into each one message. It is neccesary for ability to upgrade the protocol in the future.
+
+```c++
+class BaseMessage {
+
+public:
+    enum PROTOCOL_VERSION {
+        Latest = 0,
+    }
+
+private:
+    byte mVersion;
+}
+```
 
 #### Primitives 
 Primitives that might be useful for addressing purposes.
@@ -17,11 +31,10 @@ class DNSRecord { /* host -> string, 255 symb. max */ }
  * Regular GNS record.
  */
 class GNSRecord {
-	string provider; 	// Top-level domain in terms of classic DNS. 
+    string provider; 	// Top-level domain in terms of classic DNS. 
                         // Max length - 255.
                         // Min length - 1.
-	
-    string name;		// Internal name, used inside of this domain.
+	string name;		// Internal name, used inside of this domain.
                         // Max length - 255.
                         // Min length - 1.
 }
@@ -80,3 +93,4 @@ class Contractor {
     const Endpoints& endpoints() const;
 }
 ```
+
