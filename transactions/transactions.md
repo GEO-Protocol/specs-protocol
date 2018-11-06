@@ -6,7 +6,7 @@ crypto-protocol for atomic and consistent assets transfers via p2p networks.
 <br/>
 <br/>
 <br/>
-[`Max Demiyan`](https://github.com/MaxDemyan)
+[`Max Demyan`](https://github.com/MaxDemyan)
 [`Dima Chizhevsky`](https://github.com/haysaycheese/) 
 [`Mykola Ilashchuk`](https://github.com/MukolaIlashchuk) 
 <br/>
