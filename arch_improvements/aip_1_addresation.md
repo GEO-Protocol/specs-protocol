@@ -27,14 +27,18 @@ class IPv4Address { /* 4B  */ };
 class IPv6Address { /* 16B */ };
 class DNSRecord { /* host -> string, 255 symb. max */ }
 
+class BaseGNSRecord {
+    string provider;    // Top-level domain in terms of classic DNS. 
+                        // Max length - 255.
+                        // Min length - 1.
+}
+
 /*
  * Regular GNS record.
  */
-class GNSRecord {
-    string provider; 	// Top-level domain in terms of classic DNS. 
-                        // Max length - 255.
-                        // Min length - 1.
-	string name;		// Internal name, used inside of this domain.
+class GNSRecord: 
+public BaseGNSRecord {
+    string name;		// Internal name, used inside of this domain.
                         // Max length - 255.
                         // Min length - 1.
 }
@@ -44,9 +48,9 @@ class GNSRecord {
  * GNS is able to store binary data, so it might a replacement for UUIDv4 or 
  * IPv6 address.
  */
-class BinaryGNSRecord {
-	string provider;
-	byte id[16];
+class BinaryGNSRecord:
+public BaseGNSRecord {
+    byte id[16];
 }
 ```
 
@@ -69,8 +73,8 @@ public:
      * Returns count of ipv4 addresses available.
      * If 0 - ipv4Addresses() must return ipv4AddressesEnd().
      */
-	const uint8 ipv4AddressCount() const;
-	vector::const_iterator<IPv4Address> ipv4Addresses() const;
+    const uint8 ipv4AddressCount() const;
+    vector::const_iterator<IPv4Address> ipv4Addresses() const;
     vector::const_iterator<IPv4Address> ipv4AddressesEnd() const;
 
     // ...
@@ -82,6 +86,64 @@ private:
     // ...
 }
 ```
+
+#### Communicator helpers
+```c++
+class GNSResolver {
+public:
+    /**
+     * Returns IPv4 and/or IPv6 received from the GNS provider,
+     * or "nullptr" in case if (one|both) address(es) resolving is impossible.
+     * checks internal cache before any providers request.
+     */ 
+    pair<IPv4Address::Shared, IPv6Address::Shared> resolve(
+        GNSRecord &record)
+        const; 
+
+    pair<IPv4Address::Shared, IPv6Address::Shared> resolve(
+        BinaryGNSRecord &record)
+        const; 
+}
+
+```
+
+```c++
+class GNSCache {
+    pair<IPv4Address::Shared, IPv6Address::Shared> resolve(
+        GNSRecord &record)
+        const; 
+
+    pair<IPv4Address::Shared, IPv6Address::Shared> resolve(
+        BinaryGNSRecord &record)
+        const; 
+
+}
+```
+
+```c++
+class DNSResolver {
+public:
+    /**
+     * Returns IPv4 and/or IPv6 received from the DNS provider,
+     * or "nullptr" in case if (one|both) address(es) resolving is impossible.
+     * checks internal cache before any providers request.
+     */ 
+    pair<IPv4Address::Shared, IPv6Address::Shared> resolve(
+        DNSRecord &record)
+        const; 
+}
+
+```
+
+```c++
+class DNSCache {
+    pair<IPv4Address::Shared, IPv6Address::Shared> resolve(
+        GNSRecord &record)
+        const; 
+}
+```
+
+
 
 #### Engine primitives
 ```c++
