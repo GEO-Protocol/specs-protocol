@@ -109,6 +109,7 @@ public:
 
 ```c++
 class GNSCache {
+public:
     pair<IPv4Address::Shared, IPv6Address::Shared> resolve(
         GNSRecord &record)
         const; 
@@ -137,8 +138,9 @@ public:
 
 ```c++
 class DNSCache {
+public:
     pair<IPv4Address::Shared, IPv6Address::Shared> resolve(
-        GNSRecord &record)
+        DNSRecord &record)
         const; 
 }
 ```
